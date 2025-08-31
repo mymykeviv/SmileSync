@@ -17,13 +17,15 @@ import PatientDetail from './views/Patients/PatientDetail';
 import Services from './views/Services/Services';
 import Products from './views/Products/Products';
 import Billing from './views/Billing/Billing';
-import InvoiceForm from './views/Billing/InvoiceForm';
 import InvoiceDetail from './views/Billing/InvoiceDetail';
+import InvoiceForm from './views/Billing/InvoiceForm';
+import PaymentForm from './views/Billing/PaymentForm';
 import ServiceForm from './views/Services/ServiceForm';
 import ProductForm from './views/Products/ProductForm';
 import CategorySupplierManager from './views/Products/CategorySupplierManager';
 import Catalog from './views/Catalog/Catalog';
 import Analytics from './views/Analytics/Analytics';
+import Users from './views/Users/Users';
 
 // Theme configuration
 const theme = createTheme({
@@ -120,11 +122,15 @@ function App() {
               {/* Billing */}
               <Route path="/billing" element={<Billing />} />
               <Route path="/billing/:id" element={<InvoiceDetail />} />
+              <Route path="/billing/:id/payment" element={<PaymentForm />} />
               <Route path="/billing/invoices/new" element={<InvoiceForm />} />
               <Route path="/billing/invoices/:id/edit" element={<InvoiceForm />} />
               
               {/* Catalog */}
               <Route path="/catalog" element={<Catalog />} />
+              
+              {/* Staff */}
+              <Route path="/staff" element={<Users />} />
               
               {/* Analytics */}
               <Route path="/analytics" element={<Analytics />} />

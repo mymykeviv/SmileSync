@@ -10,6 +10,7 @@ const invoiceRoutes = require('./routes/invoiceRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const productRoutes = require('./routes/productRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const userRoutes = require('./routes/users');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -47,6 +48,7 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/users', userRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -247,6 +247,66 @@ class ApiService {
       body: paymentData,
     });
   }
+
+  // User API methods
+  static async getUsers(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = `/users${queryString ? `?${queryString}` : ''}`;
+    return this.request(endpoint);
+  }
+
+  static async getUser(id) {
+    return this.request(`/users/${id}`);
+  }
+
+  static async createUser(userData) {
+    return this.request('/users', {
+      method: 'POST',
+      body: userData,
+    });
+  }
+
+  static async updateUser(id, userData) {
+    return this.request(`/users/${id}`, {
+      method: 'PUT',
+      body: userData,
+    });
+  }
+
+  static async deleteUser(id) {
+    return this.request(`/users/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  static async deactivateUser(id) {
+    return this.request(`/users/${id}/deactivate`, {
+      method: 'PATCH',
+    });
+  }
+
+  static async activateUser(id) {
+    return this.request(`/users/${id}/activate`, {
+      method: 'PATCH',
+    });
+  }
+
+  static async updateUserPassword(id, passwordData) {
+    return this.request(`/users/${id}/password`, {
+      method: 'PUT',
+      body: passwordData,
+    });
+  }
+
+  static async getDentists(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = `/users/dentists${queryString ? `?${queryString}` : ''}`;
+    return this.request(endpoint);
+  }
+
+  static async getUserStats() {
+    return this.request('/users/stats/roles');
+  }
 }
 
 export default ApiService;

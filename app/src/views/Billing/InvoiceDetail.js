@@ -20,8 +20,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  TextField,
   Menu,
   MenuItem,
 } from '@mui/material';
@@ -50,10 +48,7 @@ function InvoiceDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const [paymentAmount, setPaymentAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [paymentNotes, setPaymentNotes] = useState('');
+
   const [pdfPreviewDialog, setPdfPreviewDialog] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
 
@@ -144,25 +139,7 @@ function InvoiceDetail() {
     }
   };
 
-  const handleRecordPayment = async () => {
-    try {
-      const paymentData = {
-        amount: parseFloat(paymentAmount),
-        method: paymentMethod,
-        notes: paymentNotes,
-      };
-      
-      await ApiService.recordPayment(invoice.id, paymentData);
-      setShowPaymentDialog(false);
-      setPaymentAmount('');
-      setPaymentMethod('cash');
-      setPaymentNotes('');
-      loadInvoice(); // Reload to get updated data
-    } catch (error) {
-      console.error('Error recording payment:', error);
-      setError('Failed to record payment');
-    }
-  };
+
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -425,7 +402,7 @@ function InvoiceDetail() {
                 <Button
                   variant="contained"
                   startIcon={<PaymentIcon />}
-                  onClick={() => setShowPaymentDialog(true)}
+                  onClick={() => navigate(`/billing/${invoice.id}/payment`)}
                   fullWidth
                 >
                   Record Payment
@@ -465,60 +442,7 @@ function InvoiceDetail() {
         </MenuItem>
       </Menu>
 
-      {/* Payment Dialog */}
-      <Dialog open={showPaymentDialog} onClose={() => setShowPaymentDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Record Payment</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Payment Amount"
-                type="number"
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                inputProps={{ min: 0, max: invoice.balanceDue, step: 0.01 }}
-                helperText={`Balance due: ${formatCurrency(invoice.balanceDue)}`}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                select
-                label="Payment Method"
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              >
-                <MenuItem value="cash">Cash</MenuItem>
-                <MenuItem value="check">Check</MenuItem>
-                <MenuItem value="credit_card">Credit Card</MenuItem>
-                <MenuItem value="bank_transfer">Bank Transfer</MenuItem>
-                <MenuItem value="other">Other</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Notes (Optional)"
-                multiline
-                rows={3}
-                value={paymentNotes}
-                onChange={(e) => setPaymentNotes(e.target.value)}
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowPaymentDialog(false)}>Cancel</Button>
-          <Button 
-            onClick={handleRecordPayment}
-            variant="contained"
-            disabled={!paymentAmount || parseFloat(paymentAmount) <= 0}
-          >
-            Record Payment
-          </Button>
-        </DialogActions>
-        </Dialog>
+
 
 
       

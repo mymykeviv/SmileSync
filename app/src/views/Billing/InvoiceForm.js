@@ -96,11 +96,23 @@ function InvoiceForm() {
       const response = await ApiService.getInvoice(id);
       if (response.success) {
         const invoice = response.data;
+        // Process items to include total calculation and proper structure
+        const processedItems = (invoice.items || []).map(item => ({
+          id: item.id,
+          type: item.type || 'service',
+          itemId: item.id,
+          itemName: item.itemName,
+          description: item.description || '',
+          quantity: item.quantity || 1,
+          unitPrice: item.unitPrice || 0,
+          total: (item.quantity || 1) * (item.unitPrice || 0)
+        }));
+        
         setFormData({
           patientId: invoice.patientId || '',
           issueDate: invoice.issueDate ? format(new Date(invoice.issueDate), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
           dueDate: invoice.dueDate ? format(new Date(invoice.dueDate), 'yyyy-MM-dd') : format(addDays(new Date(), 30), 'yyyy-MM-dd'),
-          items: invoice.items || [],
+          items: processedItems,
           notes: invoice.notes || '',
           taxRate: invoice.taxRate || 8.0,
         });

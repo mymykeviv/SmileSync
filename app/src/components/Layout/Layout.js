@@ -23,6 +23,7 @@ import {
   Receipt as ReceiptIcon,
   Inventory as InventoryIcon,
   Analytics as AnalyticsIcon,
+  AdminPanelSettings as StaffIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -53,6 +54,11 @@ const menuItems = [
     text: 'Catalog',
     icon: <InventoryIcon />,
     path: '/catalog',
+  },
+  {
+    text: 'Staff',
+    icon: <StaffIcon />,
+    path: '/staff',
   },
   {
     text: 'Analytics',

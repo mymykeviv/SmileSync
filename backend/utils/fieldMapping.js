@@ -235,6 +235,7 @@ const PAYMENT_FIELD_MAPPINGS = {
     invoiceId: 'invoice_id',
     patientId: 'patient_id',
     paymentDate: 'payment_date',
+    method: 'payment_method',
     paymentMethod: 'payment_method',
     paymentReference: 'payment_reference',
     transactionId: 'transaction_id',
@@ -242,7 +243,7 @@ const PAYMENT_FIELD_MAPPINGS = {
     updatedAt: 'updated_at',
     createdBy: 'created_by'
   },
-  
+
   backendToFrontend: {
     payment_number: 'paymentNumber',
     invoice_id: 'invoiceId',
@@ -251,6 +252,35 @@ const PAYMENT_FIELD_MAPPINGS = {
     payment_method: 'paymentMethod',
     payment_reference: 'paymentReference',
     transaction_id: 'transactionId',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+    created_by: 'createdBy'
+  }
+};
+
+/**
+ * User field mappings
+ */
+const USER_FIELD_MAPPINGS = {
+  frontendToBackend: {
+    firstName: 'first_name',
+    lastName: 'last_name',
+    passwordHash: 'password_hash',
+    licenseNumber: 'license_number',
+    isActive: 'is_active',
+    lastLogin: 'last_login',
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    createdBy: 'created_by'
+  },
+
+  backendToFrontend: {
+    first_name: 'firstName',
+    last_name: 'lastName',
+    password_hash: 'passwordHash',
+    license_number: 'licenseNumber',
+    is_active: 'isActive',
+    last_login: 'lastLogin',
     created_at: 'createdAt',
     updated_at: 'updatedAt',
     created_by: 'createdBy'
@@ -341,6 +371,34 @@ function convertPaymentToFrontend(paymentData) {
   return converted;
 }
 
+/**
+ * Convert user data from frontend format to backend format
+ */
+function convertUserToBackend(userData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(userData)) {
+    const backendKey = USER_FIELD_MAPPINGS.frontendToBackend[key] || camelToSnake(key);
+    converted[backendKey] = value;
+  }
+  
+  return converted;
+}
+
+/**
+ * Convert user data from backend format to frontend format
+ */
+function convertUserToFrontend(userData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(userData)) {
+    const frontendKey = USER_FIELD_MAPPINGS.backendToFrontend[key] || snakeToCamel(key);
+    converted[frontendKey] = value;
+  }
+  
+  return converted;
+}
+
 module.exports = {
   camelToSnake,
   snakeToCamel,
@@ -354,8 +412,11 @@ module.exports = {
   convertInvoiceToFrontend,
   convertPaymentToBackend,
   convertPaymentToFrontend,
+  convertUserToBackend,
+  convertUserToFrontend,
   PATIENT_FIELD_MAPPINGS,
   APPOINTMENT_FIELD_MAPPINGS,
   INVOICE_FIELD_MAPPINGS,
-  PAYMENT_FIELD_MAPPINGS
+  PAYMENT_FIELD_MAPPINGS,
+  USER_FIELD_MAPPINGS
 };
