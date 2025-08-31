@@ -150,3 +150,29 @@
 This design system ensures a consistent, accessible, and user-focused UI aligned with the dental clinic app’s needs.
 
 ---
+
+1. Appointments
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/ced52640-bf99-4577-87b2-22c06ef5b51e" />
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/56e17215-8721-49b4-909d-e8cf37336080" />
+
+
+2. Patient management
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/22b5c124-16b4-4a5b-8c72-c7932996316f" />
+
+3. catalog /service
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/548b8773-f827-4350-8b86-9c2816464048" />
+
+4. Billing 
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/3826db27-8127-4c04-b9a3-1544336a4c5f" />
+
+5. Dashboard
+<img width="1024" height="1024" alt="image" src="https://github.com/user-attachments/assets/4d30332b-5b0b-4b86-9c4e-6047b894df14" />
+
+
+
+
+
