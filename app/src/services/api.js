@@ -204,9 +204,20 @@ class ApiService {
   }
 
   static async generatePdf(id) {
-    return this.request(`/invoices/${id}/pdf`, {
+    const url = `${API_BASE_URL}/invoices/${id}/pdf`;
+    const response = await fetch(url, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Network error' }));
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.blob();
   }
 }
 

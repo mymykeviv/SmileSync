@@ -141,16 +141,24 @@ function Billing() {
 
   const handleGeneratePdf = async (invoice) => {
     try {
+      const response = await ApiService.generatePdf(invoice.id);
+      
+      // Create blob from response
+      const blob = new Blob([response], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      
       // Create a temporary link to download the PDF
       const link = document.createElement('a');
-      link.href = `http://localhost:5001/api/invoices/${invoice.id}/pdf`;
+      link.href = url;
       link.download = `invoice-${invoice.invoiceNumber}.pdf`;
-      link.target = '_blank';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      console.log('PDF download initiated');
+      // Clean up the URL object
+      window.URL.revokeObjectURL(url);
+      
+      console.log('PDF download completed');
     } catch (error) {
       console.error('Failed to generate PDF:', error);
     }
@@ -457,7 +465,7 @@ function Billing() {
                         </IconButton>
                         <IconButton
                           size="small"
-                          onClick={() => navigate(`/billing/${invoice.id}/edit`)}
+                          onClick={() => navigate(`/billing/invoices/${invoice.id}/edit`)}
                           title="Edit"
                           disabled={invoice.status === 'paid' || invoice.status === 'cancelled'}
                         >
