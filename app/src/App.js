@@ -9,6 +9,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Layout from './components/Layout/Layout';
 import Dashboard from './views/Dashboard/Dashboard';
 import Appointments from './views/Appointments/Appointments';
+import AppointmentForm from './views/Appointments/AppointmentForm';
 import Patients from './views/Patients/Patients';
 import PatientForm from './views/Patients/PatientForm';
 import PatientDetail from './views/Patients/PatientDetail';
@@ -91,6 +92,8 @@ function App() {
               
               {/* Appointments */}
                 <Route path="/appointments" element={<Appointments />} />
+                <Route path="/appointments/new" element={<AppointmentForm />} />
+                <Route path="/appointments/:id/edit" element={<AppointmentForm />} />
               
               {/* Patients */}
                 <Route path="/patients" element={<Patients />} />
