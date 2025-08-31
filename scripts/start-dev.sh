@@ -14,6 +14,55 @@ if ! command -v npm &> /dev/null; then
     exit 1
 fi
 
+# Function to check if port is in use
+check_port() {
+    local port=$1
+    if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
+        return 0  # Port is in use
+    else
+        return 1  # Port is free
+    fi
+}
+
+# Function to find available port
+find_available_port() {
+    local start_port=$1
+    local port=$start_port
+    while check_port $port; do
+        port=$((port + 1))
+        if [ $port -gt $((start_port + 100)) ]; then
+            echo "Error: Could not find available port after checking 100 ports starting from $start_port"
+            exit 1
+        fi
+    done
+    echo $port
+}
+
+# Check for existing SmileSync processes
+if pgrep -f "SmileSync\|smilesync" > /dev/null; then
+    echo "⚠️  SmileSync appears to be already running!"
+    echo "   You can access the existing application at:"
+    if check_port 3000; then
+        echo "   Frontend: http://localhost:3000"
+    fi
+    if check_port 5001; then
+        echo "   Backend API: http://localhost:5001"
+    fi
+    echo ""
+    read -p "Do you want to stop existing processes and start fresh? (y/N): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "Stopping existing SmileSync processes..."
+        pkill -f nodemon 2>/dev/null
+        pkill -f react-scripts 2>/dev/null
+        pkill -f webpack 2>/dev/null
+        sleep 2
+    else
+        echo "Exiting. Use existing running application."
+        exit 0
+    fi
+fi
+
 # Get the project root directory
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 echo "Project root: $PROJECT_ROOT"
@@ -38,21 +87,37 @@ if [ ! -d "$PROJECT_ROOT/backend/node_modules" ]; then
 fi
 
 # Create data directory for SQLite database
-mkdir -p "$PROJECT_ROOT/backend/data"
+mkdir -p "$PROJECT_ROOT/data"
+
+# Determine backend port
+BACKEND_PORT=5001
+if check_port $BACKEND_PORT; then
+    echo "⚠️  Port $BACKEND_PORT is already in use."
+    BACKEND_PORT=$(find_available_port 5001)
+    echo "✅ Using alternative backend port: $BACKEND_PORT"
+fi
 
 # Start backend server in background
-echo "Starting backend server..."
+echo "Starting backend server on port $BACKEND_PORT..."
 cd "$PROJECT_ROOT/backend"
-npx nodemon index.js &
+PORT=$BACKEND_PORT npx nodemon index.js &
 BACKEND_PID=$!
 
 # Wait a moment for backend to start
-sleep 2
+sleep 3
+
+# Determine frontend port
+FRONTEND_PORT=3000
+if check_port $FRONTEND_PORT; then
+    echo "⚠️  Port $FRONTEND_PORT is already in use."
+    FRONTEND_PORT=$(find_available_port 3000)
+    echo "✅ Using alternative frontend port: $FRONTEND_PORT"
+fi
 
 # Start frontend React app in background
-echo "Starting frontend React app..."
+echo "Starting frontend React app on port $FRONTEND_PORT..."
 cd "$PROJECT_ROOT/app"
-npm start &
+PORT=$FRONTEND_PORT npm start &
 FRONTEND_PID=$!
 
 # Function to cleanup processes on exit
@@ -75,8 +140,8 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 echo "\n=== SmileSync Development Environment Started ==="
-echo "Frontend: http://localhost:3000"
-echo "Backend API: http://localhost:5001"
+echo "Frontend: http://localhost:$FRONTEND_PORT"
+echo "Backend API: http://localhost:$BACKEND_PORT"
 echo "Press Ctrl+C to stop all services"
 echo "================================================\n"
 

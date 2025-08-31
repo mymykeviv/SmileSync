@@ -38,19 +38,39 @@ safe_kill "node.*smilesync"
 # Clean up any orphaned processes on specific ports
 echo "Checking for processes on development ports..."
 
-# Check port 3000 (React)
-PORT_3000_PID=$(lsof -ti:3000 2>/dev/null)
-if [ ! -z "$PORT_3000_PID" ]; then
-    echo "Stopping process on port 3000..."
-    kill -9 $PORT_3000_PID 2>/dev/null
-fi
+# Function to kill process on specific port
+kill_port() {
+    local port=$1
+    local port_pid=$(lsof -ti:$port 2>/dev/null)
+    if [ ! -z "$port_pid" ]; then
+        echo "Stopping process on port $port (PID: $port_pid)..."
+        kill -TERM $port_pid 2>/dev/null
+        sleep 2
+        # Force kill if still running
+        if kill -0 $port_pid 2>/dev/null; then
+            echo "Force stopping process on port $port..."
+            kill -9 $port_pid 2>/dev/null
+        fi
+    fi
+}
 
-# Check port 5000 (Backend)
-PORT_5000_PID=$(lsof -ti:5000 2>/dev/null)
-if [ ! -z "$PORT_5000_PID" ]; then
-    echo "Stopping process on port 5000..."
-    kill -9 $PORT_5000_PID 2>/dev/null
-fi
+# Check common development ports
+kill_port 3000  # React frontend
+kill_port 5001  # Backend API
+kill_port 8080  # Alternative development server
+
+# Check for any additional ports that might be in use
+echo "Scanning for other SmileSync-related processes..."
+for port in $(seq 3001 3010); do
+    port_pid=$(lsof -ti:$port 2>/dev/null)
+    if [ ! -z "$port_pid" ]; then
+        # Check if it's a Node.js process
+        if ps -p $port_pid -o comm= | grep -q node; then
+            echo "Found Node.js process on port $port, stopping..."
+            kill_port $port
+        fi
+    fi
+done
 
 echo "\n=== SmileSync Development Environment Stopped ==="
 echo "All development processes have been terminated."

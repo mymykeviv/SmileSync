@@ -331,6 +331,86 @@ This will create distributable packages in the `dist/` folder:
 - Native file system access for exports/imports
 - Better performance than web version
 
+## Port Conflicts and Process Management
+
+### Handling Port Conflicts
+
+The enhanced deployment scripts now automatically detect and resolve port conflicts:
+
+- **Automatic Detection**: Scripts check if default ports (3000 for frontend, 5001 for backend) are already in use
+- **Alternative Ports**: If conflicts are detected, scripts automatically find and use the next available port
+- **Clear Messaging**: You'll see warnings and confirmations about which ports are being used
+
+### Accessing Existing Running Applications
+
+If SmileSync is already running, you can access it at:
+
+- **Frontend**: http://localhost:3000 (or the port shown in your terminal)
+- **Backend API**: http://localhost:5001 (or the port shown in your terminal)
+- **Desktop App**: The Electron window should already be open
+
+### Managing Running Processes
+
+#### Check What's Running
+
+**Mac/Linux:**
+```bash
+# Check for SmileSync processes
+ps aux | grep -E "(nodemon|react-scripts|electron)" | grep -v grep
+
+# Check specific ports
+lsof -i :3000
+lsof -i :5001
+```
+
+**Windows:**
+```cmd
+# Check for Node.js processes
+tasklist | find "node.exe"
+
+# Check specific ports
+netstat -an | find ":3000"
+netstat -an | find ":5001"
+```
+
+#### Stop Running Processes
+
+**Using Scripts (Recommended):**
+
+*Windows:*
+```bash
+scripts/stop-dev.bat
+```
+
+*Mac/Linux:*
+```bash
+scripts/stop-dev.sh
+```
+
+**Manual Process Termination:**
+
+*Mac/Linux:*
+```bash
+# Stop all SmileSync processes
+pkill -f nodemon
+pkill -f react-scripts
+pkill -f electron
+```
+
+*Windows:*
+```cmd
+# Stop Node.js processes
+taskkill /f /im node.exe
+taskkill /f /im electron.exe
+```
+
+### Troubleshooting Common Issues
+
+1. **"Port already in use" errors**: The enhanced scripts now handle this automatically
+2. **Multiple instances running**: Use the stop scripts before starting new instances
+3. **Can't access application**: Check the terminal output for the actual ports being used
+4. **Database locked errors**: Ensure only one backend instance is running
+
 ## Default Login Credentials
 
 After running the seed script, you can log in with:
