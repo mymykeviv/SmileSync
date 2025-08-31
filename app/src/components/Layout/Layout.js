@@ -88,7 +88,7 @@ function Layout({ children }) {
   const drawer = (
     <div>
       <Toolbar>
-        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
+        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold', color: '#FFFFFF' }}>
           SmileSync
         </Typography>
       </Toolbar>
@@ -103,17 +103,21 @@ function Layout({ children }) {
                 onClick={() => handleNavigation(item.path)}
                 selected={isActive}
                 sx={{
+                  color: '#FFFFFF',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  },
                   '&.Mui-selected': {
-                    backgroundColor: theme.palette.primary.main + '20',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
                     '&:hover': {
-                      backgroundColor: theme.palette.primary.main + '30',
+                      backgroundColor: 'rgba(255, 255, 255, 0.25)',
                     },
                   },
                 }}
               >
                 <ListItemIcon
                   sx={{
-                    color: isActive ? theme.palette.primary.main : 'inherit',
+                    color: '#FFFFFF',
                   }}
                 >
                   {item.icon}
@@ -122,7 +126,7 @@ function Layout({ children }) {
                   primary={item.text}
                   sx={{
                     '& .MuiListItemText-primary': {
-                      color: isActive ? theme.palette.primary.main : 'inherit',
+                      color: '#FFFFFF',
                       fontWeight: isActive ? 600 : 400,
                     },
                   }}
@@ -175,7 +179,12 @@ function Layout({ children }) {
           }}
           sx={{
             display: { xs: 'block', md: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: drawerWidth,
+              backgroundColor: theme.palette.primary.main,
+              color: '#FFFFFF',
+            },
           }}
         >
           {drawer}
@@ -185,7 +194,12 @@ function Layout({ children }) {
           variant="permanent"
           sx={{
             display: { xs: 'none', md: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: drawerWidth,
+              backgroundColor: theme.palette.primary.main,
+              color: '#FFFFFF',
+            },
           }}
           open
         >
