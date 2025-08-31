@@ -139,27 +139,28 @@ class AppointmentController {
                 });
             }
 
-            // Convert frontend camelCase fields to backend snake_case
-            const backendAppointmentData = convertAppointmentToBackend(req.body);
-            
+            // Extract fields directly from request body (already in snake_case)
             const {
                 patient_id,
+                service_id,
                 dentist_id,
                 appointment_date,
                 appointment_time,
-                duration_minutes,
+                duration,
                 appointment_type,
                 chief_complaint,
                 treatment_notes,
-                priority
-            } = backendAppointmentData;
+                priority,
+                status,
+                notes
+            } = req.body;
 
             // Check for conflicts
             const hasConflict = await Appointment.checkConflict(
                 dentist_id,
                 appointment_date,
                 appointment_time,
-                duration_minutes
+                duration
             );
 
             if (hasConflict) {
@@ -189,15 +190,17 @@ class AppointmentController {
 
             const appointment = new Appointment({
                 patient_id,
+                service_id,
                 dentist_id,
                 appointment_date,
                 appointment_time,
-                duration_minutes: duration_minutes || 30,
+                duration_minutes: duration || 30,
                 appointment_type: appointment_type || 'consultation',
                 chief_complaint,
                 treatment_notes,
                 priority: priority || 'medium',
-                status: 'scheduled',
+                status: status || 'scheduled',
+                notes,
                 created_by: req.user?.id
             });
 

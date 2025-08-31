@@ -80,13 +80,13 @@ const validatePatient = [
 
 // Appointment validation rules
 const validateAppointment = [
-  body('patientId')
+  body('patient_id')
     .isInt({ min: 1 })
     .withMessage('Valid patient ID is required'),
-  body('serviceId')
+  body('service_id')
     .isInt({ min: 1 })
     .withMessage('Valid service ID is required'),
-  body('appointmentDate')
+  body('appointment_date')
     .isISO8601()
     .toDate()
     .custom((value) => {
