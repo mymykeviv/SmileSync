@@ -18,6 +18,7 @@ import Billing from './views/Billing/Billing';
 import InvoiceForm from './views/Billing/InvoiceForm';
 import ServiceForm from './views/Services/ServiceForm';
 import ProductForm from './views/Products/ProductForm';
+import Analytics from './views/Analytics/Analytics';
 
 // Theme configuration
 const theme = createTheme({
@@ -111,6 +112,9 @@ function App() {
               <Route path="/billing" element={<Billing />} />
               <Route path="/billing/invoices/new" element={<InvoiceForm />} />
               <Route path="/billing/invoices/:id/edit" element={<InvoiceForm />} />
+              
+              {/* Analytics */}
+              <Route path="/analytics" element={<Analytics />} />
               
               {/* Catch all route */}
               <Route path="*" element={<Navigate to="/" replace />} />

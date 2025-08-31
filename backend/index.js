@@ -9,6 +9,7 @@ const patientRoutes = require('./routes/patientRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const productRoutes = require('./routes/productRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -45,6 +46,7 @@ app.use('/api/patients', patientRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
