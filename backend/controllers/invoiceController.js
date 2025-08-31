@@ -67,9 +67,24 @@ class InvoiceController {
         });
       }
 
+      // Fetch invoice items
+      const items = await invoice.getItems();
+      
+      // Convert invoice to JSON and add items
+      const invoiceData = invoice.toJSON();
+      invoiceData.items = items.map(item => ({
+        id: item.id,
+        itemName: item.item_name,
+        description: item.description,
+        type: item.item_type,
+        quantity: item.quantity,
+        unitPrice: item.unit_price,
+        toothNumber: item.tooth_number
+      }));
+
       res.json({
         success: true,
-        data: invoice
+        data: invoiceData
       });
     } catch (error) {
       console.error('Error fetching invoice:', error);
@@ -94,9 +109,24 @@ class InvoiceController {
         });
       }
 
+      // Fetch invoice items
+      const items = await invoice.getItems();
+      
+      // Convert invoice to JSON and add items
+      const invoiceData = invoice.toJSON();
+      invoiceData.items = items.map(item => ({
+        id: item.id,
+        itemName: item.item_name,
+        description: item.description,
+        type: item.item_type,
+        quantity: item.quantity,
+        unitPrice: item.unit_price,
+        toothNumber: item.tooth_number
+      }));
+
       res.json({
         success: true,
-        data: invoice
+        data: invoiceData
       });
     } catch (error) {
       console.error('Error fetching invoice:', error);
