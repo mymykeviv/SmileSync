@@ -257,21 +257,150 @@ class Invoice {
     /**
      * Get all invoices
      */
-    static async findAll(limit = 100, offset = 0) {
+    static async findAll(options = {}) {
         try {
-            const sql = `
+            const {
+                search = '',
+                status = '',
+                dateFilter = '',
+                sortBy = 'invoice_date',
+                sortOrder = 'desc',
+                limit = 100,
+                offset = 0
+            } = options;
+
+            let sql = `
                 SELECT i.*, 
                        p.first_name as patient_first_name, p.last_name as patient_last_name, p.patient_number
                 FROM invoices i
                 LEFT JOIN patients p ON i.patient_id = p.id
-                ORDER BY i.invoice_date DESC
-                LIMIT ? OFFSET ?
+                WHERE 1=1
             `;
             
-            const rows = await database.all(sql, [limit, offset]);
-            return rows.map(row => new Invoice(row));
+            const params = [];
+            
+            // Add search filter
+            if (search) {
+                sql += ` AND (i.invoice_number LIKE ? OR p.first_name LIKE ? OR p.last_name LIKE ?)`;
+                const searchTerm = `%${search}%`;
+                params.push(searchTerm, searchTerm, searchTerm);
+            }
+            
+            // Add status filter
+            if (status) {
+                sql += ` AND i.status = ?`;
+                params.push(status);
+            }
+            
+            // Add date filter
+            if (dateFilter) {
+                const today = moment().format('YYYY-MM-DD');
+                switch (dateFilter) {
+                    case 'today':
+                        sql += ` AND DATE(i.invoice_date) = ?`;
+                        params.push(today);
+                        break;
+                    case 'week':
+                        const weekStart = moment().startOf('week').format('YYYY-MM-DD');
+                        const weekEnd = moment().endOf('week').format('YYYY-MM-DD');
+                        sql += ` AND DATE(i.invoice_date) BETWEEN ? AND ?`;
+                        params.push(weekStart, weekEnd);
+                        break;
+                    case 'month':
+                        const monthStart = moment().startOf('month').format('YYYY-MM-DD');
+                        const monthEnd = moment().endOf('month').format('YYYY-MM-DD');
+                        sql += ` AND DATE(i.invoice_date) BETWEEN ? AND ?`;
+                        params.push(monthStart, monthEnd);
+                        break;
+                }
+            }
+            
+            // Add sorting
+            const validSortColumns = ['invoice_date', 'invoice_number', 'total_amount', 'status', 'due_date'];
+            const validSortOrders = ['asc', 'desc'];
+            
+            if (validSortColumns.includes(sortBy) && validSortOrders.includes(sortOrder.toLowerCase())) {
+                sql += ` ORDER BY i.${sortBy} ${sortOrder.toUpperCase()}`;
+            } else {
+                sql += ` ORDER BY i.invoice_date DESC`;
+            }
+            
+            // Add pagination
+            sql += ` LIMIT ? OFFSET ?`;
+            params.push(limit, offset);
+            
+            const rows = await database.all(sql, params);
+            return rows.map(row => {
+                const invoice = new Invoice(row);
+                invoice.patientName = `${row.patient_first_name} ${row.patient_last_name}`;
+                return invoice;
+            });
         } catch (error) {
             console.error('Error finding all invoices:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get count of invoices with filters
+     */
+    static async getCount(options = {}) {
+        try {
+            const {
+                search = '',
+                status = '',
+                dateFilter = ''
+            } = options;
+
+            let sql = `
+                SELECT COUNT(*) as count
+                FROM invoices i
+                LEFT JOIN patients p ON i.patient_id = p.id
+                WHERE 1=1
+            `;
+            
+            const params = [];
+            
+            // Add search filter
+            if (search) {
+                sql += ` AND (i.invoice_number LIKE ? OR p.first_name LIKE ? OR p.last_name LIKE ?)`;
+                const searchTerm = `%${search}%`;
+                params.push(searchTerm, searchTerm, searchTerm);
+            }
+            
+            // Add status filter
+            if (status) {
+                sql += ` AND i.status = ?`;
+                params.push(status);
+            }
+            
+            // Add date filter
+            if (dateFilter) {
+                const today = moment().format('YYYY-MM-DD');
+                switch (dateFilter) {
+                    case 'today':
+                        sql += ` AND DATE(i.invoice_date) = ?`;
+                        params.push(today);
+                        break;
+                    case 'week':
+                        const weekStart = moment().startOf('week').format('YYYY-MM-DD');
+                        const weekEnd = moment().endOf('week').format('YYYY-MM-DD');
+                        sql += ` AND DATE(i.invoice_date) BETWEEN ? AND ?`;
+                        params.push(weekStart, weekEnd);
+                        break;
+                    case 'month':
+                        const monthStart = moment().startOf('month').format('YYYY-MM-DD');
+                        const monthEnd = moment().endOf('month').format('YYYY-MM-DD');
+                        sql += ` AND DATE(i.invoice_date) BETWEEN ? AND ?`;
+                        params.push(monthStart, monthEnd);
+                        break;
+                }
+            }
+            
+            const result = await database.get(sql, params);
+            return result.count;
+        } catch (error) {
+            console.error('Error getting invoice count:', error);
             throw error;
         }
     }
@@ -480,6 +609,24 @@ class Invoice {
             return this;
         } catch (error) {
             console.error('Error marking invoice as sent:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Delete invoice
+     */
+    async delete() {
+        try {
+            // First delete all invoice items
+            await database.run('DELETE FROM invoice_items WHERE invoice_id = ?', [this.id]);
+            
+            // Then delete the invoice
+            await database.run('DELETE FROM invoices WHERE id = ?', [this.id]);
+            
+            return true;
+        } catch (error) {
+            console.error('Error deleting invoice:', error);
             throw error;
         }
     }

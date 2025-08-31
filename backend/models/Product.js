@@ -18,6 +18,20 @@ class Product {
     }
 
     /**
+     * Generate a unique product code
+     */
+    static async generateProductCode() {
+        try {
+            const result = await database.get('SELECT COUNT(*) as count FROM products');
+            const count = result.count + 1;
+            return `PROD${count.toString().padStart(4, '0')}`;
+        } catch (error) {
+            console.error('Error generating product code:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Create a new product
      */
     async save() {
@@ -120,16 +134,60 @@ class Product {
     /**
      * Get all active products
      */
-    static async findAll(limit = 100, offset = 0) {
+    static async findAll(options = {}) {
         try {
-            const sql = `
-                SELECT * FROM products 
-                WHERE is_active = 1 
-                ORDER BY category, name
-                LIMIT ? OFFSET ?
-            `;
+            const {
+                search,
+                category,
+                supplier,
+                status,
+                lowStock = false,
+                sortBy = 'name',
+                sortOrder = 'asc',
+                limit = 100,
+                offset = 0
+            } = options;
+
+            let sql = 'SELECT * FROM products WHERE 1=1';
+            const params = [];
+
+            // Apply filters
+            if (search) {
+                sql += ' AND (name LIKE ? OR description LIKE ? OR product_code LIKE ?)';
+                const searchTerm = `%${search}%`;
+                params.push(searchTerm, searchTerm, searchTerm);
+            }
+
+            if (category) {
+                sql += ' AND category = ?';
+                params.push(category);
+            }
+
+            if (supplier) {
+                sql += ' AND supplier = ?';
+                params.push(supplier);
+            }
+
+            if (status !== undefined) {
+                sql += ' AND is_active = ?';
+                params.push(status === 'active' ? 1 : 0);
+            }
+
+            if (lowStock) {
+                sql += ' AND current_stock <= minimum_stock';
+            }
+
+            // Apply sorting
+            const validSortFields = ['name', 'category', 'unit_price', 'current_stock', 'created_at'];
+            const sortField = validSortFields.includes(sortBy) ? sortBy : 'name';
+            const order = sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+            sql += ` ORDER BY ${sortField} ${order}`;
+
+            // Apply pagination
+            sql += ' LIMIT ? OFFSET ?';
+            params.push(limit, offset);
             
-            const rows = await database.all(sql, [limit, offset]);
+            const rows = await database.all(sql, params);
             return rows.map(row => new Product(row));
         } catch (error) {
             console.error('Error finding all products:', error);
@@ -240,7 +298,55 @@ class Product {
     /**
      * Get product count
      */
-    static async getCount(activeOnly = true) {
+    static async getCount(options = {}) {
+        try {
+            const {
+                search,
+                category,
+                supplier,
+                status,
+                lowStock = false
+            } = options;
+
+            let sql = 'SELECT COUNT(*) as count FROM products WHERE 1=1';
+            const params = [];
+
+            // Apply same filters as findAll
+            if (search) {
+                sql += ' AND (name LIKE ? OR description LIKE ? OR product_code LIKE ?)';
+                const searchTerm = `%${search}%`;
+                params.push(searchTerm, searchTerm, searchTerm);
+            }
+
+            if (category) {
+                sql += ' AND category = ?';
+                params.push(category);
+            }
+
+            if (supplier) {
+                sql += ' AND supplier = ?';
+                params.push(supplier);
+            }
+
+            if (status !== undefined) {
+                sql += ' AND is_active = ?';
+                params.push(status === 'active' ? 1 : 0);
+            }
+
+            if (lowStock) {
+                sql += ' AND current_stock <= minimum_stock';
+            }
+            
+            const result = await database.get(sql, params);
+            return result.count;
+        } catch (error) {
+            console.error('Error getting product count:', error);
+            throw error;
+        }
+    }
+
+    // Legacy method for backward compatibility
+    static async getCountLegacy(activeOnly = true) {
         try {
             const sql = activeOnly 
                 ? 'SELECT COUNT(*) as count FROM products WHERE is_active = 1'

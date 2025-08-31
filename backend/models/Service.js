@@ -15,6 +15,22 @@ class Service {
     }
 
     /**
+     * Generate a unique service code
+     */
+    static async generateServiceCode() {
+        try {
+            const result = await database.get(
+                'SELECT COUNT(*) as count FROM services'
+            );
+            const count = result.count + 1;
+            return `SRV-${count.toString().padStart(3, '0')}`;
+        } catch (error) {
+            console.error('Error generating service code:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Create a new service
      */
     async save() {
@@ -113,21 +129,59 @@ class Service {
     }
 
     /**
-     * Get all active services
+     * Get all services with search, filter, and pagination
      */
-    static async findAll(limit = 100, offset = 0) {
+    static async findAll(options = {}) {
         try {
-            const sql = `
-                SELECT * FROM services 
-                WHERE is_active = 1 
-                ORDER BY category, name
-                LIMIT ? OFFSET ?
-            `;
-            
-            const rows = await database.all(sql, [limit, offset]);
+            const {
+                search,
+                category,
+                status,
+                sortBy = 'name',
+                sortOrder = 'asc',
+                limit = 100,
+                offset = 0
+            } = options;
+
+            let sql = 'SELECT * FROM services WHERE 1=1';
+            const params = [];
+
+            // Search filter
+            if (search) {
+                sql += ' AND (name LIKE ? OR description LIKE ? OR service_code LIKE ?)';
+                const searchTerm = `%${search}%`;
+                params.push(searchTerm, searchTerm, searchTerm);
+            }
+
+            // Category filter
+            if (category) {
+                sql += ' AND category = ?';
+                params.push(category);
+            }
+
+            // Status filter
+            if (status !== undefined) {
+                if (status === 'active') {
+                    sql += ' AND is_active = 1';
+                } else if (status === 'inactive') {
+                    sql += ' AND is_active = 0';
+                }
+            }
+
+            // Sorting
+            const validSortFields = ['name', 'category', 'base_price', 'duration_minutes', 'created_at'];
+            const sortField = validSortFields.includes(sortBy) ? sortBy : 'name';
+            const order = sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+            sql += ` ORDER BY ${sortField} ${order}`;
+
+            // Pagination
+            sql += ' LIMIT ? OFFSET ?';
+            params.push(limit, offset);
+
+            const rows = await database.all(sql, params);
             return rows.map(row => new Service(row));
         } catch (error) {
-            console.error('Error finding all services:', error);
+            console.error('Error finding services:', error);
             throw error;
         }
     }
@@ -173,9 +227,49 @@ class Service {
     }
 
     /**
-     * Get service count
+     * Get service count with filters
      */
-    static async getCount(activeOnly = true) {
+    static async getCount(options = {}) {
+        try {
+            const { search, category, status } = options;
+            
+            let sql = 'SELECT COUNT(*) as count FROM services WHERE 1=1';
+            const params = [];
+
+            // Search filter
+            if (search) {
+                sql += ' AND (name LIKE ? OR description LIKE ? OR service_code LIKE ?)';
+                const searchTerm = `%${search}%`;
+                params.push(searchTerm, searchTerm, searchTerm);
+            }
+
+            // Category filter
+            if (category) {
+                sql += ' AND category = ?';
+                params.push(category);
+            }
+
+            // Status filter
+            if (status !== undefined) {
+                if (status === 'active') {
+                    sql += ' AND is_active = 1';
+                } else if (status === 'inactive') {
+                    sql += ' AND is_active = 0';
+                }
+            }
+
+            const result = await database.get(sql, params);
+            return result.count;
+        } catch (error) {
+            console.error('Error getting service count:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get service count (legacy method for backward compatibility)
+     */
+    static async getCountLegacy(activeOnly = true) {
         try {
             const sql = activeOnly 
                 ? 'SELECT COUNT(*) as count FROM services WHERE is_active = 1'
