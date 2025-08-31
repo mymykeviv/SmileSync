@@ -1,9 +1,4 @@
-const { Appointment } = require('../models/Appointment');
-const { Patient } = require('../models/Patient');
-const { Invoice } = require('../models/Invoice');
-const { Service } = require('../models/Service');
-const { Product } = require('../models/Product');
-const { Op } = require('sequelize');
+const database = require('../database/init');
 
 /**
  * Get dashboard overview metrics
@@ -17,64 +12,50 @@ const getDashboardOverview = async (req, res) => {
     const end = endDate || new Date().toISOString().split('T')[0];
 
     // Get total patients
-    const totalPatients = await Patient.count();
+    const totalPatientsResult = await database.get('SELECT COUNT(*) as count FROM patients WHERE is_active = 1');
+    const totalPatients = totalPatientsResult.count;
     
     // Get new patients in date range
-    const newPatients = await Patient.count({
-      where: {
-        created_at: {
-          [Op.between]: [start + ' 00:00:00', end + ' 23:59:59']
-        }
-      }
-    });
+    const newPatientsResult = await database.get(
+      'SELECT COUNT(*) as count FROM patients WHERE created_at BETWEEN ? AND ? AND is_active = 1',
+      [start + ' 00:00:00', end + ' 23:59:59']
+    );
+    const newPatients = newPatientsResult.count;
 
     // Get appointments in date range
-    const totalAppointments = await Appointment.count({
-      where: {
-        appointment_date: {
-          [Op.between]: [start, end]
-        }
-      }
-    });
+    const totalAppointmentsResult = await database.get(
+      'SELECT COUNT(*) as count FROM appointments WHERE appointment_date BETWEEN ? AND ?',
+      [start, end]
+    );
+    const totalAppointments = totalAppointmentsResult.count;
 
     // Get completed appointments
-    const completedAppointments = await Appointment.count({
-      where: {
-        appointment_date: {
-          [Op.between]: [start, end]
-        },
-        status: 'completed'
-      }
-    });
+    const completedAppointmentsResult = await database.get(
+      'SELECT COUNT(*) as count FROM appointments WHERE appointment_date BETWEEN ? AND ? AND status = ?',
+      [start, end, 'completed']
+    );
+    const completedAppointments = completedAppointmentsResult.count;
 
     // Get cancelled appointments
-    const cancelledAppointments = await Appointment.count({
-      where: {
-        appointment_date: {
-          [Op.between]: [start, end]
-        },
-        status: 'cancelled'
-      }
-    });
+    const cancelledAppointmentsResult = await database.get(
+      'SELECT COUNT(*) as count FROM appointments WHERE appointment_date BETWEEN ? AND ? AND status = ?',
+      [start, end, 'cancelled']
+    );
+    const cancelledAppointments = cancelledAppointmentsResult.count;
 
     // Get total revenue from invoices
-    const revenueResult = await Invoice.sum('total_amount', {
-      where: {
-        created_at: {
-          [Op.between]: [start + ' 00:00:00', end + ' 23:59:59']
-        },
-        status: 'paid'
-      }
-    });
-    const totalRevenue = revenueResult || 0;
+    const revenueResult = await database.get(
+      'SELECT COALESCE(SUM(total_amount), 0) as total FROM invoices WHERE created_at BETWEEN ? AND ? AND status = ?',
+      [start + ' 00:00:00', end + ' 23:59:59', 'paid']
+    );
+    const totalRevenue = revenueResult.total || 0;
 
     // Get pending invoices amount
-    const pendingRevenueResult = await Invoice.sum('total_amount', {
-      where: {
-        status: 'pending'
-      }
-    });
-    const pendingRevenue = pendingRevenueResult || 0;
+    const pendingRevenueResult = await database.get(
+      'SELECT COALESCE(SUM(total_amount), 0) as total FROM invoices WHERE status = ?',
+      ['pending']
+    );
+    const pendingRevenue = pendingRevenueResult.total || 0;
 
     res.json({
       overview: {
@@ -106,71 +87,47 @@ const getAppointmentAnalytics = async (req, res) => {
     const end = endDate || new Date().toISOString().split('T')[0];
 
     // Get appointments by status
-    const appointmentsByStatus = await Appointment.findAll({
-      where: {
-        appointment_date: {
-          [Op.between]: [start, end]
-        }
-      },
-      attributes: [
-        'status',
-        [Appointment.sequelize.fn('COUNT', '*'), 'count']
-      ],
-      group: ['status']
-    });
+    const appointmentsByStatus = await database.all(
+      'SELECT status, COUNT(*) as count FROM appointments WHERE appointment_date BETWEEN ? AND ? GROUP BY status',
+      [start, end]
+    );
 
     // Get appointments by day for trend analysis
-    const appointmentsByDay = await Appointment.findAll({
-      where: {
-        appointment_date: {
-          [Op.between]: [start, end]
-        }
-      },
-      attributes: [
-        'appointment_date',
-        [Appointment.sequelize.fn('COUNT', '*'), 'count']
-      ],
-      group: ['appointment_date'],
-      order: [['appointment_date', 'ASC']]
-    });
+    const appointmentsByDay = await database.all(
+      'SELECT appointment_date, COUNT(*) as count FROM appointments WHERE appointment_date BETWEEN ? AND ? GROUP BY appointment_date ORDER BY appointment_date ASC',
+      [start, end]
+    );
 
-    // Get most popular services
-    const popularServices = await Appointment.findAll({
-      where: {
-        appointment_date: {
-          [Op.between]: [start, end]
-        },
-        service_id: {
-          [Op.ne]: null
-        }
-      },
-      attributes: [
-        'service_id',
-        [Appointment.sequelize.fn('COUNT', '*'), 'count']
-      ],
-      include: [{
-        model: Service,
-        attributes: ['name', 'price']
-      }],
-      group: ['service_id', 'Service.id'],
-      order: [[Appointment.sequelize.fn('COUNT', '*'), 'DESC']],
-      limit: 10
-    });
+    // Get popular services from invoice items
+    const popularServices = await database.all(
+      `SELECT 
+        ii.description as service_name,
+        SUM(ii.quantity) as count,
+        SUM(ii.total_price) as revenue
+      FROM invoice_items ii
+      JOIN invoices i ON ii.invoice_id = i.id
+      WHERE i.invoice_date BETWEEN ? AND ?
+        AND ii.item_type = 'service'
+        AND i.status = 'paid'
+      GROUP BY ii.description
+      ORDER BY count DESC
+      LIMIT 10`,
+      [start, end]
+    );
 
     res.json({
       appointmentsByStatus: appointmentsByStatus.map(item => ({
         status: item.status,
-        count: parseInt(item.dataValues.count)
+        count: parseInt(item.count)
       })),
       appointmentsByDay: appointmentsByDay.map(item => ({
         date: item.appointment_date,
-        count: parseInt(item.dataValues.count)
+        count: parseInt(item.count)
       })),
       popularServices: popularServices.map(item => ({
-        serviceId: item.service_id,
-        serviceName: item.Service?.name || 'Unknown Service',
-        count: parseInt(item.dataValues.count),
-        revenue: item.Service ? parseFloat((item.Service.price * parseInt(item.dataValues.count)).toFixed(2)) : 0
+        serviceName: item.service_name,
+        count: parseInt(item.count),
+        revenue: parseFloat(item.revenue || 0)
       })),
       dateRange: { start, end }
     });
@@ -190,61 +147,34 @@ const getRevenueAnalytics = async (req, res) => {
     const end = endDate || new Date().toISOString().split('T')[0];
 
     // Get revenue by day
-    const revenueByDay = await Invoice.findAll({
-      where: {
-        created_at: {
-          [Op.between]: [start + ' 00:00:00', end + ' 23:59:59']
-        },
-        status: 'paid'
-      },
-      attributes: [
-        [Invoice.sequelize.fn('DATE', Invoice.sequelize.col('created_at')), 'date'],
-        [Invoice.sequelize.fn('SUM', Invoice.sequelize.col('total_amount')), 'revenue']
-      ],
-      group: [Invoice.sequelize.fn('DATE', Invoice.sequelize.col('created_at'))],
-      order: [[Invoice.sequelize.fn('DATE', Invoice.sequelize.col('created_at')), 'ASC']]
-    });
+    const revenueByDay = await database.all(
+      'SELECT DATE(created_at) as date, SUM(total_amount) as revenue FROM invoices WHERE created_at BETWEEN ? AND ? AND status = ? GROUP BY DATE(created_at) ORDER BY DATE(created_at) ASC',
+      [start + ' 00:00:00', end + ' 23:59:59', 'paid']
+    );
 
-    // Get revenue by payment method
-    const revenueByPaymentMethod = await Invoice.findAll({
-      where: {
-        created_at: {
-          [Op.between]: [start + ' 00:00:00', end + ' 23:59:59']
-        },
-        status: 'paid'
-      },
-      attributes: [
-        'payment_method',
-        [Invoice.sequelize.fn('SUM', Invoice.sequelize.col('total_amount')), 'revenue'],
-        [Invoice.sequelize.fn('COUNT', '*'), 'count']
-      ],
-      group: ['payment_method']
-    });
+    // Get revenue by payment method from payments table
+    const revenueByPaymentMethod = await database.all(
+      'SELECT payment_method, SUM(amount) as revenue, COUNT(*) as count FROM payments WHERE payment_date BETWEEN ? AND ? GROUP BY payment_method',
+      [start, end]
+    );
 
     // Get average invoice amount
-    const avgInvoiceAmount = await Invoice.findOne({
-      where: {
-        created_at: {
-          [Op.between]: [start + ' 00:00:00', end + ' 23:59:59']
-        },
-        status: 'paid'
-      },
-      attributes: [
-        [Invoice.sequelize.fn('AVG', Invoice.sequelize.col('total_amount')), 'average']
-      ]
-    });
+    const avgInvoiceAmountResult = await database.get(
+      'SELECT AVG(total_amount) as average FROM invoices WHERE created_at BETWEEN ? AND ? AND status = ?',
+      [start + ' 00:00:00', end + ' 23:59:59', 'paid']
+    );
 
     res.json({
       revenueByDay: revenueByDay.map(item => ({
-        date: item.dataValues.date,
-        revenue: parseFloat(parseFloat(item.dataValues.revenue).toFixed(2))
+        date: item.date,
+        revenue: parseFloat(parseFloat(item.revenue || 0).toFixed(2))
       })),
       revenueByPaymentMethod: revenueByPaymentMethod.map(item => ({
         paymentMethod: item.payment_method || 'Unknown',
-        revenue: parseFloat(parseFloat(item.dataValues.revenue).toFixed(2)),
-        count: parseInt(item.dataValues.count)
+        revenue: parseFloat(parseFloat(item.revenue || 0).toFixed(2)),
+        count: parseInt(item.count)
       })),
-      averageInvoiceAmount: parseFloat(parseFloat(avgInvoiceAmount?.dataValues?.average || 0).toFixed(2)),
+      averageInvoiceAmount: parseFloat(parseFloat(avgInvoiceAmountResult?.average || 0).toFixed(2)),
       dateRange: { start, end }
     });
   } catch (error) {
@@ -263,77 +193,45 @@ const getPatientAnalytics = async (req, res) => {
     const end = endDate || new Date().toISOString().split('T')[0];
 
     // Get new patients by day
-    const newPatientsByDay = await Patient.findAll({
-      where: {
-        created_at: {
-          [Op.between]: [start + ' 00:00:00', end + ' 23:59:59']
-        }
-      },
-      attributes: [
-        [Patient.sequelize.fn('DATE', Patient.sequelize.col('created_at')), 'date'],
-        [Patient.sequelize.fn('COUNT', '*'), 'count']
-      ],
-      group: [Patient.sequelize.fn('DATE', Patient.sequelize.col('created_at'))],
-      order: [[Patient.sequelize.fn('DATE', Patient.sequelize.col('created_at')), 'ASC']]
-    });
+    const newPatientsByDay = await database.all(
+      'SELECT DATE(created_at) as date, COUNT(*) as count FROM patients WHERE created_at BETWEEN ? AND ? GROUP BY DATE(created_at) ORDER BY DATE(created_at) ASC',
+      [start + ' 00:00:00', end + ' 23:59:59']
+    );
 
     // Get patient age distribution
     const currentYear = new Date().getFullYear();
-    const patientAgeDistribution = await Patient.findAll({
-      attributes: [
-        [Patient.sequelize.literal(`
-          CASE 
-            WHEN (${currentYear} - CAST(SUBSTR(date_of_birth, 1, 4) AS INTEGER)) < 18 THEN 'Under 18'
-            WHEN (${currentYear} - CAST(SUBSTR(date_of_birth, 1, 4) AS INTEGER)) BETWEEN 18 AND 30 THEN '18-30'
-            WHEN (${currentYear} - CAST(SUBSTR(date_of_birth, 1, 4) AS INTEGER)) BETWEEN 31 AND 50 THEN '31-50'
-            WHEN (${currentYear} - CAST(SUBSTR(date_of_birth, 1, 4) AS INTEGER)) BETWEEN 51 AND 70 THEN '51-70'
-            ELSE 'Over 70'
-          END
-        `), 'ageGroup'],
-        [Patient.sequelize.fn('COUNT', '*'), 'count']
-      ],
-      where: {
-        date_of_birth: {
-          [Op.ne]: null
-        }
-      },
-      group: [Patient.sequelize.literal(`
+    const patientAgeDistribution = await database.all(
+      `SELECT 
         CASE 
           WHEN (${currentYear} - CAST(SUBSTR(date_of_birth, 1, 4) AS INTEGER)) < 18 THEN 'Under 18'
           WHEN (${currentYear} - CAST(SUBSTR(date_of_birth, 1, 4) AS INTEGER)) BETWEEN 18 AND 30 THEN '18-30'
           WHEN (${currentYear} - CAST(SUBSTR(date_of_birth, 1, 4) AS INTEGER)) BETWEEN 31 AND 50 THEN '31-50'
           WHEN (${currentYear} - CAST(SUBSTR(date_of_birth, 1, 4) AS INTEGER)) BETWEEN 51 AND 70 THEN '51-70'
           ELSE 'Over 70'
-        END
-      `)]
-    });
+        END as ageGroup,
+        COUNT(*) as count
+      FROM patients 
+      WHERE date_of_birth IS NOT NULL 
+      GROUP BY ageGroup`
+    );
 
     // Get patient gender distribution
-    const patientGenderDistribution = await Patient.findAll({
-      attributes: [
-        'gender',
-        [Patient.sequelize.fn('COUNT', '*'), 'count']
-      ],
-      where: {
-        gender: {
-          [Op.ne]: null
-        }
-      },
-      group: ['gender']
-    });
+    const patientGenderDistribution = await database.all(
+      'SELECT gender, COUNT(*) as count FROM patients WHERE gender IS NOT NULL GROUP BY gender'
+    );
 
     res.json({
       newPatientsByDay: newPatientsByDay.map(item => ({
-        date: item.dataValues.date,
-        count: parseInt(item.dataValues.count)
+        date: item.date,
+        count: parseInt(item.count)
       })),
       patientAgeDistribution: patientAgeDistribution.map(item => ({
-        ageGroup: item.dataValues.ageGroup,
-        count: parseInt(item.dataValues.count)
+        ageGroup: item.ageGroup,
+        count: parseInt(item.count)
       })),
       patientGenderDistribution: patientGenderDistribution.map(item => ({
         gender: item.gender || 'Not specified',
-        count: parseInt(item.dataValues.count)
+        count: parseInt(item.count)
       })),
       dateRange: { start, end }
     });
@@ -357,42 +255,50 @@ const exportAnalytics = async (req, res) => {
 
     switch (type) {
       case 'appointments':
-        const appointments = await Appointment.findAll({
-          where: {
-            appointment_date: {
-              [Op.between]: [start, end]
-            }
-          },
-          include: [
-            { model: Patient, attributes: ['first_name', 'last_name'] },
-            { model: Service, attributes: ['name', 'price'] }
-          ],
-          order: [['appointment_date', 'ASC']]
-        });
+        const appointments = await database.all(`
+          SELECT 
+            a.appointment_date,
+            a.appointment_time,
+            a.status,
+            a.notes,
+            p.first_name,
+            p.last_name,
+            s.name as service_name
+          FROM appointments a
+          LEFT JOIN patients p ON a.patient_id = p.id
+          LEFT JOIN services s ON a.service_id = s.id
+          WHERE a.appointment_date BETWEEN ? AND ?
+          ORDER BY a.appointment_date ASC
+        `, [start, end]);
         
         csvData = 'Date,Time,Patient,Service,Status,Notes\n';
         appointments.forEach(apt => {
-          const patientName = apt.Patient ? `${apt.Patient.first_name} ${apt.Patient.last_name}` : 'Unknown';
-          const serviceName = apt.Service ? apt.Service.name : 'No service';
+          const patientName = apt.first_name && apt.last_name ? `${apt.first_name} ${apt.last_name}` : 'Unknown';
+          const serviceName = apt.service_name || 'No service';
           csvData += `${apt.appointment_date},${apt.appointment_time},"${patientName}","${serviceName}",${apt.status},"${apt.notes || ''}"\n`;
         });
         filename = `appointments_${start}_to_${end}.csv`;
         break;
 
       case 'revenue':
-        const invoices = await Invoice.findAll({
-          where: {
-            created_at: {
-              [Op.between]: [start + ' 00:00:00', end + ' 23:59:59']
-            }
-          },
-          include: [{ model: Patient, attributes: ['first_name', 'last_name'] }],
-          order: [['created_at', 'ASC']]
-        });
+        const invoices = await database.all(`
+          SELECT 
+            i.created_at,
+            i.total_amount,
+            i.status,
+            i.payment_method,
+            i.description,
+            p.first_name,
+            p.last_name
+          FROM invoices i
+          LEFT JOIN patients p ON i.patient_id = p.id
+          WHERE i.created_at BETWEEN ? AND ?
+          ORDER BY i.created_at ASC
+        `, [start + ' 00:00:00', end + ' 23:59:59']);
         
         csvData = 'Date,Patient,Amount,Status,Payment Method,Description\n';
         invoices.forEach(inv => {
-          const patientName = inv.Patient ? `${inv.Patient.first_name} ${inv.Patient.last_name}` : 'Unknown';
+          const patientName = inv.first_name && inv.last_name ? `${inv.first_name} ${inv.last_name}` : 'Unknown';
           const date = new Date(inv.created_at).toISOString().split('T')[0];
           csvData += `${date},"${patientName}",${inv.total_amount},${inv.status},${inv.payment_method || 'Not specified'},"${inv.description || ''}"\n`;
         });
@@ -400,14 +306,19 @@ const exportAnalytics = async (req, res) => {
         break;
 
       case 'patients':
-        const patients = await Patient.findAll({
-          where: {
-            created_at: {
-              [Op.between]: [start + ' 00:00:00', end + ' 23:59:59']
-            }
-          },
-          order: [['created_at', 'ASC']]
-        });
+        const patients = await database.all(`
+          SELECT 
+            created_at,
+            first_name,
+            last_name,
+            email,
+            phone,
+            date_of_birth,
+            gender
+          FROM patients
+          WHERE created_at BETWEEN ? AND ?
+          ORDER BY created_at ASC
+        `, [start + ' 00:00:00', end + ' 23:59:59']);
         
         csvData = 'Registration Date,Name,Email,Phone,Date of Birth,Gender\n';
         patients.forEach(patient => {

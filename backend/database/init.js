@@ -52,7 +52,9 @@ class Database {
     async createTables() {
         try {
             const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');
-            const statements = schema.split(';').filter(stmt => stmt.trim());
+            
+            // Split SQL statements properly, handling triggers and other complex statements
+            const statements = this.splitSQLStatements(schema);
             
             for (const statement of statements) {
                 if (statement.trim()) {
@@ -65,6 +67,59 @@ class Database {
             console.error('Error creating tables:', error);
             throw error;
         }
+    }
+
+    /**
+     * Split SQL statements properly, handling triggers and other complex statements
+     */
+    splitSQLStatements(sql) {
+        const statements = [];
+        let current = '';
+        let inTrigger = false;
+        let depth = 0;
+        
+        const lines = sql.split('\n');
+        
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            
+            // Skip comments and empty lines
+            if (trimmedLine.startsWith('--') || trimmedLine === '') {
+                continue;
+            }
+            
+            current += line + '\n';
+            
+            // Check for trigger start
+            if (trimmedLine.toUpperCase().includes('CREATE TRIGGER')) {
+                inTrigger = true;
+            }
+            
+            // Track BEGIN/END depth in triggers
+            if (inTrigger) {
+                if (trimmedLine.toUpperCase().includes('BEGIN')) {
+                    depth++;
+                } else if (trimmedLine.toUpperCase().includes('END')) {
+                    depth--;
+                    if (depth === 0) {
+                        inTrigger = false;
+                        statements.push(current.trim());
+                        current = '';
+                    }
+                }
+            } else if (trimmedLine.endsWith(';')) {
+                // Regular statement ending
+                statements.push(current.trim());
+                current = '';
+            }
+        }
+        
+        // Add any remaining statement
+        if (current.trim()) {
+            statements.push(current.trim());
+        }
+        
+        return statements.filter(stmt => stmt.length > 0);
     }
 
     /**

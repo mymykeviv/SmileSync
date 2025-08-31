@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { initializeDatabase } = require('./init');
+const database = require('./database/init');
 
 // Import routes
 const appointmentRoutes = require('./routes/appointmentRoutes');
@@ -69,7 +69,7 @@ app.use('*', (req, res) => {
 async function startServer() {
   try {
     console.log('Initializing database...');
-    await initializeDatabase();
+    await database.init();
     console.log('Database initialized successfully');
     
     app.listen(PORT, () => {
