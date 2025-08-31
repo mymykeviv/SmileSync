@@ -8,8 +8,10 @@ A comprehensive, production-ready dental clinic management system built with mod
 - **Patient Management**: Complete patient profiles with medical history, contact information, and treatment records
 - **Appointment Scheduling**: Advanced booking system with conflict detection, rescheduling, and cancellation capabilities
 - **Service & Product Catalog**: Comprehensive management of dental services and products with pricing
-- **Invoice & Billing**: Automated invoice generation with PDF export and payment tracking
+- **Invoice & Billing**: Automated invoice generation with PDF preview and download, payment tracking in INR (₹)
 - **Analytics Dashboard**: Real-time clinic performance metrics with interactive charts and data export
+- **PDF Preview System**: Interactive invoice preview before download with embedded viewer
+- **Localized Currency**: Complete INR (Indian Rupee) support across all financial components
 
 ### Technical Features
 - **Desktop Application**: Cross-platform Electron app for Windows, macOS, and Linux
