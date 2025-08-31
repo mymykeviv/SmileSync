@@ -130,16 +130,16 @@ const validateService = [
     .trim()
     .isLength({ min: 1, max: 100 })
     .withMessage('Category is required and must be less than 100 characters'),
-  body('durationMinutes')
+  body('duration_minutes')
     .isInt({ min: 15, max: 480 })
     .withMessage('Duration must be between 15 and 480 minutes'),
-  body('basePrice')
+  body('base_price')
     .isFloat({ min: 0 })
     .withMessage('Base price must be a positive number'),
-  body('isActive')
+  body('is_active')
     .optional()
     .isBoolean()
-    .withMessage('isActive must be a boolean value')
+    .withMessage('is_active must be a boolean value')
 ];
 
 // Product validation rules

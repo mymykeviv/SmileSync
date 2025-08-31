@@ -109,7 +109,7 @@ exports.createService = async (req, res) => {
         const serviceData = req.body;
         
         // Validate required fields
-        const requiredFields = ['name', 'category', 'price', 'duration'];
+        const requiredFields = ['name', 'category', 'base_price', 'duration_minutes'];
         for (const field of requiredFields) {
             if (!serviceData[field]) {
                 return res.status(400).json({
