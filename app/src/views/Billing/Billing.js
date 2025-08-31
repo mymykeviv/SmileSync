@@ -152,10 +152,11 @@ function Billing() {
   };
 
   const formatCurrency = (amount) => {
+    const numericAmount = parseFloat(amount) || 0;
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format(amount);
+    }).format(numericAmount);
   };
 
   const getStatusConfig = (status) => {
@@ -169,9 +170,30 @@ function Billing() {
     return configs[status] || configs.pending;
   };
 
+  // Helper function to safely parse dates (handles both ISO strings and timestamps)
+  const parseDate = (dateValue) => {
+    if (!dateValue) return new Date();
+    
+    // If it's a number (timestamp), convert to Date
+    if (typeof dateValue === 'number') {
+      return new Date(dateValue);
+    }
+    
+    // If it's a string, try parseISO first, fallback to new Date()
+    if (typeof dateValue === 'string') {
+      try {
+        return parseISO(dateValue);
+      } catch (error) {
+        return new Date(dateValue);
+      }
+    }
+    
+    return new Date(dateValue);
+  };
+
   const getDaysOverdue = (dueDate, status) => {
     if (status !== 'overdue') return 0;
-    return differenceInDays(new Date(), parseISO(dueDate));
+    return differenceInDays(new Date(), parseDate(dueDate));
   };
 
   const clearFilters = () => {
@@ -184,7 +206,7 @@ function Billing() {
   const pendingInvoices = invoices.filter(inv => inv.status === 'pending');
   const totalOutstanding = invoices.reduce((sum, inv) => {
     if (inv.status !== 'paid' && inv.status !== 'cancelled') {
-      return sum + inv.balanceAmount;
+      return sum + (inv.balanceDue || 0);
     }
     return sum;
   }, 0);
@@ -267,7 +289,7 @@ function Billing() {
       {overdueInvoices.length > 0 && (
         <Alert severity="error" sx={{ mb: 3 }}>
           <Typography variant="body2">
-            <strong>{overdueInvoices.length}</strong> invoice(s) are overdue. Total overdue amount: <strong>{formatCurrency(overdueInvoices.reduce((sum, inv) => sum + inv.balanceAmount, 0))}</strong>
+            <strong>{overdueInvoices.length}</strong> invoice(s) are overdue. Total overdue amount: <strong>{formatCurrency(overdueInvoices.reduce((sum, inv) => sum + (inv.balanceDue || 0), 0))}</strong>
           </Typography>
         </Alert>
       )}
@@ -387,12 +409,12 @@ function Billing() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {format(parseISO(invoice.issueDate), 'MMM dd, yyyy')}
+                        {format(parseDate(invoice.issueDate), 'MMM dd, yyyy')}
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {format(parseISO(invoice.dueDate), 'MMM dd, yyyy')}
+                        {format(parseDate(invoice.dueDate), 'MMM dd, yyyy')}
                       </Typography>
                       {daysOverdue > 0 && (
                         <Typography variant="caption" color="error.main">
@@ -402,11 +424,11 @@ function Billing() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body1" fontWeight="medium">
-                        {formatCurrency(invoice.total)}
+                        {formatCurrency(invoice.totalAmount || 0)}
                       </Typography>
-                      {invoice.balanceAmount > 0 && (
+                      {(invoice.balanceDue || 0) > 0 && (
                         <Typography variant="caption" color="text.secondary">
-                          Balance: {formatCurrency(invoice.balanceAmount)}
+                          Balance: {formatCurrency(invoice.balanceDue || 0)}
                         </Typography>
                       )}
                     </TableCell>

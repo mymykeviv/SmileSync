@@ -22,24 +22,28 @@ const getDashboardOverview = async (req, res) => {
     );
     const newPatients = newPatientsResult.count;
 
+    // Convert date strings to timestamps for comparison
+    const startTimestamp = new Date(start).getTime();
+    const endTimestamp = new Date(end + ' 23:59:59').getTime();
+
     // Get appointments in date range
     const totalAppointmentsResult = await database.get(
       'SELECT COUNT(*) as count FROM appointments WHERE appointment_date BETWEEN ? AND ?',
-      [start, end]
+      [startTimestamp, endTimestamp]
     );
     const totalAppointments = totalAppointmentsResult.count;
 
     // Get completed appointments
     const completedAppointmentsResult = await database.get(
       'SELECT COUNT(*) as count FROM appointments WHERE appointment_date BETWEEN ? AND ? AND status = ?',
-      [start, end, 'completed']
+      [startTimestamp, endTimestamp, 'completed']
     );
     const completedAppointments = completedAppointmentsResult.count;
 
     // Get cancelled appointments
     const cancelledAppointmentsResult = await database.get(
       'SELECT COUNT(*) as count FROM appointments WHERE appointment_date BETWEEN ? AND ? AND status = ?',
-      [start, end, 'cancelled']
+      [startTimestamp, endTimestamp, 'cancelled']
     );
     const cancelledAppointments = cancelledAppointmentsResult.count;
 
@@ -86,16 +90,20 @@ const getAppointmentAnalytics = async (req, res) => {
     const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const end = endDate || new Date().toISOString().split('T')[0];
 
+    // Convert date strings to timestamps for comparison
+    const startTimestamp = new Date(start).getTime();
+    const endTimestamp = new Date(end + ' 23:59:59').getTime();
+
     // Get appointments by status
     const appointmentsByStatus = await database.all(
       'SELECT status, COUNT(*) as count FROM appointments WHERE appointment_date BETWEEN ? AND ? GROUP BY status',
-      [start, end]
+      [startTimestamp, endTimestamp]
     );
 
     // Get appointments by day for trend analysis
     const appointmentsByDay = await database.all(
       'SELECT appointment_date, COUNT(*) as count FROM appointments WHERE appointment_date BETWEEN ? AND ? GROUP BY appointment_date ORDER BY appointment_date ASC',
-      [start, end]
+      [startTimestamp, endTimestamp]
     );
 
     // Get popular services from invoice items

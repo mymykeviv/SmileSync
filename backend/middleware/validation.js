@@ -95,7 +95,11 @@ const validateAppointment = [
       const oneYearFromNow = new Date();
       oneYearFromNow.setFullYear(now.getFullYear() + 1);
       
-      if (appointmentDate < now) {
+      // Set time to start of day for date-only comparison
+      const appointmentDateOnly = new Date(appointmentDate.getFullYear(), appointmentDate.getMonth(), appointmentDate.getDate());
+      const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      if (appointmentDateOnly < todayOnly) {
         throw new Error('Appointment date cannot be in the past');
       }
       if (appointmentDate > oneYearFromNow) {
@@ -103,13 +107,28 @@ const validateAppointment = [
       }
       return true;
     }),
+  body('appointment_time')
+    .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .withMessage('Appointment time must be in HH:mm format'),
   body('duration')
     .isInt({ min: 15, max: 480 })
     .withMessage('Duration must be between 15 and 480 minutes'),
+  body('dentist')
+    .optional({ nullable: true, checkFalsy: true })
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Dentist name must be less than 100 characters'),
+  body('dentist_id')
+    .optional({ nullable: true })
+    .isInt({ min: 1 })
+    .withMessage('Valid dentist ID is required'),
   body('status')
     .optional()
     .isIn(['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'])
     .withMessage('Invalid appointment status'),
+  body('appointment_type')
+    .optional({ nullable: true, checkFalsy: true })
+    .isIn(['checkup', 'cleaning', 'consultation', 'treatment', 'emergency', 'follow_up'])
+    .withMessage('Invalid appointment type'),
   body('notes')
     .optional({ nullable: true, checkFalsy: true })
     .isLength({ max: 1000 })

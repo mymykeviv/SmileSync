@@ -19,6 +19,16 @@ class Appointment {
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
         this.created_by = data.created_by;
+        
+        // Patient information from JOIN queries
+        this.patient_first_name = data.patient_first_name;
+        this.patient_last_name = data.patient_last_name;
+        this.patient_number = data.patient_number;
+        this.phone = data.phone;
+        
+        // Dentist information from JOIN queries
+        this.dentist_first_name = data.dentist_first_name;
+        this.dentist_last_name = data.dentist_last_name;
     }
 
     /**
@@ -270,7 +280,9 @@ class Appointment {
      */
     static async checkConflicts(dentistId, appointmentDate, appointmentTime, durationMinutes, excludeId = null) {
         try {
-            const startTime = moment(`${appointmentDate} ${appointmentTime}`);
+            // Parse the ISO date and combine with time
+            const date = moment(appointmentDate).format('YYYY-MM-DD');
+            const startTime = moment(`${date} ${appointmentTime}`, 'YYYY-MM-DD HH:mm');
             const endTime = startTime.clone().add(durationMinutes, 'minutes');
             
             let sql = `
@@ -308,6 +320,127 @@ class Appointment {
             return conflicts;
         } catch (error) {
             console.error('Error checking appointment conflicts:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get all appointments with pagination
+     */
+    static async findAll(limit = 50, offset = 0) {
+        try {
+            const sql = `
+                SELECT a.*, 
+                       p.first_name as patient_first_name, p.last_name as patient_last_name, p.patient_number, p.phone,
+                       u.first_name as dentist_first_name, u.last_name as dentist_last_name
+                FROM appointments a
+                LEFT JOIN patients p ON a.patient_id = p.id
+                LEFT JOIN users u ON a.dentist_id = u.id
+                ORDER BY a.appointment_date DESC, a.appointment_time DESC
+                LIMIT ? OFFSET ?
+            `;
+            
+            const rows = await database.all(sql, [limit, offset]);
+            return rows.map(row => new Appointment(row));
+        } catch (error) {
+            console.error('Error finding all appointments:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Search appointments by patient name or appointment number
+     */
+    static async search(searchTerm, limit = 50, offset = 0) {
+        try {
+            const sql = `
+                SELECT a.*, 
+                       p.first_name as patient_first_name, p.last_name as patient_last_name, p.patient_number, p.phone,
+                       u.first_name as dentist_first_name, u.last_name as dentist_last_name
+                FROM appointments a
+                LEFT JOIN patients p ON a.patient_id = p.id
+                LEFT JOIN users u ON a.dentist_id = u.id
+                WHERE a.appointment_number LIKE ? 
+                   OR p.first_name LIKE ? 
+                   OR p.last_name LIKE ?
+                   OR (p.first_name || ' ' || p.last_name) LIKE ?
+                ORDER BY a.appointment_date DESC, a.appointment_time DESC
+                LIMIT ? OFFSET ?
+            `;
+            
+            const searchPattern = `%${searchTerm}%`;
+            const rows = await database.all(sql, [searchPattern, searchPattern, searchPattern, searchPattern, limit, offset]);
+            return rows.map(row => new Appointment(row));
+        } catch (error) {
+            console.error('Error searching appointments:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Find appointments by status
+     */
+    static async findByStatus(status, limit = 50, offset = 0) {
+        try {
+            const sql = `
+                SELECT a.*, 
+                       p.first_name as patient_first_name, p.last_name as patient_last_name, p.patient_number, p.phone,
+                       u.first_name as dentist_first_name, u.last_name as dentist_last_name
+                FROM appointments a
+                LEFT JOIN patients p ON a.patient_id = p.id
+                LEFT JOIN users u ON a.dentist_id = u.id
+                WHERE a.status = ?
+                ORDER BY a.appointment_date DESC, a.appointment_time DESC
+                LIMIT ? OFFSET ?
+            `;
+            
+            const rows = await database.all(sql, [status, limit, offset]);
+            return rows.map(row => new Appointment(row));
+        } catch (error) {
+            console.error('Error finding appointments by status:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get count of appointments with optional filters
+     */
+    static async getCount(filters = {}) {
+        try {
+            let sql = `
+                SELECT COUNT(*) as count
+                FROM appointments a
+                LEFT JOIN patients p ON a.patient_id = p.id
+                LEFT JOIN users u ON a.dentist_id = u.id
+                WHERE 1=1
+            `;
+            
+            const params = [];
+            
+            if (filters.patient_id) {
+                sql += ' AND a.patient_id = ?';
+                params.push(filters.patient_id);
+            }
+            
+            if (filters.dentist_id) {
+                sql += ' AND a.dentist_id = ?';
+                params.push(filters.dentist_id);
+            }
+            
+            if (filters.status) {
+                sql += ' AND a.status = ?';
+                params.push(filters.status);
+            }
+            
+            if (filters.start_date && filters.end_date) {
+                sql += ' AND a.appointment_date BETWEEN ? AND ?';
+                params.push(filters.start_date, filters.end_date);
+            }
+            
+            const result = await database.get(sql, params);
+            return result.count;
+        } catch (error) {
+            console.error('Error getting appointment count:', error);
             throw error;
         }
     }
@@ -469,14 +602,18 @@ class Appointment {
      * Get formatted date and time
      */
     getFormattedDateTime() {
-        return moment(`${this.appointment_date} ${this.appointment_time}`).format('YYYY-MM-DD HH:mm');
+        // Parse the ISO date and combine with time
+        const date = moment(this.appointment_date).format('YYYY-MM-DD');
+        return moment(`${date} ${this.appointment_time}`, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD HH:mm');
     }
 
     /**
      * Get end time
      */
     getEndTime() {
-        return moment(`${this.appointment_date} ${this.appointment_time}`)
+        // Parse the ISO date and combine with time
+        const date = moment(this.appointment_date).format('YYYY-MM-DD');
+        return moment(`${date} ${this.appointment_time}`, 'YYYY-MM-DD HH:mm')
             .add(this.duration_minutes, 'minutes')
             .format('HH:mm');
     }
@@ -485,7 +622,9 @@ class Appointment {
      * Check if appointment is in the past
      */
     isPast() {
-        const appointmentDateTime = moment(`${this.appointment_date} ${this.appointment_time}`);
+        // Parse the ISO date and combine with time
+        const date = moment(this.appointment_date).format('YYYY-MM-DD');
+        const appointmentDateTime = moment(`${date} ${this.appointment_time}`, 'YYYY-MM-DD HH:mm');
         return appointmentDateTime.isBefore(moment());
     }
 
@@ -500,7 +639,7 @@ class Appointment {
      * Convert to JSON (for API responses)
      */
     toJSON() {
-        return {
+        const result = {
             id: this.id,
             appointmentNumber: this.appointment_number,
             patientId: this.patient_id,
@@ -521,6 +660,28 @@ class Appointment {
             createdAt: this.created_at,
             updatedAt: this.updated_at
         };
+
+        // Include patient information if available
+        if (this.patient_first_name && this.patient_last_name) {
+            result.patientName = `${this.patient_first_name} ${this.patient_last_name}`;
+            result.patientFirstName = this.patient_first_name;
+            result.patientLastName = this.patient_last_name;
+        }
+        if (this.patient_number) {
+            result.patientNumber = this.patient_number;
+        }
+        if (this.phone) {
+            result.patientPhone = this.phone;
+        }
+
+        // Include dentist information if available
+        if (this.dentist_first_name && this.dentist_last_name) {
+            result.dentistName = `${this.dentist_first_name} ${this.dentist_last_name}`;
+            result.dentistFirstName = this.dentist_first_name;
+            result.dentistLastName = this.dentist_last_name;
+        }
+
+        return result;
     }
 }
 

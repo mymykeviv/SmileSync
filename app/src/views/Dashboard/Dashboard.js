@@ -274,7 +274,7 @@ function Dashboard() {
                   >
                     <ListItemAvatar>
                       <Avatar sx={{ bgcolor: 'primary.main' }}>
-                        {appointment.patientName.charAt(0)}
+                        {appointment.patientName ? appointment.patientName.charAt(0) : '?'}
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
@@ -282,7 +282,7 @@ function Dashboard() {
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <span style={{ fontSize: '1rem', fontWeight: 500 }}>
-                            {appointment.patientName}
+                            {appointment.patientName || 'Unknown Patient'}
                           </span>
                           <Chip
                             label={getStatusLabel(appointment.status)}

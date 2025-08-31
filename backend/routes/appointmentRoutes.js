@@ -22,18 +22,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Get appointment by appointment number
-router.get('/number/:appointmentNumber', async (req, res) => {
-  try {
-    const result = await AppointmentController.getAppointmentByNumber(req.params.appointmentNumber);
-    res.json(result);
-  } catch (error) {
-    if (error.message === 'Appointment not found') {
-      res.status(404).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: error.message });
-    }
-  }
-});
+router.get('/number/:appointmentNumber', AppointmentController.getAppointmentByNumber);
 
 // Create new appointment
 router.post('/', validateAppointment, AppointmentController.createAppointment);

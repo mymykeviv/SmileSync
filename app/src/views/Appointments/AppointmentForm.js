@@ -358,7 +358,7 @@ const AppointmentForm = () => {
             <Grid item xs={12} md={6}>
               <Autocomplete
                 options={patients}
-                getOptionLabel={(option) => `${option.first_name} ${option.last_name} (${option.email})`}
+                getOptionLabel={(option) => `${option.firstName} ${option.lastName} (${option.email})`}
                 value={getSelectedPatient() || null}
                 onChange={(event, newValue) => {
                   handleInputChange('patient_id', newValue ? newValue.id : '');
@@ -379,7 +379,7 @@ const AppointmentForm = () => {
                     <Box component="li" key={key} {...otherProps}>
                       <Box>
                         <Typography variant="body1">
-                          {option.first_name} {option.last_name}
+                          {option.firstName} {option.lastName}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           {option.email} • {option.phone}
@@ -570,7 +570,7 @@ const AppointmentForm = () => {
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                   {getSelectedPatient() && (
                     <Chip
-                      label={`Patient: ${getSelectedPatient().first_name} ${getSelectedPatient().last_name}`}
+                      label={`Patient: ${getSelectedPatient().firstName} ${getSelectedPatient().lastName}`}
                       color="primary"
                       variant="outlined"
                     />
