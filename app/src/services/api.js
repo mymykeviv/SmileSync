@@ -110,6 +110,27 @@ class ApiService {
     });
   }
 
+  static async updateAppointmentStatus(id, status) {
+    return this.request(`/appointments/${id}`, {
+      method: 'PUT',
+      body: { status },
+    });
+  }
+
+  static async cancelAppointment(id, reason) {
+    return this.request(`/appointments/${id}/cancel`, {
+      method: 'PATCH',
+      body: { reason },
+    });
+  }
+
+  static async completeAppointment(id, notes) {
+    return this.request(`/appointments/${id}/complete`, {
+      method: 'PATCH',
+      body: { notes },
+    });
+  }
+
   // Service API methods
   static async getServices(params = {}) {
     const queryString = new URLSearchParams(params).toString();
@@ -218,6 +239,13 @@ class ApiService {
     }
     
     return await response.blob();
+  }
+
+  static async recordPayment(id, paymentData) {
+    return this.request(`/invoices/${id}/payment`, {
+      method: 'POST',
+      body: paymentData,
+    });
   }
 }
 

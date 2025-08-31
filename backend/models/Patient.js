@@ -297,6 +297,12 @@ class Patient {
         
         const today = new Date();
         const birthDate = new Date(this.date_of_birth);
+        
+        // Check if the birth date is valid
+        if (isNaN(birthDate.getTime())) {
+            return null;
+        }
+        
         let age = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
         

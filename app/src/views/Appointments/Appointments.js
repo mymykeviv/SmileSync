@@ -39,72 +39,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
-
-// Mock API service
-const api = {
-  getAppointments: async (params = {}) => {
-    // Mock data
-    const mockAppointments = [
-      {
-        id: 1,
-        appointmentNumber: 'APT-001',
-        patientName: 'John Doe',
-        patientId: 1,
-        date: '2024-01-15',
-        time: '09:00',
-        service: 'Routine Checkup',
-        dentist: 'Dr. Smith',
-        status: 'scheduled',
-        duration: 30,
-        notes: 'Regular checkup'
-      },
-      {
-        id: 2,
-        appointmentNumber: 'APT-002',
-        patientName: 'Jane Smith',
-        patientId: 2,
-        date: '2024-01-15',
-        time: '10:30',
-        service: 'Teeth Cleaning',
-        dentist: 'Dr. Johnson',
-        status: 'completed',
-        duration: 45,
-        notes: 'Deep cleaning completed'
-      },
-      {
-        id: 3,
-        appointmentNumber: 'APT-003',
-        patientName: 'Bob Johnson',
-        patientId: 3,
-        date: '2024-01-16',
-        time: '14:00',
-        service: 'Filling',
-        dentist: 'Dr. Smith',
-        status: 'scheduled',
-        duration: 60,
-        notes: 'Cavity filling'
-      }
-    ];
-    
-    return {
-      success: true,
-      data: mockAppointments,
-      pagination: {
-        currentPage: 1,
-        totalPages: 1,
-        totalCount: mockAppointments.length
-      }
-    };
-  },
-  
-  cancelAppointment: async (id, reason) => {
-    return { success: true, message: 'Appointment cancelled successfully' };
-  },
-  
-  completeAppointment: async (id, notes) => {
-    return { success: true, message: 'Appointment completed successfully' };
-  }
-};
+import ApiService from '../../services/api';
 
 function Appointments() {
   const navigate = useNavigate();
@@ -120,6 +55,16 @@ function Appointments() {
   const [cancelDialog, setCancelDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
 
+  const formatAppointmentDate = (date) => {
+    if (!date) return 'Invalid Date';
+    try {
+      return format(parseISO(date), 'MMM dd, yyyy');
+    } catch (error) {
+      console.error('Error formatting date:', date, error);
+      return 'Invalid Date';
+    }
+  };
+
   const loadAppointments = async () => {
     try {
       setLoading(true);
@@ -131,7 +76,7 @@ function Appointments() {
         status: statusFilter !== 'all' ? statusFilter : undefined
       };
       
-      const response = await api.getAppointments(params);
+      const response = await ApiService.getAppointments(params);
       if (response.success) {
         setAppointments(response.data);
       }
@@ -168,7 +113,7 @@ function Appointments() {
 
   const handleComplete = async () => {
     try {
-      await api.completeAppointment(selectedAppointment.id, 'Completed from appointments list');
+      await ApiService.completeAppointment(selectedAppointment.id, 'Completed from appointments list');
       loadAppointments();
     } catch (error) {
       console.error('Failed to complete appointment:', error);
@@ -184,7 +129,7 @@ function Appointments() {
 
   const handleCancelConfirm = async () => {
     try {
-      await api.cancelAppointment(selectedAppointment.id, cancelReason);
+      await ApiService.cancelAppointment(selectedAppointment.id, cancelReason);
       setCancelDialog(false);
       setCancelReason('');
       handleMenuClose(); // Close menu after successful cancellation
@@ -358,7 +303,7 @@ function Appointments() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {format(parseISO(appointment.date), 'MMM dd, yyyy')}
+                      {formatAppointmentDate(appointment.date)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {appointment.time}

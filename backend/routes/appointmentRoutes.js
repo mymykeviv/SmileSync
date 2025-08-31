@@ -8,18 +8,7 @@ const router = express.Router();
 router.get('/', AppointmentController.getAppointments);
 
 // Get appointment by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const result = await AppointmentController.getAppointmentById(req.params.id);
-    res.json(result);
-  } catch (error) {
-    if (error.message === 'Appointment not found') {
-      res.status(404).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: error.message });
-    }
-  }
-});
+router.get('/:id', AppointmentController.getAppointmentById);
 
 // Get appointment by appointment number
 router.get('/number/:appointmentNumber', AppointmentController.getAppointmentByNumber);
@@ -44,18 +33,7 @@ router.put('/:id', validateId, validateAppointment, handleValidationErrors, asyn
 });
 
 // Cancel appointment
-router.patch('/:id/cancel', async (req, res) => {
-  try {
-    const result = await AppointmentController.cancelAppointment(req.params.id, req.body.reason);
-    res.json(result);
-  } catch (error) {
-    if (error.message === 'Appointment not found') {
-      res.status(404).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: error.message });
-    }
-  }
-});
+router.patch('/:id/cancel', AppointmentController.cancelAppointment);
 
 // Reschedule appointment
 router.patch('/:id/reschedule', async (req, res) => {
@@ -75,18 +53,7 @@ router.patch('/:id/reschedule', async (req, res) => {
 });
 
 // Complete appointment
-router.patch('/:id/complete', async (req, res) => {
-  try {
-    const result = await AppointmentController.completeAppointment(req.params.id, req.body.notes);
-    res.json(result);
-  } catch (error) {
-    if (error.message === 'Appointment not found') {
-      res.status(404).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: error.message });
-    }
-  }
-});
+router.patch('/:id/complete', AppointmentController.completeAppointment);
 
 // Mark appointment as no-show
 router.patch('/:id/no-show', async (req, res) => {

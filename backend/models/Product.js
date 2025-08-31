@@ -561,7 +561,7 @@ class Product {
      * Get formatted price
      */
     getFormattedPrice() {
-        return `$${parseFloat(this.unit_price).toFixed(2)}`;
+        return `₹${parseFloat(this.unit_price).toFixed(2)}`;
     }
 
     /**
@@ -575,7 +575,7 @@ class Product {
      * Get formatted stock value
      */
     getFormattedStockValue() {
-        return `$${this.getStockValue().toFixed(2)}`;
+        return `₹${this.getStockValue().toFixed(2)}`;
     }
 
     /**

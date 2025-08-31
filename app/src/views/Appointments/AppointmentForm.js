@@ -395,7 +395,7 @@ const AppointmentForm = () => {
             <Grid item xs={12} md={6}>
               <Autocomplete
                 options={services}
-                getOptionLabel={(option) => `${option.name} - $${option.base_price}`}
+                getOptionLabel={(option) => `${option.name} - ₹${option.base_price}`}
                 value={getSelectedService() || null}
                 onChange={(event, newValue) => {
                   handleInputChange('service_id', newValue ? newValue.id : '');
@@ -422,7 +422,7 @@ const AppointmentForm = () => {
                           {option.name}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {option.category} • ${option.base_price} • {option.duration}min
+                          {option.category} • ₹{option.base_price} • {option.duration}min
                         </Typography>
                       </Box>
                     </Box>
@@ -577,7 +577,7 @@ const AppointmentForm = () => {
                   )}
                   {getSelectedService() && (
                     <Chip
-                      label={`Service: ${getSelectedService().name} ($${getSelectedService().base_price})`}
+                      label={`Service: ${getSelectedService().name} (₹${getSelectedService().base_price})`}
                       color="secondary"
                       variant="outlined"
                     />

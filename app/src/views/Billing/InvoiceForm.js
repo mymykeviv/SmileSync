@@ -204,7 +204,7 @@ function InvoiceForm() {
     } else {
       const issueDate = new Date(formData.issueDate);
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      today.setHours(23, 59, 59, 999); // Allow until end of today
       if (issueDate > today) {
         newErrors.issueDate = 'Issue date cannot be in the future';
       }
@@ -248,7 +248,7 @@ function InvoiceForm() {
         if (!item.unitPrice || item.unitPrice <= 0) {
           itemError.unitPrice = 'Unit price must be greater than 0';
         } else if (item.unitPrice > 999999.99) {
-          itemError.unitPrice = 'Unit price cannot exceed $999,999.99';
+          itemError.unitPrice = 'Unit price cannot exceed ₹999,999.99';
         }
         
         if (Object.keys(itemError).length > 0) {
@@ -409,16 +409,16 @@ function InvoiceForm() {
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography>Subtotal:</Typography>
-                    <Typography>${subtotal.toFixed(2)}</Typography>
+                    <Typography>₹{subtotal.toFixed(2)}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography>Tax ({formData.taxRate}%):</Typography>
-                    <Typography>${tax.toFixed(2)}</Typography>
+                    <Typography>₹{tax.toFixed(2)}</Typography>
                   </Box>
                   <Divider sx={{ my: 1 }} />
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography variant="h6">Total:</Typography>
-                    <Typography variant="h6">${total.toFixed(2)}</Typography>
+                    <Typography variant="h6">₹{total.toFixed(2)}</Typography>
                   </Box>
                 </Box>
               </CardContent>
@@ -498,7 +498,7 @@ function InvoiceForm() {
                           </TableCell>
                           <TableCell align="right">
                             <Typography fontWeight="medium">
-                              ${item.total.toFixed(2)}
+                              ₹{item.total.toFixed(2)}
                             </Typography>
                           </TableCell>
                           <TableCell align="center">

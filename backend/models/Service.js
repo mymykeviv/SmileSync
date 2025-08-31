@@ -414,7 +414,7 @@ class Service {
      * Get formatted price
      */
     getFormattedPrice() {
-        return `$${parseFloat(this.base_price).toFixed(2)}`;
+        return `₹${parseFloat(this.base_price).toFixed(2)}`;
     }
 
     /**

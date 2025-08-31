@@ -140,7 +140,7 @@ const ServiceForm = () => {
       if (isNaN(price) || price <= 0) {
         newErrors.base_price = 'Base price must be a positive number';
       } else if (price > 999999.99) {
-        newErrors.base_price = 'Base price cannot exceed $999,999.99';
+        newErrors.base_price = 'Base price cannot exceed ₹999,999.99';
       }
     }
     

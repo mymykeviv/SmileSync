@@ -139,7 +139,7 @@ const ProductForm = () => {
             if (isNaN(price) || price <= 0) {
                 newErrors.unit_price = 'Unit price must be a positive number';
             } else if (price > 999999.99) {
-                newErrors.unit_price = 'Unit price cannot exceed $999,999.99';
+                newErrors.unit_price = 'Unit price cannot exceed ₹999,999.99';
             }
         }
         
@@ -275,6 +275,7 @@ const ProductForm = () => {
                                         label="Category"
                                         required
                                     >
+                                        <MenuItem value="N/A">N/A</MenuItem>
                                         {categories.map((category) => (
                                             <MenuItem key={category} value={category}>
                                                 {category}
@@ -307,6 +308,7 @@ const ProductForm = () => {
                                         label="Supplier"
                                         required
                                     >
+                                        <MenuItem value="N/A">N/A</MenuItem>
                                         {suppliers.map((supplier) => (
                                             <MenuItem key={supplier} value={supplier}>
                                                 {supplier}

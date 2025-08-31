@@ -704,27 +704,27 @@ class Invoice {
      * Get formatted amounts
      */
     getFormattedSubtotal() {
-        return `$${parseFloat(this.subtotal).toFixed(2)}`;
+        return `₹${parseFloat(this.subtotal).toFixed(2)}`;
     }
 
     getFormattedTaxAmount() {
-        return `$${parseFloat(this.tax_amount).toFixed(2)}`;
+        return `₹${parseFloat(this.tax_amount).toFixed(2)}`;
     }
 
     getFormattedDiscountAmount() {
-        return `$${parseFloat(this.discount_amount).toFixed(2)}`;
+        return `₹${parseFloat(this.discount_amount).toFixed(2)}`;
     }
 
     getFormattedTotalAmount() {
-        return `$${parseFloat(this.total_amount).toFixed(2)}`;
+        return `₹${parseFloat(this.total_amount).toFixed(2)}`;
     }
 
     getFormattedAmountPaid() {
-        return `$${parseFloat(this.amount_paid).toFixed(2)}`;
+        return `₹${parseFloat(this.amount_paid).toFixed(2)}`;
     }
 
     getFormattedBalanceDue() {
-        return `$${parseFloat(this.balance_due).toFixed(2)}`;
+        return `₹${parseFloat(this.balance_due).toFixed(2)}`;
     }
 
     /**

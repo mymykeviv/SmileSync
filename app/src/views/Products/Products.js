@@ -41,6 +41,7 @@ import {
   Inventory as ProductsIcon,
   Warning as WarningIcon,
   TrendingDown as LowStockIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -197,9 +198,9 @@ function Products() {
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'INR'
     }).format(price);
   };
 
@@ -234,6 +235,14 @@ function Products() {
           <IconButton onClick={() => loadProducts(pagination.currentPage)}>
             <RefreshIcon />
           </IconButton>
+          <Button
+            variant="outlined"
+            startIcon={<SettingsIcon />}
+            onClick={() => navigate('/products/settings')}
+            sx={{ ml: 1 }}
+          >
+            Manage Categories & Suppliers
+          </Button>
           <Button
             variant="contained"
             startIcon={<AddIcon />}

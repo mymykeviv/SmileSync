@@ -316,8 +316,8 @@ class InvoiceController {
         items.forEach(item => {
           doc.text(item.description || 'N/A', 50, yPosition)
              .text(item.quantity?.toString() || '0', 200, yPosition)
-             .text(`$${(item.unitPrice || 0).toFixed(2)}`, 300, yPosition)
-             .text(`$${(item.totalPrice || 0).toFixed(2)}`, 400, yPosition);
+             .text(`₹${(item.unitPrice || 0).toFixed(2)}`, 300, yPosition)
+                .text(`₹${(item.totalPrice || 0).toFixed(2)}`, 400, yPosition);
           yPosition += 20;
         });
       }
@@ -329,25 +329,27 @@ class InvoiceController {
          .stroke();
       
       yPosition += 10;
-      doc.text(`Subtotal: $${(invoice.subtotal || 0).toFixed(2)}`, 300, yPosition);
-      yPosition += 20;
-      doc.text(`Tax: $${(invoice.taxAmount || 0).toFixed(2)}`, 300, yPosition);
-      yPosition += 20;
-      doc.fontSize(14).text(`Total: $${(invoice.totalAmount || 0).toFixed(2)}`, 300, yPosition);
-      yPosition += 20;
-      doc.text(`Amount Paid: $${(invoice.amountPaid || 0).toFixed(2)}`, 300, yPosition);
-      yPosition += 20;
-      doc.text(`Balance Due: $${(invoice.balanceDue || 0).toFixed(2)}`, 300, yPosition);
+      doc.text(`Subtotal: ₹${(invoice.subtotal || 0).toFixed(2)}`, 300, yPosition);
+        yPosition += 20;
+        doc.text(`Tax: ₹${(invoice.taxAmount || 0).toFixed(2)}`, 300, yPosition);
+        yPosition += 20;
+        doc.fontSize(14).text(`Total: ₹${(invoice.totalAmount || 0).toFixed(2)}`, 300, yPosition);
+        yPosition += 30;
+        doc.text(`Amount Paid: ₹${(invoice.amountPaid || 0).toFixed(2)}`, 300, yPosition);
+        yPosition += 20;
+        doc.text(`Balance Due: ₹${(invoice.balanceDue || 0).toFixed(2)}`, 300, yPosition);
       
       // Finalize PDF
       doc.end();
       
     } catch (error) {
       console.error('Error generating PDF:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to generate PDF' 
-      });
+      if (!res.headersSent) {
+        res.status(500).json({ 
+          success: false, 
+          error: 'Failed to generate PDF' 
+        });
+      }
     }
   }
 

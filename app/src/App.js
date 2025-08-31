@@ -10,6 +10,7 @@ import Layout from './components/Layout/Layout';
 import Dashboard from './views/Dashboard/Dashboard';
 import Appointments from './views/Appointments/Appointments';
 import AppointmentForm from './views/Appointments/AppointmentForm';
+import AppointmentDetail from './views/Appointments/AppointmentDetail';
 import Patients from './views/Patients/Patients';
 import PatientForm from './views/Patients/PatientForm';
 import PatientDetail from './views/Patients/PatientDetail';
@@ -17,8 +18,10 @@ import Services from './views/Services/Services';
 import Products from './views/Products/Products';
 import Billing from './views/Billing/Billing';
 import InvoiceForm from './views/Billing/InvoiceForm';
+import InvoiceDetail from './views/Billing/InvoiceDetail';
 import ServiceForm from './views/Services/ServiceForm';
 import ProductForm from './views/Products/ProductForm';
+import CategorySupplierManager from './views/Products/CategorySupplierManager';
 import Catalog from './views/Catalog/Catalog';
 import Analytics from './views/Analytics/Analytics';
 
@@ -94,6 +97,7 @@ function App() {
               {/* Appointments */}
                 <Route path="/appointments" element={<Appointments />} />
                 <Route path="/appointments/new" element={<AppointmentForm />} />
+                <Route path="/appointments/:id" element={<AppointmentDetail />} />
                 <Route path="/appointments/:id/edit" element={<AppointmentForm />} />
               
               {/* Patients */}
@@ -111,9 +115,11 @@ function App() {
               
               {/* Products */}
               <Route path="/products" element={<Products />} />
+              <Route path="/products/settings" element={<CategorySupplierManager />} />
               
               {/* Billing */}
               <Route path="/billing" element={<Billing />} />
+              <Route path="/billing/:id" element={<InvoiceDetail />} />
               <Route path="/billing/invoices/new" element={<InvoiceForm />} />
               <Route path="/billing/invoices/:id/edit" element={<InvoiceForm />} />
               

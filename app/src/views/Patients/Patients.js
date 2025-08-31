@@ -245,7 +245,7 @@ function Patients() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {calculateAge(patient.dateOfBirth)} years
+                      {calculateAge(patient.dateOfBirth) || 'N/A'} years
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       DOB: {formatDateOfBirth(patient.dateOfBirth)}

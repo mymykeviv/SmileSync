@@ -209,7 +209,7 @@ const Analytics = () => {
           <Grid item xs={12} sm={6} md={3}>
             <MetricCard
               title="Total Revenue"
-              value={`$${dashboardData.overview.totalRevenue}`}
+              value={`₹${dashboardData.overview.totalRevenue}`}
               icon={<AttachMoney fontSize="large" />}
               color="warning"
             />
@@ -225,7 +225,7 @@ const Analytics = () => {
           <Grid item xs={12} sm={6} md={3}>
             <MetricCard
               title="Pending Revenue"
-              value={`$${dashboardData.overview.pendingRevenue}`}
+              value={`₹${dashboardData.overview.pendingRevenue}`}
               icon={<AttachMoney fontSize="large" />}
               color="error"
             />
@@ -278,7 +278,7 @@ const Analytics = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
+                  <Tooltip formatter={(value) => [`₹${value}`, 'Revenue']} />
                   <Legend />
                   <Line type="monotone" dataKey="revenue" stroke="#8884d8" strokeWidth={2} />
                 </LineChart>
@@ -343,7 +343,7 @@ const Analytics = () => {
                   <YAxis />
                   <Tooltip formatter={(value, name) => {
                     if (name === 'count') return [value, 'Appointments'];
-                    if (name === 'revenue') return [`$${value}`, 'Revenue'];
+                    if (name === 'revenue') return [`₹${value}`, 'Revenue'];
                     return [value, name];
                   }} />
                   <Legend />

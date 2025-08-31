@@ -258,7 +258,7 @@ function PatientDetail() {
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 <Chip
                   icon={<PersonIcon />}
-                  label={`${calculateAge(patient.dateOfBirth)} years old`}
+                  label={`${calculateAge(patient.dateOfBirth) || 'N/A'} years old`}
                   variant="outlined"
                 />
                 <Chip
@@ -493,7 +493,7 @@ function PatientDetail() {
                           {formatDateShort(invoice.date)}
                         </TableCell>
                         <TableCell>{invoice.description}</TableCell>
-                        <TableCell>${invoice.amount.toFixed(2)}</TableCell>
+                        <TableCell>₹{invoice.amount.toFixed(2)}</TableCell>
                         <TableCell>
                           <Chip
                             label={invoice.status}

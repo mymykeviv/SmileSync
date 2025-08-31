@@ -69,6 +69,8 @@ function Billing() {
   
   // Dialog states
   const [deleteDialog, setDeleteDialog] = useState({ open: false, invoice: null });
+  const [pdfPreviewDialog, setPdfPreviewDialog] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
   
   // Menu state
   const [anchorEl, setAnchorEl] = useState(null);
@@ -147,28 +149,43 @@ function Billing() {
       const blob = new Blob([response], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       
-      // Create a temporary link to download the PDF
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `invoice-${invoice.invoiceNumber}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Set PDF URL and open preview dialog
+      setPdfUrl(url);
+      setPdfPreviewDialog(true);
       
-      // Clean up the URL object
-      window.URL.revokeObjectURL(url);
-      
-      console.log('PDF download completed');
+      console.log('PDF preview opened');
     } catch (error) {
       console.error('Failed to generate PDF:', error);
     }
   };
 
+  const handleDownloadPdf = () => {
+    if (pdfUrl && selectedInvoice) {
+      // Create a temporary link to download the PDF
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `invoice-${selectedInvoice.invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('PDF download completed');
+    }
+  };
+
+  const handleClosePdfPreview = () => {
+    setPdfPreviewDialog(false);
+    if (pdfUrl) {
+      window.URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+    }
+  };
+
   const formatCurrency = (amount) => {
     const numericAmount = parseFloat(amount) || 0;
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'INR'
     }).format(numericAmount);
   };
 
@@ -620,6 +637,49 @@ function Billing() {
       >
         <AddIcon />
       </Fab>
+
+      {/* PDF Preview Dialog */}
+      <Dialog
+        open={pdfPreviewDialog}
+        onClose={handleClosePdfPreview}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: { height: '90vh' }
+        }}
+      >
+        <DialogTitle>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6">
+              Invoice Preview - {selectedInvoice?.invoiceNumber}
+            </Typography>
+            <Box>
+              <Button
+                startIcon={<PdfIcon />}
+                onClick={handleDownloadPdf}
+                variant="outlined"
+                sx={{ mr: 1 }}
+              >
+                Download
+              </Button>
+              <IconButton onClick={handleClosePdfPreview}>
+                <CancelledIcon />
+              </IconButton>
+            </Box>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, height: '100%' }}>
+          {pdfUrl && (
+            <iframe
+              src={pdfUrl}
+              width="100%"
+              height="100%"
+              style={{ border: 'none' }}
+              title="Invoice PDF Preview"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

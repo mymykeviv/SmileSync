@@ -507,7 +507,7 @@ class Payment {
      * Get formatted amount
      */
     getFormattedAmount() {
-        return `$${Math.abs(parseFloat(this.amount)).toFixed(2)}`;
+        return `₹${Math.abs(parseFloat(this.amount)).toFixed(2)}`;
     }
 
     /**

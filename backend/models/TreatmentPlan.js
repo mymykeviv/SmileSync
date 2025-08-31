@@ -652,7 +652,7 @@ class TreatmentPlan {
      * Get formatted estimated cost
      */
     getFormattedEstimatedCost() {
-        return `$${parseFloat(this.estimated_cost).toFixed(2)}`;
+        return `₹${parseFloat(this.estimated_cost).toFixed(2)}`;
     }
 
     /**

@@ -160,7 +160,7 @@ function Dashboard() {
     },
     {
       title: 'Monthly Revenue',
-      value: `$${stats.monthlyRevenue.toLocaleString()}`,
+      value: `₹${stats.monthlyRevenue.toLocaleString()}`,
       icon: <MoneyIcon />,
       color: '#f57c00',
       action: () => navigate('/billing')
