@@ -18,7 +18,7 @@ import {
     InputAdornment
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import ApiService from '../../services/api';
+import ApiService from '../../services/ApiService';
 
 const ProductForm = () => {
     const navigate = useNavigate();

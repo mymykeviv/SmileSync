@@ -19,7 +19,7 @@ class PatientController {
       
       return {
         success: true,
-        data: patients,
+        data: patients.map(patient => patient.toJSON()),
         pagination: {
           currentPage: parseInt(page),
           totalPages,
@@ -43,7 +43,7 @@ class PatientController {
       
       return {
         success: true,
-        data: patient
+        data: patient.toJSON()
       };
     } catch (error) {
       throw new Error(error.message);
@@ -60,7 +60,7 @@ class PatientController {
       
       return {
         success: true,
-        data: patient
+        data: patient.toJSON()
       };
     } catch (error) {
       throw new Error(error.message);
@@ -98,7 +98,7 @@ class PatientController {
       return {
         success: true,
         message: 'Patient created successfully',
-        data: savedPatient
+        data: savedPatient.toJSON()
       };
     } catch (error) {
       throw new Error(error.message);
@@ -132,7 +132,7 @@ class PatientController {
       return {
         success: true,
         message: 'Patient updated successfully',
-        data: updatedPatient
+        data: updatedPatient.toJSON()
       };
     } catch (error) {
       throw new Error(error.message);
@@ -231,7 +231,7 @@ class PatientController {
       
       return {
         success: true,
-        data: patients,
+        data: patients.map(patient => patient.toJSON()),
         query: q
       };
     } catch (error) {

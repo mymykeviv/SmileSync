@@ -30,7 +30,7 @@ exports.getAllServices = async (req, res) => {
 
         res.json({
             success: true,
-            data: services,
+            data: services.map(service => service.toJSON()),
             pagination: {
                 currentPage: parseInt(page),
                 totalPages,
@@ -64,7 +64,7 @@ exports.getServiceById = async (req, res) => {
 
         res.json({
             success: true,
-            data: service
+            data: service.toJSON()
         });
     } catch (error) {
         console.error('Error getting service:', error);
@@ -91,7 +91,7 @@ exports.getServiceByCode = async (req, res) => {
 
         res.json({
             success: true,
-            data: service
+            data: service.toJSON()
         });
     } catch (error) {
         console.error('Error getting service by code:', error);
@@ -130,7 +130,7 @@ exports.createService = async (req, res) => {
         res.status(201).json({
             success: true,
             message: 'Service created successfully',
-            data: service
+            data: service.toJSON()
         });
     } catch (error) {
         console.error('Error creating service:', error);
@@ -163,7 +163,7 @@ exports.updateService = async (req, res) => {
         res.json({
             success: true,
             message: 'Service updated successfully',
-            data: service
+            data: service.toJSON()
         });
     } catch (error) {
         console.error('Error updating service:', error);
@@ -194,7 +194,7 @@ exports.toggleServiceStatus = async (req, res) => {
         res.json({
             success: true,
             message: `Service ${service.is_active ? 'activated' : 'deactivated'} successfully`,
-            data: service
+            data: service.toJSON()
         });
     } catch (error) {
         console.error('Error toggling service status:', error);

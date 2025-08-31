@@ -41,7 +41,7 @@ import {
   FilterList as FilterIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import ApiService from '../../services/api';
+import ApiService from '../../services/ApiService';
 
 // API service (placeholder - will be implemented later)
 const api = {

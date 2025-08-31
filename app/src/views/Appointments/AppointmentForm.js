@@ -26,7 +26,7 @@ import {
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { format, addMinutes, parseISO } from 'date-fns';
-import ApiService from '../../services/api';
+import ApiService from '../../services/ApiService';
 
 const AppointmentForm = () => {
   const navigate = useNavigate();

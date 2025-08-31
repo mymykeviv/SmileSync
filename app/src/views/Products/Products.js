@@ -44,7 +44,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
-import ApiService from '../../services/api';
+import ApiService from '../../services/ApiService';
 
 // API service methods for products
 const api = {
