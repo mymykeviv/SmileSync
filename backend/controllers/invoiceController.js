@@ -1,5 +1,8 @@
 const { Invoice, Patient, Service, Product, Payment } = require('../models');
 const { convertInvoiceToBackend, convertPaymentToBackend } = require('../utils/fieldMapping');
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
 
 class InvoiceController {
   // Get all invoices with search, filter, and pagination
@@ -261,26 +264,89 @@ class InvoiceController {
     try {
       const { id } = req.params;
       
+      // Get invoice data
       const invoice = await Invoice.findById(id);
       if (!invoice) {
-        return res.status(404).json({
-          success: false,
-          message: 'Invoice not found'
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Invoice not found' 
         });
       }
 
-      // TODO: Implement PDF generation logic
-      // For now, just return success
-      res.json({
-        success: true,
-        message: 'PDF generated successfully'
-      });
+      // Get invoice items
+      const items = await invoice.getItems();
+      
+      // Create PDF document
+      const doc = new PDFDocument();
+      
+      // Set response headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="invoice-${invoice.invoiceNumber}.pdf"`);
+      
+      // Pipe PDF to response
+      doc.pipe(res);
+      
+      // Add content to PDF
+      doc.fontSize(20).text('SmileSync Dental Clinic', 50, 50);
+      doc.fontSize(16).text('Invoice', 50, 80);
+      
+      // Invoice details
+      doc.fontSize(12)
+         .text(`Invoice Number: ${invoice.invoiceNumber}`, 50, 120)
+         .text(`Date: ${new Date(invoice.invoiceDate).toLocaleDateString()}`, 50, 140)
+         .text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}`, 50, 160)
+         .text(`Patient ID: ${invoice.patientId}`, 50, 180);
+      
+      // Items table header
+      let yPosition = 220;
+      doc.text('Description', 50, yPosition)
+         .text('Quantity', 200, yPosition)
+         .text('Unit Price', 300, yPosition)
+         .text('Total', 400, yPosition);
+      
+      // Draw line under header
+      doc.moveTo(50, yPosition + 15)
+         .lineTo(500, yPosition + 15)
+         .stroke();
+      
+      yPosition += 30;
+      
+      // Add items
+      if (items && items.length > 0) {
+        items.forEach(item => {
+          doc.text(item.description || 'N/A', 50, yPosition)
+             .text(item.quantity?.toString() || '0', 200, yPosition)
+             .text(`$${(item.unitPrice || 0).toFixed(2)}`, 300, yPosition)
+             .text(`$${(item.totalPrice || 0).toFixed(2)}`, 400, yPosition);
+          yPosition += 20;
+        });
+      }
+      
+      // Totals
+      yPosition += 20;
+      doc.moveTo(300, yPosition)
+         .lineTo(500, yPosition)
+         .stroke();
+      
+      yPosition += 10;
+      doc.text(`Subtotal: $${(invoice.subtotal || 0).toFixed(2)}`, 300, yPosition);
+      yPosition += 20;
+      doc.text(`Tax: $${(invoice.taxAmount || 0).toFixed(2)}`, 300, yPosition);
+      yPosition += 20;
+      doc.fontSize(14).text(`Total: $${(invoice.totalAmount || 0).toFixed(2)}`, 300, yPosition);
+      yPosition += 20;
+      doc.text(`Amount Paid: $${(invoice.amountPaid || 0).toFixed(2)}`, 300, yPosition);
+      yPosition += 20;
+      doc.text(`Balance Due: $${(invoice.balanceDue || 0).toFixed(2)}`, 300, yPosition);
+      
+      // Finalize PDF
+      doc.end();
+      
     } catch (error) {
       console.error('Error generating PDF:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to generate PDF',
-        error: error.message
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to generate PDF' 
       });
     }
   }

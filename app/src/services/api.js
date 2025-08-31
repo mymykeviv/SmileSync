@@ -202,6 +202,12 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  static async generatePdf(id) {
+    return this.request(`/invoices/${id}/pdf`, {
+      method: 'POST',
+    });
+  }
 }
 
 export default ApiService;

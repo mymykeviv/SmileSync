@@ -97,9 +97,9 @@ function InvoiceForm() {
       if (response.success) {
         const invoice = response.data;
         setFormData({
-          patientId: invoice.patientId,
-          issueDate: format(new Date(invoice.issueDate), 'yyyy-MM-dd'),
-          dueDate: format(new Date(invoice.dueDate), 'yyyy-MM-dd'),
+          patientId: invoice.patientId || '',
+          issueDate: invoice.issueDate ? format(new Date(invoice.issueDate), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+          dueDate: invoice.dueDate ? format(new Date(invoice.dueDate), 'yyyy-MM-dd') : format(addDays(new Date(), 30), 'yyyy-MM-dd'),
           items: invoice.items || [],
           notes: invoice.notes || '',
           taxRate: invoice.taxRate || 8.0,
@@ -113,7 +113,9 @@ function InvoiceForm() {
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    // Ensure value is never undefined to prevent controlled/uncontrolled input warnings
+    const safeValue = value === undefined ? '' : value;
+    setFormData(prev => ({ ...prev, [field]: safeValue }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
@@ -577,7 +579,7 @@ function InvoiceForm() {
                       ...prev,
                       itemId: newValue ? newValue.id : '',
                       itemName: newValue ? newValue.name : '',
-                      unitPrice: newValue ? newValue.price : 0
+                      unitPrice: newValue ? (newValue.price || 0) : 0
                     }));
                   }}
                   renderInput={(params) => (

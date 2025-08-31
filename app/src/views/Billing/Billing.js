@@ -141,11 +141,16 @@ function Billing() {
 
   const handleGeneratePdf = async (invoice) => {
     try {
-      const response = await ApiService.generatePdf(invoice.id);
-      if (response.success) {
-        // Show success message or download PDF
-        console.log('PDF generated successfully');
-      }
+      // Create a temporary link to download the PDF
+      const link = document.createElement('a');
+      link.href = `http://localhost:5001/api/invoices/${invoice.id}/pdf`;
+      link.download = `invoice-${invoice.invoiceNumber}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('PDF download initiated');
     } catch (error) {
       console.error('Failed to generate PDF:', error);
     }
