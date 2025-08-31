@@ -218,14 +218,21 @@ function PatientDetail() {
         </Box>
         
         <Breadcrumbs>
-          <Link
-            component="button"
-            variant="body1"
+          <Button
+            variant="text"
             onClick={() => navigate('/patients')}
-            sx={{ textDecoration: 'none' }}
+            sx={{ 
+              textDecoration: 'none',
+              minWidth: 'auto',
+              padding: 0,
+              fontSize: 'inherit',
+              fontWeight: 'inherit',
+              textTransform: 'none',
+              color: 'inherit'
+            }}
           >
             Patients
-          </Link>
+          </Button>
           <Typography color="text.primary">
             {patient.firstName} {patient.lastName}
           </Typography>

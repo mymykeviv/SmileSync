@@ -148,23 +148,70 @@ const AppointmentForm = () => {
   const validateForm = () => {
     const newErrors = {};
 
+    // Required field validations
     if (!formData.patient_id) {
       newErrors.patient_id = 'Patient is required';
     }
+    
     if (!formData.service_id) {
       newErrors.service_id = 'Service is required';
     }
+    
     if (!formData.appointment_date) {
       newErrors.appointment_date = 'Appointment date is required';
+    } else {
+      const appointmentDate = new Date(formData.appointment_date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const oneYearFromNow = new Date();
+      oneYearFromNow.setFullYear(today.getFullYear() + 1);
+      
+      if (appointmentDate < today) {
+        newErrors.appointment_date = 'Appointment date cannot be in the past';
+      } else if (appointmentDate > oneYearFromNow) {
+        newErrors.appointment_date = 'Appointment date cannot be more than one year in the future';
+      }
     }
+    
     if (!formData.appointment_time) {
       newErrors.appointment_time = 'Appointment time is required';
+    } else if (formData.appointment_date) {
+      // Check if appointment is in the past (same day)
+      const appointmentDate = new Date(formData.appointment_date);
+      const appointmentTime = new Date(formData.appointment_time);
+      const now = new Date();
+      
+      const appointmentDateTime = new Date(appointmentDate);
+      appointmentDateTime.setHours(appointmentTime.getHours(), appointmentTime.getMinutes());
+      
+      if (appointmentDateTime < now) {
+        newErrors.appointment_time = 'Appointment time cannot be in the past';
+      }
+      
+      // Check business hours (8 AM to 6 PM)
+      const hours = appointmentTime.getHours();
+      if (hours < 8 || hours >= 18) {
+        newErrors.appointment_time = 'Appointment must be between 8:00 AM and 6:00 PM';
+      }
     }
-    if (!formData.dentist) {
+    
+    if (!formData.dentist || !formData.dentist.trim()) {
       newErrors.dentist = 'Dentist is required';
+    } else if (formData.dentist.trim().length > 100) {
+      newErrors.dentist = 'Dentist name must be less than 100 characters';
     }
-    if (formData.duration < 15 || formData.duration > 240) {
-      newErrors.duration = 'Duration must be between 15 and 240 minutes';
+    
+    if (!formData.duration || formData.duration < 15 || formData.duration > 480) {
+      newErrors.duration = 'Duration must be between 15 and 480 minutes';
+    }
+    
+    // Optional field validations
+    if (formData.notes && formData.notes.length > 1000) {
+      newErrors.notes = 'Notes must be less than 1000 characters';
+    }
+    
+    if (formData.appointment_type && !['checkup', 'cleaning', 'consultation', 'treatment', 'emergency', 'follow_up'].includes(formData.appointment_type)) {
+      newErrors.appointment_type = 'Invalid appointment type';
     }
 
     setErrors(newErrors);
@@ -255,14 +302,21 @@ const AppointmentForm = () => {
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Breadcrumbs sx={{ mb: 2 }}>
-          <Link
-            component="button"
-            variant="body1"
+          <Button
+            variant="text"
             onClick={() => navigate('/appointments')}
-            sx={{ textDecoration: 'none' }}
+            sx={{ 
+              textDecoration: 'none',
+              minWidth: 'auto',
+              padding: 0,
+              fontSize: 'inherit',
+              fontWeight: 'inherit',
+              textTransform: 'none',
+              color: 'inherit'
+            }}
           >
             Appointments
-          </Link>
+          </Button>
           <Typography color="text.primary">
             {isEdit ? 'Edit Appointment' : 'New Appointment'}
           </Typography>

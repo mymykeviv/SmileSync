@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const invoiceController = require('../controllers/invoiceController');
+const { validateInvoice, validatePayment, validateId, handleValidationErrors } = require('../middleware/validation');
 
 // Get all invoices with search, filter, and pagination
 router.get('/', invoiceController.getAllInvoices);
@@ -15,10 +16,10 @@ router.get('/:id', invoiceController.getInvoiceById);
 router.get('/number/:invoiceNumber', invoiceController.getInvoiceByNumber);
 
 // Create new invoice
-router.post('/', invoiceController.createInvoice);
+router.post('/', validateInvoice, handleValidationErrors, invoiceController.createInvoice);
 
 // Update invoice
-router.put('/:id', invoiceController.updateInvoice);
+router.put('/:id', validateId, validateInvoice, handleValidationErrors, invoiceController.updateInvoice);
 
 // Delete invoice
 router.delete('/:id', invoiceController.deleteInvoice);
@@ -30,7 +31,7 @@ router.post('/:id/send', invoiceController.sendInvoice);
 router.post('/:id/pdf', invoiceController.generatePdf);
 
 // Record payment for invoice
-router.post('/:id/payment', invoiceController.recordPayment);
+router.post('/:id/payment', validateId, validatePayment, handleValidationErrors, invoiceController.recordPayment);
 
 // Get payments for invoice
 router.get('/:id/payments', invoiceController.getInvoicePayments);

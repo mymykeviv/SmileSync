@@ -192,10 +192,82 @@ function InvoiceForm() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.patientId) newErrors.patientId = 'Patient is required';
-    if (!formData.issueDate) newErrors.issueDate = 'Issue date is required';
-    if (!formData.dueDate) newErrors.dueDate = 'Due date is required';
-    if (formData.items.length === 0) newErrors.items = 'At least one item is required';
+    // Required field validations
+    if (!formData.patientId) {
+      newErrors.patientId = 'Patient is required';
+    }
+    
+    if (!formData.issueDate) {
+      newErrors.issueDate = 'Issue date is required';
+    } else {
+      const issueDate = new Date(formData.issueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (issueDate > today) {
+        newErrors.issueDate = 'Issue date cannot be in the future';
+      }
+    }
+    
+    if (!formData.dueDate) {
+      newErrors.dueDate = 'Due date is required';
+    } else {
+      const dueDate = new Date(formData.dueDate);
+      const issueDate = new Date(formData.issueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (dueDate < today) {
+        newErrors.dueDate = 'Due date cannot be in the past';
+      } else if (formData.issueDate && dueDate < issueDate) {
+        newErrors.dueDate = 'Due date cannot be before issue date';
+      }
+    }
+    
+    if (formData.items.length === 0) {
+      newErrors.items = 'At least one item is required';
+    } else {
+      // Validate each item
+      const itemErrors = [];
+      formData.items.forEach((item, index) => {
+        const itemError = {};
+        
+        if (!item.description || !item.description.trim()) {
+          itemError.description = 'Item description is required';
+        } else if (item.description.length > 500) {
+          itemError.description = 'Item description must be less than 500 characters';
+        }
+        
+        if (!item.quantity || item.quantity <= 0) {
+          itemError.quantity = 'Quantity must be greater than 0';
+        } else if (item.quantity > 9999) {
+          itemError.quantity = 'Quantity cannot exceed 9,999';
+        }
+        
+        if (!item.unitPrice || item.unitPrice <= 0) {
+          itemError.unitPrice = 'Unit price must be greater than 0';
+        } else if (item.unitPrice > 999999.99) {
+          itemError.unitPrice = 'Unit price cannot exceed $999,999.99';
+        }
+        
+        if (Object.keys(itemError).length > 0) {
+          itemErrors[index] = itemError;
+        }
+      });
+      
+      if (itemErrors.length > 0) {
+        newErrors.itemErrors = itemErrors;
+      }
+    }
+    
+    // Tax rate validation
+    if (formData.taxRate < 0 || formData.taxRate > 100) {
+      newErrors.taxRate = 'Tax rate must be between 0% and 100%';
+    }
+    
+    // Optional field validations
+    if (formData.notes && formData.notes.length > 1000) {
+      newErrors.notes = 'Notes must be less than 1000 characters';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

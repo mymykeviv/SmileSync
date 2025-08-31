@@ -99,29 +99,64 @@ function PatientForm() {
     const newErrors = {};
     
     // Required fields
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
-    if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    } else if (formData.firstName.trim().length > 100) {
+      newErrors.firstName = 'First name must be less than 100 characters';
+    } else if (!/^[a-zA-Z\s'-]+$/.test(formData.firstName.trim())) {
+      newErrors.firstName = 'First name can only contain letters, spaces, hyphens, and apostrophes';
+    }
     
-    // Email validation
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    } else if (formData.lastName.trim().length > 100) {
+      newErrors.lastName = 'Last name must be less than 100 characters';
+    } else if (!/^[a-zA-Z\s'-]+$/.test(formData.lastName.trim())) {
+      newErrors.lastName = 'Last name can only contain letters, spaces, hyphens, and apostrophes';
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
     
-    // Phone validation (basic)
-    if (formData.phone && !/^[\d\s\-\(\)\+]+$/.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone is required';
+    } else if (!/^[\+]?[1-9][\d\s\-\(\)]{7,15}$/.test(formData.phone)) {
+      newErrors.phone = 'Please enter a valid phone number (7-15 digits)';
     }
     
-    // Date validation
-    if (formData.dateOfBirth) {
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    } else {
       const birthDate = new Date(formData.dateOfBirth);
       const today = new Date();
       if (birthDate > today) {
         newErrors.dateOfBirth = 'Date of birth cannot be in the future';
+      } else {
+        const age = today.getFullYear() - birthDate.getFullYear();
+        if (age > 150) {
+          newErrors.dateOfBirth = 'Date of birth seems unrealistic';
+        }
       }
+    }
+    
+    // Optional field validations
+    if (formData.address && formData.address.length > 500) {
+      newErrors.address = 'Address must be less than 500 characters';
+    }
+    
+    if (formData.medicalHistory && formData.medicalHistory.length > 2000) {
+      newErrors.medicalHistory = 'Medical history must be less than 2000 characters';
+    }
+    
+    if (formData.emergencyContact && formData.emergencyContact.length > 200) {
+      newErrors.emergencyContact = 'Emergency contact must be less than 200 characters';
+    }
+    
+    if (formData.insuranceInfo && formData.insuranceInfo.length > 200) {
+      newErrors.insuranceInfo = 'Insurance info must be less than 200 characters';
     }
     
     setErrors(newErrors);
@@ -186,14 +221,21 @@ function PatientForm() {
         </Box>
         
         <Breadcrumbs>
-          <Link
-            component="button"
-            variant="body1"
+          <Button
+            variant="text"
             onClick={() => navigate('/patients')}
-            sx={{ textDecoration: 'none' }}
+            sx={{ 
+              textDecoration: 'none',
+              minWidth: 'auto',
+              padding: 0,
+              fontSize: 'inherit',
+              fontWeight: 'inherit',
+              textTransform: 'none',
+              color: 'inherit'
+            }}
           >
             Patients
-          </Link>
+          </Button>
           <Typography color="text.primary">
             {isEditing ? `Edit ${formData.firstName} ${formData.lastName}` : 'New Patient'}
           </Typography>

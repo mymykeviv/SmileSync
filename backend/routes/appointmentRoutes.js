@@ -1,5 +1,6 @@
 const express = require('express');
 const AppointmentController = require('../controllers/appointmentController');
+const { validateAppointment, validateId, handleValidationErrors } = require('../middleware/validation');
 
 const router = express.Router();
 
@@ -42,7 +43,7 @@ router.get('/number/:appointmentNumber', async (req, res) => {
 });
 
 // Create new appointment
-router.post('/', async (req, res) => {
+router.post('/', validateAppointment, handleValidationErrors, async (req, res) => {
   try {
     const result = await AppointmentController.createAppointment(req.body);
     res.status(201).json(result);
@@ -56,7 +57,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update appointment
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateId, validateAppointment, handleValidationErrors, async (req, res) => {
   try {
     const result = await AppointmentController.updateAppointment(req.params.id, req.body);
     res.json(result);

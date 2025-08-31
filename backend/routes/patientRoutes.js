@@ -1,5 +1,6 @@
 const express = require('express');
 const PatientController = require('../controllers/patientController');
+const { validatePatient, validateId, handleValidationErrors } = require('../middleware/validation');
 
 const router = express.Router();
 
@@ -66,14 +67,13 @@ router.get('/number/:patientNumber', async (req, res) => {
 });
 
 // Create new patient
-router.post('/', async (req, res) => {
+router.post('/', validatePatient, handleValidationErrors, async (req, res) => {
   try {
     const result = await PatientController.createPatient(req.body);
     res.status(201).json(result);
   } catch (error) {
-    if (error.message.includes('Missing required fields') || 
-        error.message.includes('already exists')) {
-      res.status(400).json({ error: error.message });
+    if (error.message.includes('already exists')) {
+      res.status(409).json({ error: error.message });
     } else {
       res.status(500).json({ error: error.message });
     }
@@ -81,7 +81,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update patient
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateId, validatePatient, handleValidationErrors, async (req, res) => {
   try {
     const result = await PatientController.updatePatient(req.params.id, req.body);
     res.json(result);
@@ -89,7 +89,7 @@ router.put('/:id', async (req, res) => {
     if (error.message === 'Patient not found') {
       res.status(404).json({ error: error.message });
     } else if (error.message.includes('already exists')) {
-      res.status(400).json({ error: error.message });
+      res.status(409).json({ error: error.message });
     } else {
       res.status(500).json({ error: error.message });
     }

@@ -111,22 +111,69 @@ const ProductForm = () => {
     };
 
     const validateForm = () => {
+        const newErrors = {};
+        
+        // Required field validations
         if (!formData.name.trim()) {
-            setError('Product name is required');
-            return false;
+            newErrors.name = 'Product name is required';
+        } else if (formData.name.trim().length > 200) {
+            newErrors.name = 'Product name must be less than 200 characters';
         }
+        
         if (!formData.category.trim()) {
-            setError('Category is required');
-            return false;
+            newErrors.category = 'Category is required';
+        } else if (formData.category.trim().length > 100) {
+            newErrors.category = 'Category must be less than 100 characters';
         }
+        
         if (!formData.supplier.trim()) {
-            setError('Supplier is required');
+            newErrors.supplier = 'Supplier is required';
+        } else if (formData.supplier.trim().length > 200) {
+            newErrors.supplier = 'Supplier must be less than 200 characters';
+        }
+        
+        if (!formData.unit_price) {
+            newErrors.unit_price = 'Unit price is required';
+        } else {
+            const price = parseFloat(formData.unit_price);
+            if (isNaN(price) || price <= 0) {
+                newErrors.unit_price = 'Unit price must be a positive number';
+            } else if (price > 999999.99) {
+                newErrors.unit_price = 'Unit price cannot exceed $999,999.99';
+            }
+        }
+        
+        // Optional field validations
+        if (formData.description && formData.description.length > 1000) {
+            newErrors.description = 'Description must be less than 1000 characters';
+        }
+        
+        if (formData.current_stock !== '' && formData.current_stock !== null) {
+            const stock = parseInt(formData.current_stock);
+            if (isNaN(stock) || stock < 0) {
+                newErrors.current_stock = 'Current stock must be a non-negative number';
+            } else if (stock > 999999) {
+                newErrors.current_stock = 'Current stock cannot exceed 999,999';
+            }
+        }
+        
+        if (formData.minimum_stock !== '' && formData.minimum_stock !== null) {
+            const minStock = parseInt(formData.minimum_stock);
+            if (isNaN(minStock) || minStock < 0) {
+                newErrors.minimum_stock = 'Minimum stock must be a non-negative number';
+            } else if (minStock > 999999) {
+                newErrors.minimum_stock = 'Minimum stock cannot exceed 999,999';
+            }
+        }
+        
+        // Set all errors at once
+        if (Object.keys(newErrors).length > 0) {
+            setError('Please correct the errors in the form');
+            // You might want to implement field-specific error display here
             return false;
         }
-        if (!formData.unit_price || parseFloat(formData.unit_price) <= 0) {
-            setError('Valid unit price is required');
-            return false;
-        }
+        
+        setError('');
         return true;
     };
 

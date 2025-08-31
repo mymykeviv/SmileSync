@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const serviceController = require('../controllers/serviceController');
+const { validateService, validateId, handleValidationErrors } = require('../middleware/validation');
 
 // Get all services with search, filter, and pagination
 router.get('/', serviceController.getAllServices);
@@ -18,10 +19,10 @@ router.get('/:id', serviceController.getServiceById);
 router.get('/code/:serviceCode', serviceController.getServiceByCode);
 
 // Create new service
-router.post('/', serviceController.createService);
+router.post('/', validateService, handleValidationErrors, serviceController.createService);
 
 // Update service
-router.put('/:id', serviceController.updateService);
+router.put('/:id', validateId, validateService, handleValidationErrors, serviceController.updateService);
 
 // Toggle service status (active/inactive)
 router.patch('/:id/status', serviceController.toggleServiceStatus);

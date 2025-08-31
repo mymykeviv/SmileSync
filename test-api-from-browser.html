@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test Results</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testAPIs() {
+            const results = document.getElementById('results');
+            
+            try {
+                // Test patients API
+                const patientsResponse = await fetch('http://localhost:5001/api/patients?limit=5');
+                const patientsData = await patientsResponse.json();
+                results.innerHTML += `<p><strong>Patients API:</strong> Success - ${patientsData.length || 0} patients found</p>`;
+                
+                // Test services API
+                const servicesResponse = await fetch('http://localhost:5001/api/services?limit=5');
+                const servicesData = await servicesResponse.json();
+                results.innerHTML += `<p><strong>Services API:</strong> Success - ${servicesData.length || 0} services found</p>`;
+                
+                // Test appointments API
+                const appointmentsResponse = await fetch('http://localhost:5001/api/appointments?limit=5');
+                const appointmentsData = await appointmentsResponse.json();
+                results.innerHTML += `<p><strong>Appointments API:</strong> Success - ${appointmentsData.length || 0} appointments found</p>`;
+                
+            } catch (error) {
+                results.innerHTML += `<p><strong>Error:</strong> ${error.message}</p>`;
+            }
+        }
+        
+        // Run tests when page loads
+        window.onload = testAPIs;
+    </script>
+</body>
+</html>

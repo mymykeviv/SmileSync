@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
+const { validateProduct, validateId, handleValidationErrors } = require('../middleware/validation');
 
 // Get all products with search, filter, and pagination
 router.get('/', productController.getAllProducts);
@@ -24,10 +25,10 @@ router.get('/:id', productController.getProductById);
 router.get('/code/:productCode', productController.getProductByCode);
 
 // Create new product
-router.post('/', productController.createProduct);
+router.post('/', validateProduct, handleValidationErrors, productController.createProduct);
 
 // Update product
-router.put('/:id', productController.updateProduct);
+router.put('/:id', validateId, validateProduct, handleValidationErrors, productController.updateProduct);
 
 // Update product stock
 router.patch('/:id/stock', productController.updateProductStock);

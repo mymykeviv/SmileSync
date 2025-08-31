@@ -118,21 +118,57 @@ const ServiceForm = () => {
   };
 
   const validateForm = () => {
+    const newErrors = {};
+    
+    // Required field validations
     if (!formData.name.trim()) {
-      setError('Service name is required');
+      newErrors.name = 'Service name is required';
+    } else if (formData.name.trim().length > 200) {
+      newErrors.name = 'Service name must be less than 200 characters';
+    }
+    
+    if (!formData.category || !formData.category.trim()) {
+      newErrors.category = 'Category is required';
+    } else if (formData.category.trim().length > 100) {
+      newErrors.category = 'Category must be less than 100 characters';
+    }
+    
+    if (!formData.base_price) {
+      newErrors.base_price = 'Base price is required';
+    } else {
+      const price = parseFloat(formData.base_price);
+      if (isNaN(price) || price <= 0) {
+        newErrors.base_price = 'Base price must be a positive number';
+      } else if (price > 999999.99) {
+        newErrors.base_price = 'Base price cannot exceed $999,999.99';
+      }
+    }
+    
+    if (!formData.duration_minutes) {
+      newErrors.duration_minutes = 'Duration is required';
+    } else {
+      const duration = parseInt(formData.duration_minutes);
+      if (isNaN(duration) || duration < 15) {
+        newErrors.duration_minutes = 'Duration must be at least 15 minutes';
+      } else if (duration > 480) {
+        newErrors.duration_minutes = 'Duration cannot exceed 480 minutes (8 hours)';
+      }
+    }
+    
+    // Optional field validations
+    if (formData.description && formData.description.length > 1000) {
+      newErrors.description = 'Description must be less than 1000 characters';
+    }
+    
+    // Set all errors at once
+    if (Object.keys(newErrors).length > 0) {
+      setError('Please correct the errors in the form');
+      // You might want to implement field-specific error display here
       return false;
     }
-    if (!formData.category) {
-      setError('Category is required');
-      return false;
-    }
-    if (!formData.base_price || formData.base_price <= 0) {
-      setError('Valid price is required');
-      return false;
-    }
-    if (!formData.duration_minutes || formData.duration_minutes <= 0) {
-      setError('Valid duration is required');
-      return false;
+    
+    setError('');
+    return true;
     }
     return true;
   };
