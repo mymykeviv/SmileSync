@@ -115,15 +115,15 @@ const AppointmentForm = () => {
       if (response.success && response.data) {
         const appointment = response.data;
         setFormData({
-          patient_id: appointment.patient_id || '',
-          service_id: appointment.service_id || '',
-          appointment_date: appointment.appointment_date ? parseISO(appointment.appointment_date) : null,
-          appointment_time: appointment.appointment_time ? parseISO(`2000-01-01T${appointment.appointment_time}`) : null,
-          duration: appointment.duration || 30,
+          patient_id: appointment.patientId || '',
+          service_id: appointment.serviceId || '',
+          appointment_date: appointment.appointmentDate ? parseISO(appointment.appointmentDate) : null,
+          appointment_time: appointment.appointmentTime ? parseISO(`2000-01-01T${appointment.appointmentTime}`) : null,
+          duration: appointment.durationMinutes || 30,
           status: appointment.status || 'scheduled',
-          notes: appointment.notes || '',
-          dentist: appointment.dentist || '',
-          appointment_type: appointment.appointment_type || 'checkup',
+          notes: appointment.treatmentNotes || '',
+          dentist: appointment.dentistName || '',
+          appointment_type: appointment.appointmentType || 'checkup',
         });
       }
     } catch (error) {
