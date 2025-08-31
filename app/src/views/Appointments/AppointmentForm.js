@@ -236,7 +236,7 @@ const AppointmentForm = () => {
       const appointmentData = {
         patient_id: parseInt(formData.patient_id),
         service_id: parseInt(formData.service_id),
-        appointment_date: format(formData.appointment_date, 'yyyy-MM-dd'),
+        appointment_date: formData.appointment_date.toISOString(),
         appointment_time: format(formData.appointment_time, 'HH:mm'),
         duration: parseInt(formData.duration),
         status: formData.status,

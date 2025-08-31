@@ -370,7 +370,7 @@ function Billing() {
                       >
                         {invoice.invoiceNumber}
                       </Typography>
-                      {invoice.items.length > 0 && (
+                      {invoice.items && invoice.items.length > 0 && (
                         <Typography variant="caption" color="text.secondary">
                           {invoice.items.length} item(s)
                         </Typography>

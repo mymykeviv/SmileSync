@@ -5,14 +5,7 @@ const { validateAppointment, validateId, handleValidationErrors } = require('../
 const router = express.Router();
 
 // Get all appointments with optional filters
-router.get('/', async (req, res) => {
-  try {
-    const result = await AppointmentController.getAllAppointments(req.query);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/', AppointmentController.getAppointments);
 
 // Get appointment by ID
 router.get('/:id', async (req, res) => {
@@ -43,18 +36,7 @@ router.get('/number/:appointmentNumber', async (req, res) => {
 });
 
 // Create new appointment
-router.post('/', validateAppointment, handleValidationErrors, async (req, res) => {
-  try {
-    const result = await AppointmentController.createAppointment(req.body);
-    res.status(201).json(result);
-  } catch (error) {
-    if (error.message.includes('not found') || error.message.includes('conflict')) {
-      res.status(400).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: error.message });
-    }
-  }
-});
+router.post('/', validateAppointment, AppointmentController.createAppointment);
 
 // Update appointment
 router.put('/:id', validateId, validateAppointment, handleValidationErrors, async (req, res) => {
