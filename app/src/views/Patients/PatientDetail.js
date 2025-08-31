@@ -109,11 +109,35 @@ function PatientDetail() {
   };
 
   const calculateAge = (dateOfBirth) => {
-    return differenceInYears(new Date(), parseISO(dateOfBirth));
+    if (!dateOfBirth) return 'N/A';
+    try {
+      return differenceInYears(new Date(), parseISO(dateOfBirth));
+    } catch (error) {
+      return 'N/A';
+    }
   };
 
   const getInitials = (firstName, lastName) => {
+    if (!firstName || !lastName) return '??';
     return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+  };
+
+  const formatDate = (dateString, formatStr = 'MMMM dd, yyyy') => {
+    if (!dateString) return 'Not provided';
+    try {
+      return format(parseISO(dateString), formatStr);
+    } catch (error) {
+      return 'Invalid Date';
+    }
+  };
+
+  const formatDateShort = (dateString) => {
+    if (!dateString) return 'Not provided';
+    try {
+      return format(parseISO(dateString), 'MMM dd, yyyy');
+    } catch (error) {
+      return 'Invalid Date';
+    }
   };
 
   const getStatusColor = (status) => {
@@ -254,16 +278,16 @@ function PatientDetail() {
               </Typography>
               <Box sx={{ ml: 4 }}>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Date of Birth:</strong> {format(parseISO(patient.dateOfBirth), 'MMMM dd, yyyy')}
+                  <strong>Date of Birth:</strong> {formatDate(patient.dateOfBirth)}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
                   <strong>Gender:</strong> {patient.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : 'Not specified'}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Patient Since:</strong> {format(parseISO(patient.createdAt), 'MMMM dd, yyyy')}
+                  <strong>Patient Since:</strong> {formatDate(patient.createdAt)}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Last Visit:</strong> {patient.lastVisit ? format(parseISO(patient.lastVisit), 'MMMM dd, yyyy') : 'Never'}
+                  <strong>Last Visit:</strong> {patient.lastVisit ? formatDate(patient.lastVisit) : 'Never'}
                 </Typography>
               </Box>
             </Grid>
@@ -459,7 +483,7 @@ function PatientDetail() {
                       <TableRow key={invoice.id}>
                         <TableCell>{invoice.invoiceNumber}</TableCell>
                         <TableCell>
-                          {format(parseISO(invoice.date), 'MMM dd, yyyy')}
+                          {formatDateShort(invoice.date)}
                         </TableCell>
                         <TableCell>{invoice.description}</TableCell>
                         <TableCell>${invoice.amount.toFixed(2)}</TableCell>

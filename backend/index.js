@@ -17,8 +17,8 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['http://localhost:3000', 'http://localhost:3001'] // Add production frontend URL here
-    : ['http://localhost:3000', 'http://localhost:3001'], // Development frontend URL
+    ? ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:8080'] // Add production frontend URL here
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:8080'], // Development frontend URL
   credentials: true
 }));
 

@@ -537,22 +537,22 @@ class Payment {
     toJSON() {
         return {
             id: this.id,
-            payment_number: this.payment_number,
-            invoice_id: this.invoice_id,
-            patient_id: this.patient_id,
-            payment_date: this.payment_date,
-            formatted_date: this.getFormattedDate(),
+            paymentNumber: this.payment_number,
+            invoiceId: this.invoice_id,
+            patientId: this.patient_id,
+            paymentDate: this.payment_date,
+            formattedDate: this.getFormattedDate(),
             amount: this.amount,
-            formatted_amount: this.getFormattedAmount(),
-            payment_method: this.payment_method,
-            payment_reference: this.payment_reference,
-            transaction_id: this.transaction_id,
+            formattedAmount: this.getFormattedAmount(),
+            paymentMethod: this.payment_method,
+            paymentReference: this.payment_reference,
+            transactionId: this.transaction_id,
             status: this.status,
             notes: this.notes,
-            is_refund: this.isRefund(),
+            isRefund: this.isRefund(),
             type: this.getType(),
-            created_at: this.created_at,
-            updated_at: this.updated_at
+            createdAt: this.created_at,
+            updatedAt: this.updated_at
         };
     }
 }

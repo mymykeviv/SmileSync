@@ -1,4 +1,5 @@
-const { Invoice, Patient, Service, Product } = require('../models');
+const { Invoice, Patient, Service, Product, Payment } = require('../models');
+const { convertInvoiceToBackend, convertPaymentToBackend } = require('../utils/fieldMapping');
 
 class InvoiceController {
   // Get all invoices with search, filter, and pagination
@@ -117,8 +118,11 @@ class InvoiceController {
         });
       }
 
+      // Convert camelCase to snake_case for backend
+      const backendInvoiceData = convertInvoiceToBackend(invoiceData);
+
       // Verify patient exists
-      const patient = await Patient.findById(invoiceData.patientId);
+      const patient = await Patient.findById(backendInvoiceData.patient_id);
       if (!patient) {
         return res.status(404).json({
           success: false,
@@ -126,7 +130,7 @@ class InvoiceController {
         });
       }
 
-      const invoice = new Invoice(invoiceData);
+      const invoice = new Invoice(backendInvoiceData);
       const savedInvoice = await invoice.save();
 
       res.status(201).json({
@@ -166,7 +170,10 @@ class InvoiceController {
         });
       }
 
-      const updatedInvoice = await invoice.update(updateData);
+      // Convert camelCase to snake_case for backend
+      const backendUpdateData = convertInvoiceToBackend(updateData);
+
+      const updatedInvoice = await invoice.update(backendUpdateData);
 
       res.json({
         success: true,
@@ -292,10 +299,28 @@ class InvoiceController {
         });
       }
 
-      // TODO: Implement payment recording logic
-      // For now, just return success
+      // Convert camelCase to snake_case for backend
+      const backendPaymentData = convertPaymentToBackend(paymentData);
+      
+      // Set invoice and patient IDs
+      backendPaymentData.invoice_id = id;
+      backendPaymentData.patient_id = invoice.patient_id;
+      
+      // Create payment record
+      const payment = new Payment(backendPaymentData);
+      const savedPayment = await payment.save();
+      
+      // Apply payment to invoice
+      await invoice.applyPayment(
+        backendPaymentData.amount,
+        backendPaymentData.payment_method,
+        backendPaymentData.payment_reference,
+        backendPaymentData.notes
+      );
+
       res.json({
         success: true,
+        data: savedPayment,
         message: 'Payment recorded successfully'
       });
     } catch (error) {

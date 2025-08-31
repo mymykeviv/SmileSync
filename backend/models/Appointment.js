@@ -502,24 +502,24 @@ class Appointment {
     toJSON() {
         return {
             id: this.id,
-            appointment_number: this.appointment_number,
-            patient_id: this.patient_id,
-            dentist_id: this.dentist_id,
-            appointment_date: this.appointment_date,
-            appointment_time: this.appointment_time,
-            duration_minutes: this.duration_minutes,
+            appointmentNumber: this.appointment_number,
+            patientId: this.patient_id,
+            dentistId: this.dentist_id,
+            appointmentDate: this.appointment_date,
+            appointmentTime: this.appointment_time,
+            durationMinutes: this.duration_minutes,
             status: this.status,
-            appointment_type: this.appointment_type,
-            chief_complaint: this.chief_complaint,
-            treatment_notes: this.treatment_notes,
-            next_appointment_recommended: this.next_appointment_recommended,
-            next_appointment_notes: this.next_appointment_notes,
-            formatted_datetime: this.getFormattedDateTime(),
-            end_time: this.getEndTime(),
-            is_past: this.isPast(),
-            is_today: this.isToday(),
-            created_at: this.created_at,
-            updated_at: this.updated_at
+            appointmentType: this.appointment_type,
+            chiefComplaint: this.chief_complaint,
+            treatmentNotes: this.treatment_notes,
+            nextAppointmentRecommended: this.next_appointment_recommended,
+            nextAppointmentNotes: this.next_appointment_notes,
+            formattedDatetime: this.getFormattedDateTime(),
+            endTime: this.getEndTime(),
+            isPast: this.isPast(),
+            isToday: this.isToday(),
+            createdAt: this.created_at,
+            updatedAt: this.updated_at
         };
     }
 }

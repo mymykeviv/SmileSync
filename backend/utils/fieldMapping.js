@@ -1,0 +1,361 @@
+/**
+ * Field Mapping Utilities
+ * Handles conversion between frontend camelCase and backend snake_case field naming
+ */
+
+/**
+ * Convert camelCase to snake_case
+ * @param {string} str - camelCase string
+ * @returns {string} snake_case string
+ */
+function camelToSnake(str) {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
+/**
+ * Convert snake_case to camelCase
+ * @param {string} str - snake_case string
+ * @returns {string} camelCase string
+ */
+function snakeToCamel(str) {
+  return str.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
+}
+
+/**
+ * Convert object keys from camelCase to snake_case
+ * @param {Object} obj - Object with camelCase keys
+ * @returns {Object} Object with snake_case keys
+ */
+function convertKeysToSnakeCase(obj) {
+  if (obj === null || typeof obj !== 'object' || obj instanceof Date) {
+    return obj;
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(convertKeysToSnakeCase);
+  }
+  
+  const converted = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const snakeKey = camelToSnake(key);
+    converted[snakeKey] = convertKeysToSnakeCase(value);
+  }
+  
+  return converted;
+}
+
+/**
+ * Convert object keys from snake_case to camelCase
+ * @param {Object} obj - Object with snake_case keys
+ * @returns {Object} Object with camelCase keys
+ */
+function convertKeysToCamelCase(obj) {
+  if (obj === null || typeof obj !== 'object' || obj instanceof Date) {
+    return obj;
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(convertKeysToCamelCase);
+  }
+  
+  const converted = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const camelKey = snakeToCamel(key);
+    converted[camelKey] = convertKeysToCamelCase(value);
+  }
+  
+  return converted;
+}
+
+/**
+ * Patient-specific field mappings
+ */
+const PATIENT_FIELD_MAPPINGS = {
+  // Frontend (camelCase) -> Backend (snake_case)
+  frontendToBackend: {
+    firstName: 'first_name',
+    lastName: 'last_name',
+    dateOfBirth: 'date_of_birth',
+    patientNumber: 'patient_number',
+    zipCode: 'zip_code',
+    emergencyContactName: 'emergency_contact_name',
+    emergencyContactPhone: 'emergency_contact_phone',
+    emergencyContactRelationship: 'emergency_contact_relationship',
+    insuranceProvider: 'insurance_provider',
+    insurancePolicyNumber: 'insurance_policy_number',
+    insuranceGroupNumber: 'insurance_group_number',
+    medicalHistory: 'medical_history',
+    isActive: 'is_active',
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    createdBy: 'created_by'
+  },
+  
+  // Backend (snake_case) -> Frontend (camelCase)
+  backendToFrontend: {
+    first_name: 'firstName',
+    last_name: 'lastName',
+    date_of_birth: 'dateOfBirth',
+    patient_number: 'patientNumber',
+    zip_code: 'zipCode',
+    emergency_contact_name: 'emergencyContactName',
+    emergency_contact_phone: 'emergencyContactPhone',
+    emergency_contact_relationship: 'emergencyContactRelationship',
+    insurance_provider: 'insuranceProvider',
+    insurance_policy_number: 'insurancePolicyNumber',
+    insurance_group_number: 'insuranceGroupNumber',
+    medical_history: 'medicalHistory',
+    is_active: 'isActive',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+    created_by: 'createdBy'
+  }
+};
+
+/**
+ * Convert patient data from frontend format to backend format
+ * @param {Object} patientData - Patient data with camelCase keys
+ * @returns {Object} Patient data with snake_case keys
+ */
+function convertPatientToBackend(patientData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(patientData)) {
+    const backendKey = PATIENT_FIELD_MAPPINGS.frontendToBackend[key] || camelToSnake(key);
+    converted[backendKey] = value;
+  }
+  
+  return converted;
+}
+
+/**
+ * Convert patient data from backend format to frontend format
+ * @param {Object} patientData - Patient data with snake_case keys
+ * @returns {Object} Patient data with camelCase keys
+ */
+function convertPatientToFrontend(patientData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(patientData)) {
+    const frontendKey = PATIENT_FIELD_MAPPINGS.backendToFrontend[key] || snakeToCamel(key);
+    converted[frontendKey] = value;
+  }
+  
+  return converted;
+}
+
+/**
+ * Appointment-specific field mappings
+ */
+const APPOINTMENT_FIELD_MAPPINGS = {
+  frontendToBackend: {
+    patientId: 'patient_id',
+    dentistId: 'dentist_id',
+    appointmentDate: 'appointment_date',
+    appointmentTime: 'appointment_time',
+    appointmentNumber: 'appointment_number',
+    durationMinutes: 'duration_minutes',
+    appointmentType: 'appointment_type',
+    chiefComplaint: 'chief_complaint',
+    treatmentNotes: 'treatment_notes',
+    nextAppointmentRecommended: 'next_appointment_recommended',
+    nextAppointmentNotes: 'next_appointment_notes',
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    createdBy: 'created_by'
+  },
+  
+  backendToFrontend: {
+    patient_id: 'patientId',
+    dentist_id: 'dentistId',
+    appointment_date: 'appointmentDate',
+    appointment_time: 'appointmentTime',
+    appointment_number: 'appointmentNumber',
+    duration_minutes: 'durationMinutes',
+    appointment_type: 'appointmentType',
+    chief_complaint: 'chiefComplaint',
+    treatment_notes: 'treatmentNotes',
+    next_appointment_recommended: 'nextAppointmentRecommended',
+    next_appointment_notes: 'nextAppointmentNotes',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+    created_by: 'createdBy'
+  }
+};
+
+/**
+ * Invoice-specific field mappings
+ */
+const INVOICE_FIELD_MAPPINGS = {
+  frontendToBackend: {
+    invoiceNumber: 'invoice_number',
+    patientId: 'patient_id',
+    appointmentId: 'appointment_id',
+    treatmentPlanId: 'treatment_plan_id',
+    invoiceDate: 'invoice_date',
+    dueDate: 'due_date',
+    taxRate: 'tax_rate',
+    taxAmount: 'tax_amount',
+    discountAmount: 'discount_amount',
+    totalAmount: 'total_amount',
+    amountPaid: 'amount_paid',
+    balanceDue: 'balance_due',
+    paymentTerms: 'payment_terms',
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    createdBy: 'created_by'
+  },
+  
+  backendToFrontend: {
+    invoice_number: 'invoiceNumber',
+    patient_id: 'patientId',
+    appointment_id: 'appointmentId',
+    treatment_plan_id: 'treatmentPlanId',
+    invoice_date: 'invoiceDate',
+    due_date: 'dueDate',
+    tax_rate: 'taxRate',
+    tax_amount: 'taxAmount',
+    discount_amount: 'discountAmount',
+    total_amount: 'totalAmount',
+    amount_paid: 'amountPaid',
+    balance_due: 'balanceDue',
+    payment_terms: 'paymentTerms',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+    created_by: 'createdBy'
+  }
+};
+
+/**
+ * Payment-specific field mappings
+ */
+const PAYMENT_FIELD_MAPPINGS = {
+  frontendToBackend: {
+    paymentNumber: 'payment_number',
+    invoiceId: 'invoice_id',
+    patientId: 'patient_id',
+    paymentDate: 'payment_date',
+    paymentMethod: 'payment_method',
+    paymentReference: 'payment_reference',
+    transactionId: 'transaction_id',
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    createdBy: 'created_by'
+  },
+  
+  backendToFrontend: {
+    payment_number: 'paymentNumber',
+    invoice_id: 'invoiceId',
+    patient_id: 'patientId',
+    payment_date: 'paymentDate',
+    payment_method: 'paymentMethod',
+    payment_reference: 'paymentReference',
+    transaction_id: 'transactionId',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+    created_by: 'createdBy'
+  }
+};
+
+/**
+ * Convert appointment data from frontend format to backend format
+ */
+function convertAppointmentToBackend(appointmentData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(appointmentData)) {
+    const backendKey = APPOINTMENT_FIELD_MAPPINGS.frontendToBackend[key] || camelToSnake(key);
+    converted[backendKey] = value;
+  }
+  
+  return converted;
+}
+
+/**
+ * Convert appointment data from backend format to frontend format
+ */
+function convertAppointmentToFrontend(appointmentData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(appointmentData)) {
+    const frontendKey = APPOINTMENT_FIELD_MAPPINGS.backendToFrontend[key] || snakeToCamel(key);
+    converted[frontendKey] = value;
+  }
+  
+  return converted;
+}
+
+/**
+ * Convert invoice data from frontend format to backend format
+ */
+function convertInvoiceToBackend(invoiceData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(invoiceData)) {
+    const backendKey = INVOICE_FIELD_MAPPINGS.frontendToBackend[key] || camelToSnake(key);
+    converted[backendKey] = value;
+  }
+  
+  return converted;
+}
+
+/**
+ * Convert invoice data from backend format to frontend format
+ */
+function convertInvoiceToFrontend(invoiceData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(invoiceData)) {
+    const frontendKey = INVOICE_FIELD_MAPPINGS.backendToFrontend[key] || snakeToCamel(key);
+    converted[frontendKey] = value;
+  }
+  
+  return converted;
+}
+
+/**
+ * Convert payment data from frontend format to backend format
+ */
+function convertPaymentToBackend(paymentData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(paymentData)) {
+    const backendKey = PAYMENT_FIELD_MAPPINGS.frontendToBackend[key] || camelToSnake(key);
+    converted[backendKey] = value;
+  }
+  
+  return converted;
+}
+
+/**
+ * Convert payment data from backend format to frontend format
+ */
+function convertPaymentToFrontend(paymentData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(paymentData)) {
+    const frontendKey = PAYMENT_FIELD_MAPPINGS.backendToFrontend[key] || snakeToCamel(key);
+    converted[frontendKey] = value;
+  }
+  
+  return converted;
+}
+
+module.exports = {
+  camelToSnake,
+  snakeToCamel,
+  convertKeysToSnakeCase,
+  convertKeysToCamelCase,
+  convertPatientToBackend,
+  convertPatientToFrontend,
+  convertAppointmentToBackend,
+  convertAppointmentToFrontend,
+  convertInvoiceToBackend,
+  convertInvoiceToFrontend,
+  convertPaymentToBackend,
+  convertPaymentToFrontend,
+  PATIENT_FIELD_MAPPINGS,
+  APPOINTMENT_FIELD_MAPPINGS,
+  INVOICE_FIELD_MAPPINGS,
+  PAYMENT_FIELD_MAPPINGS
+};

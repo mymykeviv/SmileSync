@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Typography,
   TextField,
   Grid,
@@ -321,18 +319,21 @@ const AppointmentForm = () => {
                     placeholder="Search and select a patient"
                   />
                 )}
-                renderOption={(props, option) => (
-                  <Box component="li" {...props}>
-                    <Box>
-                      <Typography variant="body1">
-                        {option.first_name} {option.last_name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {option.email} • {option.phone}
-                      </Typography>
+                renderOption={(props, option) => {
+                  const { key, ...otherProps } = props;
+                  return (
+                    <Box component="li" key={key} {...otherProps}>
+                      <Box>
+                        <Typography variant="body1">
+                          {option.first_name} {option.last_name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {option.email} • {option.phone}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                )}
+                  );
+                }}
               />
             </Grid>
 
@@ -358,18 +359,21 @@ const AppointmentForm = () => {
                     placeholder="Search and select a service"
                   />
                 )}
-                renderOption={(props, option) => (
-                  <Box component="li" {...props}>
-                    <Box>
-                      <Typography variant="body1">
-                        {option.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {option.category} • ${option.base_price} • {option.duration}min
-                      </Typography>
+                renderOption={(props, option) => {
+                  const { key, ...otherProps } = props;
+                  return (
+                    <Box component="li" key={key} {...otherProps}>
+                      <Box>
+                        <Typography variant="body1">
+                          {option.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {option.category} • ${option.base_price} • {option.duration}min
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                )}
+                  );
+                }}
               />
             </Grid>
 

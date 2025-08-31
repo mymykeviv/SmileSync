@@ -113,16 +113,35 @@ function Patients() {
   };
 
   const calculateAge = (dateOfBirth) => {
-    return differenceInYears(new Date(), parseISO(dateOfBirth));
+    if (!dateOfBirth) return 'N/A';
+    try {
+      return differenceInYears(new Date(), parseISO(dateOfBirth));
+    } catch (error) {
+      return 'N/A';
+    }
   };
 
   const getInitials = (firstName, lastName) => {
+    if (!firstName || !lastName) return '??';
     return `${firstName.charAt(0)}${lastName.charAt(0)}`;
   };
 
   const formatLastVisit = (lastVisit) => {
     if (!lastVisit) return 'Never';
-    return format(parseISO(lastVisit), 'MMM dd, yyyy');
+    try {
+      return format(parseISO(lastVisit), 'MMM dd, yyyy');
+    } catch (error) {
+      return 'Invalid Date';
+    }
+  };
+
+  const formatDateOfBirth = (dateOfBirth) => {
+    if (!dateOfBirth) return 'Not provided';
+    try {
+      return format(parseISO(dateOfBirth), 'MMM dd, yyyy');
+    } catch (error) {
+      return 'Invalid Date';
+    }
   };
 
   return (
@@ -229,7 +248,7 @@ function Patients() {
                       {calculateAge(patient.dateOfBirth)} years
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      DOB: {format(parseISO(patient.dateOfBirth), 'MMM dd, yyyy')}
+                      DOB: {formatDateOfBirth(patient.dateOfBirth)}
                     </Typography>
                   </TableCell>
                   <TableCell>

@@ -309,15 +309,16 @@ class Patient {
 
     /**
      * Convert to JSON (for API responses)
+     * Returns camelCase fields for frontend compatibility
      */
     toJSON() {
         return {
             id: this.id,
-            patient_number: this.patient_number,
-            first_name: this.first_name,
-            last_name: this.last_name,
-            full_name: this.getFullName(),
-            date_of_birth: this.date_of_birth,
+            patientNumber: this.patient_number,
+            firstName: this.first_name,
+            lastName: this.last_name,
+            fullName: this.getFullName(),
+            dateOfBirth: this.date_of_birth,
             age: this.getAge(),
             gender: this.gender,
             phone: this.phone,
@@ -325,21 +326,21 @@ class Patient {
             address: this.address,
             city: this.city,
             state: this.state,
-            zip_code: this.zip_code,
+            zipCode: this.zip_code,
             country: this.country,
-            emergency_contact_name: this.emergency_contact_name,
-            emergency_contact_phone: this.emergency_contact_phone,
-            emergency_contact_relationship: this.emergency_contact_relationship,
-            insurance_provider: this.insurance_provider,
-            insurance_policy_number: this.insurance_policy_number,
-            insurance_group_number: this.insurance_group_number,
-            medical_history: this.medical_history,
+            emergencyContactName: this.emergency_contact_name,
+            emergencyContactPhone: this.emergency_contact_phone,
+            emergencyContactRelationship: this.emergency_contact_relationship,
+            insuranceProvider: this.insurance_provider,
+            insurancePolicyNumber: this.insurance_policy_number,
+            insuranceGroupNumber: this.insurance_group_number,
+            medicalHistory: this.medical_history,
             allergies: this.allergies,
             medications: this.medications,
             notes: this.notes,
-            is_active: this.is_active,
-            created_at: this.created_at,
-            updated_at: this.updated_at
+            isActive: this.is_active,
+            createdAt: this.created_at,
+            updatedAt: this.updated_at
         };
     }
 }

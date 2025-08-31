@@ -1,4 +1,5 @@
 const { Patient } = require('../models');
+const { convertPatientToBackend } = require('../utils/fieldMapping');
 
 class PatientController {
   // Get all patients with optional filters
@@ -87,8 +88,11 @@ class PatientController {
         }
       }
       
+      // Convert frontend camelCase fields to backend snake_case
+      const backendPatientData = convertPatientToBackend(patientData);
+      
       // Create new patient instance
-      const patient = new Patient(patientData);
+      const patient = new Patient(backendPatientData);
       const savedPatient = await patient.save();
       
       return {
@@ -109,18 +113,21 @@ class PatientController {
         throw new Error('Patient not found');
       }
       
+      // Convert frontend camelCase fields to backend snake_case
+      const backendUpdateData = convertPatientToBackend(updateData);
+      
       // Check if email is being updated and already exists
-      if (updateData.email && updateData.email !== patient.email) {
-        const existingPatient = await Patient.search(updateData.email);
+      if (backendUpdateData.email && backendUpdateData.email !== patient.email) {
+        const existingPatient = await Patient.search(backendUpdateData.email);
         if (existingPatient.length > 0) {
-          const emailExists = existingPatient.some(p => p.email === updateData.email && p.id !== id);
+          const emailExists = existingPatient.some(p => p.email === backendUpdateData.email && p.id !== id);
           if (emailExists) {
             throw new Error('A patient with this email already exists');
           }
         }
       }
       
-      const updatedPatient = await patient.update(updateData);
+      const updatedPatient = await patient.update(backendUpdateData);
       
       return {
         success: true,

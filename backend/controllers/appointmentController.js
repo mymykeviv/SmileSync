@@ -1,6 +1,7 @@
 const { Appointment, Patient, User } = require('../models');
 const { validationResult } = require('express-validator');
 const moment = require('moment');
+const { convertAppointmentToBackend } = require('../utils/fieldMapping');
 
 class AppointmentController {
     /**
@@ -138,24 +139,27 @@ class AppointmentController {
                 });
             }
 
+            // Convert frontend camelCase fields to backend snake_case
+            const backendAppointmentData = convertAppointmentToBackend(req.body);
+            
             const {
                 patient_id,
                 dentist_id,
                 appointment_date,
                 appointment_time,
-                duration,
+                duration_minutes,
                 appointment_type,
-                reason,
-                notes,
+                chief_complaint,
+                treatment_notes,
                 priority
-            } = req.body;
+            } = backendAppointmentData;
 
             // Check for conflicts
             const hasConflict = await Appointment.checkConflict(
                 dentist_id,
                 appointment_date,
                 appointment_time,
-                duration
+                duration_minutes
             );
 
             if (hasConflict) {
@@ -188,10 +192,10 @@ class AppointmentController {
                 dentist_id,
                 appointment_date,
                 appointment_time,
-                duration: duration || 30,
+                duration_minutes: duration_minutes || 30,
                 appointment_type: appointment_type || 'consultation',
-                reason,
-                notes,
+                chief_complaint,
+                treatment_notes,
                 priority: priority || 'medium',
                 status: 'scheduled',
                 created_by: req.user?.id
@@ -239,30 +243,33 @@ class AppointmentController {
                 });
             }
 
+            // Convert frontend camelCase fields to backend snake_case
+            const backendUpdateData = convertAppointmentToBackend(req.body);
+            
             const {
                 patient_id,
                 dentist_id,
                 appointment_date,
                 appointment_time,
-                duration,
+                duration_minutes,
                 appointment_type,
-                reason,
-                notes,
+                chief_complaint,
+                treatment_notes,
                 priority,
                 status
-            } = req.body;
+            } = backendUpdateData;
 
             // Check for conflicts if date/time is being changed
             if ((appointment_date && appointment_date !== appointment.appointment_date) ||
                 (appointment_time && appointment_time !== appointment.appointment_time) ||
-                (duration && duration !== appointment.duration) ||
+                (duration_minutes && duration_minutes !== appointment.duration_minutes) ||
                 (dentist_id && dentist_id !== appointment.dentist_id)) {
                 
                 const hasConflict = await Appointment.checkConflict(
                     dentist_id || appointment.dentist_id,
                     appointment_date || appointment.appointment_date,
                     appointment_time || appointment.appointment_time,
-                    duration || appointment.duration,
+                    duration_minutes || appointment.duration_minutes,
                     id // Exclude current appointment from conflict check
                 );
 
@@ -279,10 +286,10 @@ class AppointmentController {
             if (dentist_id) appointment.dentist_id = dentist_id;
             if (appointment_date) appointment.appointment_date = appointment_date;
             if (appointment_time) appointment.appointment_time = appointment_time;
-            if (duration) appointment.duration = duration;
+            if (duration_minutes) appointment.duration_minutes = duration_minutes;
             if (appointment_type) appointment.appointment_type = appointment_type;
-            if (reason) appointment.reason = reason;
-            if (notes !== undefined) appointment.notes = notes;
+            if (chief_complaint) appointment.chief_complaint = chief_complaint;
+            if (treatment_notes !== undefined) appointment.treatment_notes = treatment_notes;
             if (priority) appointment.priority = priority;
             if (status) appointment.status = status;
 

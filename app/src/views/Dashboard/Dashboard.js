@@ -276,11 +276,12 @@ function Dashboard() {
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
+                      disableTypography
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="subtitle1">
+                          <span style={{ fontSize: '1rem', fontWeight: 500 }}>
                             {appointment.patientName}
-                          </Typography>
+                          </span>
                           <Chip
                             label={getStatusLabel(appointment.status)}
                             color={getStatusColor(appointment.status)}
@@ -289,13 +290,13 @@ function Dashboard() {
                         </Box>
                       }
                       secondary={
-                        <Box>
-                          <Typography variant="body2" color="text.secondary">
+                        <Box sx={{ mt: 0.5 }}>
+                          <div style={{ fontSize: '0.875rem', color: 'rgba(0, 0, 0, 0.6)' }}>
                             {appointment.time} - {appointment.service}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'rgba(0, 0, 0, 0.6)' }}>
                             {appointment.appointmentNumber}
-                          </Typography>
+                          </div>
                         </Box>
                       }
                     />
