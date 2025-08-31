@@ -1,0 +1,95 @@
+{
+  "name": "smilesync",
+  "version": "1.0.0",
+  "description": "SmileSync Solutions - Comprehensive dental clinic management application",
+  "main": "electron/main.js",
+  "homepage": "./",
+  "private": true,
+  "scripts": {
+    "start": "./scripts/start-dev.sh",
+    "start:dev": "./scripts/start-dev.sh",
+    "start:prod": "./scripts/start-prod.sh",
+    "stop:dev": "./scripts/stop-dev.sh",
+    "stop:prod": "./scripts/stop-prod.sh",
+    "frontend:start": "cd app && npm start",
+    "frontend:build": "cd app && npm run build",
+    "backend:start": "cd backend && npm start",
+    "backend:dev": "cd backend && npx nodemon index.js",
+    "electron:dev": "concurrently \"npm run backend:dev\" \"npm run frontend:start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:pack": "electron-builder",
+    "electron:dist": "npm run frontend:build && electron-builder",
+    "electron:prod": "electron .",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd app && npm test",
+    "test:backend": "cd backend && npm test",
+    "test:e2e": "cd tests/e2e && npm test",
+    "install:all": "npm install && cd app && npm install && cd ../backend && npm install && cd ../tests/e2e && npm install",
+    "build": "npm run frontend:build",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "dental",
+    "clinic",
+    "management",
+    "appointment",
+    "patient",
+    "billing",
+    "electron",
+    "desktop"
+  ],
+  "author": "SmileSync Solutions",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0",
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1"
+  },
+  "dependencies": {
+    "sqlite3": "^5.1.6",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "express-validator": "^7.0.1",
+    "multer": "^1.4.5-lts.1",
+    "pdfkit": "^0.14.0",
+    "moment": "^2.29.4",
+    "uuid": "^9.0.1",
+    "dotenv": "^16.3.1"
+  },
+  "build": {
+    "appId": "com.smilesync.app",
+    "productName": "SmileSync",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "app/build/**/*",
+      "backend/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.medical",
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
