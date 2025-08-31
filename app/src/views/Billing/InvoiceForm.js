@@ -37,7 +37,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format, addDays } from 'date-fns';
-import ApiService from '../../services/ApiService';
+import ApiService from '../../services/api';
 
 function InvoiceForm() {
   const navigate = useNavigate();

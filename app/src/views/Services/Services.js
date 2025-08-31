@@ -41,17 +41,17 @@ import {
   FilterList as FilterIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import ApiService from '../../services/ApiService';
+import ApiService from '../../services/api';
 
-// API service (placeholder - will be implemented later)
+// API service using correct ApiService methods
 const api = {
-  getServices: (params = {}) => ApiService.get('/services', { params }),
-  getServiceCategories: () => ApiService.get('/services/categories'),
-  deleteService: (id) => ApiService.delete(`/services/${id}`),
-  toggleServiceStatus: (id) => ApiService.patch(`/services/${id}/status`),
-  createService: (data) => ApiService.post('/services', data),
-  updateService: (id, data) => ApiService.put(`/services/${id}`, data),
-  getServiceById: (id) => ApiService.get(`/services/${id}`)
+  getServices: (params = {}) => ApiService.getServices(params),
+  getServiceCategories: () => ApiService.request('/services/categories'),
+  deleteService: (id) => ApiService.deleteService(id),
+  toggleServiceStatus: (id) => ApiService.request(`/services/${id}/status`, { method: 'PATCH' }),
+  createService: (data) => ApiService.createService(data),
+  updateService: (id, data) => ApiService.updateService(id, data),
+  getServiceById: (id) => ApiService.getService(id)
 };
 
 function Services() {

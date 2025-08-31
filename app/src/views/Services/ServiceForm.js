@@ -25,7 +25,7 @@ import {
   MedicalServices as ServicesIcon
 } from '@mui/icons-material';
 import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
-import ApiService from '../../services/ApiService';
+import ApiService from '../../services/api';
 
 const ServiceForm = () => {
   const navigate = useNavigate();
@@ -68,7 +68,7 @@ const ServiceForm = () => {
 
   const loadCategories = async () => {
     try {
-      const response = await ApiService.get('/services/categories');
+      const response = await ApiService.request('/services/categories');
       if (response.data.success) {
         // Combine existing categories with default ones
         const existingCategories = response.data.data || [];
@@ -86,7 +86,7 @@ const ServiceForm = () => {
   const loadService = async () => {
     try {
       setLoading(true);
-      const response = await ApiService.get(`/services/${id}`);
+      const response = await ApiService.getService(id);
       if (response.data.success) {
         const service = response.data.data;
         setFormData({
@@ -169,8 +169,6 @@ const ServiceForm = () => {
     
     setError('');
     return true;
-    }
-    return true;
   };
 
   const handleSubmit = async (e) => {
@@ -193,9 +191,9 @@ const ServiceForm = () => {
 
       let response;
       if (isEdit) {
-        response = await ApiService.put(`/services/${id}`, serviceData);
+        response = await ApiService.updateService(id, serviceData);
       } else {
-        response = await ApiService.post('/services', serviceData);
+        response = await ApiService.createService(serviceData);
       }
 
       if (response.data.success) {

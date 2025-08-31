@@ -25,52 +25,54 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import ApiService from '../../services/api';
+import { analyticsService } from '../../services/analyticsService';
 
-// API service (placeholder - will be implemented later)
+// API service using real backend endpoints
 const api = {
   getTodaysAppointments: async () => {
-    // Mock data for now
-    return {
-      success: true,
-      data: [
-        {
-          id: 1,
-          appointmentNumber: 'APT-001',
-          patientName: 'John Doe',
-          time: '09:00',
-          service: 'Routine Checkup',
-          status: 'scheduled'
-        },
-        {
-          id: 2,
-          appointmentNumber: 'APT-002',
-          patientName: 'Jane Smith',
-          time: '10:30',
-          service: 'Teeth Cleaning',
-          status: 'in_progress'
-        },
-        {
-          id: 3,
-          appointmentNumber: 'APT-003',
-          patientName: 'Bob Johnson',
-          time: '14:00',
-          service: 'Filling',
-          status: 'scheduled'
-        }
-      ]
-    };
+    try {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const response = await ApiService.getAppointments({
+        date: today,
+        limit: 10
+      });
+      return {
+        success: true,
+        data: response.data || []
+      };
+    } catch (error) {
+      console.error('Failed to load today\'s appointments:', error);
+      return { success: false, data: [] };
+    }
   },
   getDashboardStats: async () => {
-    // Mock data for now
-    return {
-      success: true,
-      data: {
-        todaysAppointments: 8,
-        totalPatients: 1247,
-        monthlyRevenue: 45600,
-        completionRate: 94
-      }
-    };
+    try {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const startOfMonth = format(new Date(new Date().getFullYear(), new Date().getMonth(), 1), 'yyyy-MM-dd');
+      
+      const response = await analyticsService.getDashboardOverview(startOfMonth, today);
+      return {
+        success: true,
+        data: {
+          todaysAppointments: response.overview?.totalAppointments || 0,
+          totalPatients: response.overview?.totalPatients || 0,
+          monthlyRevenue: response.overview?.totalRevenue || 0,
+          completionRate: response.overview?.appointmentCompletionRate || 0
+        }
+      };
+    } catch (error) {
+      console.error('Failed to load dashboard stats:', error);
+      return {
+        success: false,
+        data: {
+          todaysAppointments: 0,
+          totalPatients: 0,
+          monthlyRevenue: 0,
+          completionRate: 0
+        }
+      };
+    }
   }
 };
 

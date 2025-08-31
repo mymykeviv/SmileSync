@@ -50,7 +50,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { format, parseISO, differenceInDays } from 'date-fns';
-import ApiService from '../../services/ApiService';
+import ApiService from '../../services/api';
 
 function Billing() {
   const navigate = useNavigate();

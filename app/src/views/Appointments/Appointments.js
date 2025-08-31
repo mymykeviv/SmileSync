@@ -163,7 +163,7 @@ function Appointments() {
 
   const handleCancel = () => {
     setCancelDialog(true);
-    handleMenuClose();
+    // Don't close menu yet - keep selectedAppointment for cancel confirmation
   };
 
   const handleComplete = async () => {
@@ -176,11 +176,18 @@ function Appointments() {
     handleMenuClose();
   };
 
+  const handleCancelDialogClose = () => {
+    setCancelDialog(false);
+    setCancelReason('');
+    handleMenuClose();
+  };
+
   const handleCancelConfirm = async () => {
     try {
       await api.cancelAppointment(selectedAppointment.id, cancelReason);
       setCancelDialog(false);
       setCancelReason('');
+      handleMenuClose(); // Close menu after successful cancellation
       loadAppointments();
     } catch (error) {
       console.error('Failed to cancel appointment:', error);
@@ -419,7 +426,7 @@ function Appointments() {
       </Menu>
 
       {/* Cancel Dialog */}
-      <Dialog open={cancelDialog} onClose={() => setCancelDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog open={cancelDialog} onClose={handleCancelDialogClose} maxWidth="sm" fullWidth>
         <DialogTitle>Cancel Appointment</DialogTitle>
         <DialogContent>
           <Typography variant="body1" sx={{ mb: 2 }}>
@@ -436,7 +443,7 @@ function Appointments() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCancelDialog(false)}>Cancel</Button>
+          <Button onClick={handleCancelDialogClose}>Cancel</Button>
           <Button 
             onClick={handleCancelConfirm} 
             variant="contained" 

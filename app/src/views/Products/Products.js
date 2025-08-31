@@ -44,36 +44,36 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
-import ApiService from '../../services/ApiService';
+import ApiService from '../../services/api';
 
-// API service methods for products
+// API service methods for products using correct ApiService methods
 const api = {
   getProducts: (params = {}) => {
-    return ApiService.get('/products', { params });
+    return ApiService.getProducts(params);
   },
   getProductCategories: () => {
-    return ApiService.get('/products/categories');
+    return ApiService.request('/products/categories');
   },
   getSuppliers: () => {
-    return ApiService.get('/products/suppliers');
+    return ApiService.request('/products/suppliers');
   },
   createProduct: (productData) => {
-    return ApiService.post('/products', productData);
+    return ApiService.createProduct(productData);
   },
   updateProduct: (id, productData) => {
-    return ApiService.put(`/products/${id}`, productData);
+    return ApiService.updateProduct(id, productData);
   },
   getProductById: (id) => {
-    return ApiService.get(`/products/${id}`);
+    return ApiService.getProduct(id);
   },
   deleteProduct: (id) => {
-    return ApiService.delete(`/products/${id}`);
+    return ApiService.deleteProduct(id);
   },
   toggleProductStatus: (id) => {
-    return ApiService.patch(`/products/${id}/status`);
+    return ApiService.request(`/products/${id}/status`, { method: 'PATCH' });
   },
   updateProductStock: (id, stockData) => {
-    return ApiService.patch(`/products/${id}/stock`, stockData);
+    return ApiService.request(`/products/${id}/stock`, { method: 'PATCH', body: stockData });
   }
 };
 

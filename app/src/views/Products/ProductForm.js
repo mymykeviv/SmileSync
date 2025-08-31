@@ -18,7 +18,7 @@ import {
     InputAdornment
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import ApiService from '../../services/ApiService';
+import ApiService from '../../services/api';
 
 const ProductForm = () => {
     const navigate = useNavigate();
@@ -57,7 +57,7 @@ const ProductForm = () => {
 
     const loadCategories = async () => {
         try {
-            const response = await ApiService.get('/products/categories');
+            const response = await ApiService.request('/products/categories');
             if (response.success) {
                 setCategories(response.data);
             }
@@ -68,7 +68,7 @@ const ProductForm = () => {
 
     const loadSuppliers = async () => {
         try {
-            const response = await ApiService.get('/products/suppliers');
+            const response = await ApiService.request('/products/suppliers');
             if (response.success) {
                 setSuppliers(response.data);
             }
@@ -80,7 +80,7 @@ const ProductForm = () => {
     const loadProduct = async () => {
         try {
             setLoading(true);
-            const response = await ApiService.get(`/products/${id}`);
+            const response = await ApiService.getProduct(id);
             if (response.success) {
                 setFormData({
                     name: response.data.name || '',
@@ -198,9 +198,9 @@ const ProductForm = () => {
 
             let response;
             if (isEdit) {
-                response = await ApiService.put(`/products/${id}`, submitData);
-            } else {
-                response = await ApiService.post('/products', submitData);
+                response = await ApiService.updateProduct(id, submitData);
+      } else {
+        response = await ApiService.createProduct(submitData);
             }
 
             if (response.success) {

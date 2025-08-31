@@ -39,7 +39,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { format, parseISO, differenceInYears } from 'date-fns';
-import ApiService from '../../services/ApiService';
+import ApiService from '../../services/api';
 
 function Patients() {
   const navigate = useNavigate();
