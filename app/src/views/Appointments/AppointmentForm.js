@@ -89,7 +89,7 @@ const AppointmentForm = () => {
     try {
       const [patientsResponse, servicesResponse] = await Promise.all([
         ApiService.getPatients({ limit: 1000 }),
-        ApiService.getServices({ limit: 1000 }),
+        ApiService.getServices({ limit: 1000, status: 'active' }),
       ]);
 
       if (patientsResponse.success) {

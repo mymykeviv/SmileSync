@@ -78,7 +78,7 @@ function InvoiceForm() {
     try {
       const [patientsResponse, servicesResponse, productsResponse] = await Promise.all([
         ApiService.getPatients({ limit: 1000 }),
-        ApiService.getServices({ limit: 1000 }),
+        ApiService.getServices({ limit: 1000, status: 'active' }),
         ApiService.getProducts({ limit: 1000 })
       ]);
 
