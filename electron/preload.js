@@ -43,6 +43,36 @@ contextBridge.exposeInMainWorld('smileSync', {
   features: {
     exportData: true,
     printInvoices: true,
-    backupData: true
+    backupData: true,
+    desktopNotifications: true,
+    autoBackup: true,
+    offlineMode: false
+  },
+  
+  // Desktop-specific APIs
+  desktop: {
+    // Check if running in Electron
+    isElectron: true,
+    
+    // Get backend status
+    getBackendStatus: () => ipcRenderer.invoke('get-backend-status'),
+    
+    // Application control
+    minimize: () => ipcRenderer.invoke('window-minimize'),
+    maximize: () => ipcRenderer.invoke('window-maximize'),
+    close: () => ipcRenderer.invoke('window-close'),
+    
+    // Data management
+    exportAllData: () => ipcRenderer.invoke('export-all-data'),
+    importData: () => ipcRenderer.invoke('import-data'),
+    createBackup: () => ipcRenderer.invoke('create-backup'),
+    
+    // Notifications
+    showNotification: (title, body, options) => 
+      ipcRenderer.invoke('show-notification', { title, body, options }),
+    
+    // System integration
+    openInDefaultBrowser: (url) => ipcRenderer.invoke('open-external', url),
+    showInFolder: (path) => ipcRenderer.invoke('show-in-folder', path)
   }
 });

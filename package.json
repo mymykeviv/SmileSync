@@ -14,7 +14,7 @@
     "frontend:start": "cd app && npm start",
     "frontend:build": "cd app && npm run build",
     "backend:start": "cd backend && npm start",
-    "backend:dev": "cd backend && npx nodemon index.js",
+    "backend:dev": "cd backend && PORT=5001 npx nodemon index.js",
     "electron:dev": "concurrently \"npm run backend:dev\" \"npm run frontend:start\" \"wait-on http://localhost:3000 && electron .\"",
     "electron:pack": "electron-builder",
     "electron:dist": "npm run frontend:build && electron-builder",

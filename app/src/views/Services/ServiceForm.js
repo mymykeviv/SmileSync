@@ -25,7 +25,7 @@ import {
   MedicalServices as ServicesIcon
 } from '@mui/icons-material';
 import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
-import ApiService from '../../services/ApiService';
+import ApiService from '../../services/api';
 
 const ServiceForm = () => {
   const navigate = useNavigate();

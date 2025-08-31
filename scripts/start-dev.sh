@@ -76,7 +76,7 @@ trap cleanup SIGINT SIGTERM
 
 echo "\n=== SmileSync Development Environment Started ==="
 echo "Frontend: http://localhost:3000"
-echo "Backend API: http://localhost:5000"
+echo "Backend API: http://localhost:5001"
 echo "Press Ctrl+C to stop all services"
 echo "================================================\n"
 
