@@ -13,3 +13,5 @@ SmileSync Solutions is a comprehensive dental clinic management application desi
 
 # Why SmileSync Solutions?
 The name "SmileSync" embodies the application's mission to harmonize clinic operations while prioritizing patient satisfaction and care quality. It’s a modern, all-in-one solution that empowers dental professionals to focus on delivering exceptional care while the app handles the administrative heavy lifting. Ideal for solo practices, multi-dentist clinics, or dental chains, SmileSync Solutions ensures every aspect of the practice runs in perfect sync, creating brighter smiles for everyone involved.
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/ae9a37b8-2ed0-4cb8-9874-085c1577a27e" />
