@@ -17,14 +17,17 @@ class AppointmentController {
                 status,
                 start_date,
                 end_date,
+                date,
                 search
             } = req.query;
-
             const offset = (parseInt(page) - 1) * parseInt(limit);
             let appointments;
 
             if (search) {
                 appointments = await Appointment.search(search, parseInt(limit), offset);
+            } else if (date) {
+                // Handle single date filtering for dashboard
+                appointments = await Appointment.findByDate(date, dentist_id);
             } else if (start_date && end_date) {
                 appointments = await Appointment.findByDateRange(start_date, end_date, parseInt(limit), offset);
             } else if (patient_id) {
@@ -60,8 +63,12 @@ class AppointmentController {
             console.error('Error getting appointments:', error);
             res.status(500).json({
                 success: false,
-                message: 'Failed to retrieve appointments',
-                error: error.message
+                message: 'Failed to retrieve appointments due to database error',
+                error: {
+                    code: 'DATABASE_ERROR',
+                    details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+                },
+                timestamp: new Date().toISOString()
             });
         }
     }
@@ -77,7 +84,15 @@ class AppointmentController {
             if (!appointment) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Appointment not found'
+                    message: 'Appointment not found',
+                    error: {
+                        code: 'APPOINTMENT_NOT_FOUND',
+                        details: {
+                            appointmentId: id,
+                            message: 'The requested appointment does not exist'
+                        }
+                    },
+                    timestamp: new Date().toISOString()
                 });
             }
 
@@ -89,8 +104,12 @@ class AppointmentController {
             console.error('Error getting appointment:', error);
             res.status(500).json({
                 success: false,
-                message: 'Failed to retrieve appointment',
-                error: error.message
+                message: 'Failed to retrieve appointment due to database error',
+                error: {
+                    code: 'DATABASE_ERROR',
+                    details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+                },
+                timestamp: new Date().toISOString()
             });
         }
     }
@@ -132,10 +151,16 @@ class AppointmentController {
             // Check for validation errors
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({
+                return res.status(422).json({
                     success: false,
+                    code: 'VALIDATION_ERROR',
                     message: 'Validation failed',
-                    errors: errors.array()
+                    error: 'The data provided is invalid. Please correct the errors and try again.',
+                    errors: errors.array().map(err => ({
+                        field: err.path || err.param,
+                        message: err.msg,
+                        value: err.value
+                    }))
                 });
             }
 
@@ -160,6 +185,28 @@ class AppointmentController {
             // TODO: Implement proper dentist lookup by name
             const finalDentistId = dentist_id || 1;
 
+            // Verify patient exists first
+            const patient = await Patient.findById(patient_id);
+            if (!patient) {
+                return res.status(404).json({
+                    success: false,
+                    code: 'APPOINTMENT_PATIENT_NOT_FOUND',
+                    message: 'Patient not found',
+                    error: 'Patient not found. Please verify the patient information.'
+                });
+            }
+
+            // Validate appointment date is not in the past
+            const appointmentDateTime = moment(`${appointment_date} ${appointment_time}`);
+            if (appointmentDateTime.isBefore(moment())) {
+                return res.status(400).json({
+                    success: false,
+                    code: 'APPOINTMENT_PAST_DATE',
+                    message: 'Cannot schedule appointments in the past',
+                    error: 'Cannot schedule appointments in the past. Please select a future date.'
+                });
+            }
+
             // Check for conflicts
             const conflicts = await Appointment.checkConflicts(
                 finalDentistId,
@@ -170,18 +217,20 @@ class AppointmentController {
             const hasConflict = conflicts.length > 0;
 
             if (hasConflict) {
+                const conflictingAppointment = conflicts[0];
                 return res.status(409).json({
                     success: false,
-                    message: 'Appointment time conflicts with existing appointment'
-                });
-            }
-
-            // Verify patient exists
-            const patient = await Patient.findById(patient_id);
-            if (!patient) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Patient not found'
+                    code: 'APPOINTMENT_CONFLICT',
+                    message: 'Appointment time conflicts with existing appointment',
+                    error: 'This appointment time conflicts with an existing appointment. Please choose a different time.',
+                    details: {
+                        conflictingAppointment: {
+                            id: conflictingAppointment.id,
+                            appointmentDate: conflictingAppointment.appointment_date,
+                            appointmentTime: conflictingAppointment.appointment_time,
+                            duration: conflictingAppointment.duration_minutes
+                        }
+                    }
                 });
             }
 
@@ -214,8 +263,10 @@ class AppointmentController {
             console.error('Error creating appointment:', error);
             res.status(500).json({
                 success: false,
+                code: 'DATABASE_ERROR',
                 message: 'Failed to create appointment',
-                error: error.message
+                error: 'A database error occurred. Please try again later.',
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
     }
@@ -309,6 +360,54 @@ class AppointmentController {
                 success: false,
                 message: 'Failed to update appointment',
                 error: error.message
+            });
+        }
+    }
+
+    /**
+     * Update appointment status only
+     */
+    static async updateAppointmentStatus(req, res) {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+
+            const appointment = await Appointment.findById(id);
+
+            if (!appointment) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Appointment not found',
+                    error: {
+                        code: 'APPOINTMENT_NOT_FOUND',
+                        details: {
+                            appointmentId: id,
+                            message: 'The requested appointment does not exist'
+                        }
+                    },
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            // Update only the status
+            appointment.status = status;
+            await appointment.update();
+
+            res.json({
+                success: true,
+                message: 'Appointment status updated successfully',
+                data: appointment.toJSON()
+            });
+        } catch (error) {
+            console.error('Error updating appointment status:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to update appointment status',
+                error: {
+                    code: 'DATABASE_ERROR',
+                    details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+                },
+                timestamp: new Date().toISOString()
             });
         }
     }

@@ -48,8 +48,12 @@ exports.getAllProducts = async (req, res) => {
         console.error('Error getting products:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve products',
-            error: error.message
+            message: 'Failed to retrieve products due to database error',
+            error: {
+                code: 'DATABASE_ERROR',
+                details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+            },
+            timestamp: new Date().toISOString()
         });
     }
 };
@@ -63,7 +67,15 @@ exports.getProductById = async (req, res) => {
         if (!product) {
             return res.status(404).json({
                 success: false,
-                message: 'Product not found'
+                message: 'Product not found',
+                error: {
+                    code: 'PRODUCT_NOT_FOUND',
+                    details: {
+                        productId: id,
+                        message: 'The requested product does not exist'
+                    }
+                },
+                timestamp: new Date().toISOString()
             });
         }
 
@@ -75,8 +87,12 @@ exports.getProductById = async (req, res) => {
         console.error('Error getting product:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve product',
-            error: error.message
+            message: 'Failed to retrieve product due to database error',
+            error: {
+                code: 'DATABASE_ERROR',
+                details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+            },
+            timestamp: new Date().toISOString()
         });
     }
 };
@@ -90,7 +106,15 @@ exports.getProductByCode = async (req, res) => {
         if (!product) {
             return res.status(404).json({
                 success: false,
-                message: 'Product not found'
+                message: 'Product not found',
+                error: {
+                    code: 'PRODUCT_NOT_FOUND',
+                    details: {
+                        productCode: productCode,
+                        message: 'The requested product does not exist'
+                    }
+                },
+                timestamp: new Date().toISOString()
             });
         }
 
@@ -102,8 +126,12 @@ exports.getProductByCode = async (req, res) => {
         console.error('Error getting product by code:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve product',
-            error: error.message
+            message: 'Failed to retrieve product due to database error',
+            error: {
+                code: 'DATABASE_ERROR',
+                details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+            },
+            timestamp: new Date().toISOString()
         });
     }
 };

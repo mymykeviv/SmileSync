@@ -1,3 +1,5 @@
+import { getErrorMessage, getNetworkErrorMessage } from '../utils/errorMapping';
+
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
 
 class ApiService {
@@ -38,14 +40,61 @@ class ApiService {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Network error' }));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (parseError) {
+          // If we can't parse the response, create a generic error
+          errorData = { 
+            error: 'Network error',
+            code: 'NETWORK_ERROR',
+            statusCode: response.status 
+          };
+        }
+        
+        // Use the error mapping system to get user-friendly messages
+        const userFriendlyMessage = getErrorMessage(errorData, response.status);
+        
+        // Create enhanced error object with both user and technical details
+        const enhancedError = new Error(userFriendlyMessage);
+        enhancedError.statusCode = response.status;
+        enhancedError.originalError = errorData;
+        enhancedError.endpoint = endpoint;
+        
+        throw enhancedError;
       }
 
       return await response.json();
     } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
+      // Handle network errors (fetch failures)
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        const networkError = getNetworkErrorMessage(error);
+        const enhancedError = new Error(networkError.message);
+        enhancedError.isNetworkError = true;
+        enhancedError.canRetry = networkError.canRetry;
+        enhancedError.retryDelay = networkError.retryDelay;
+        enhancedError.originalError = error;
+        
+        console.error('Network request failed:', error);
+        throw enhancedError;
+      }
+      
+      // Re-throw API errors (already processed above)
+      if (error.statusCode) {
+        console.error('API request failed:', {
+          endpoint,
+          statusCode: error.statusCode,
+          message: error.message,
+          originalError: error.originalError
+        });
+        throw error;
+      }
+      
+      // Handle unexpected errors
+      console.error('Unexpected error in API request:', error);
+      const fallbackError = new Error('An unexpected error occurred. Please try again.');
+      fallbackError.originalError = error;
+      throw fallbackError;
     }
   }
 
@@ -130,8 +179,8 @@ class ApiService {
   }
 
   static async updateAppointmentStatus(id, status) {
-    return this.request(`/appointments/${id}`, {
-      method: 'PUT',
+    return this.request(`/appointments/${id}/status`, {
+      method: 'PATCH',
       body: { status },
     });
   }

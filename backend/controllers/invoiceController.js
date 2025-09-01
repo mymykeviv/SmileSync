@@ -64,7 +64,9 @@ class InvoiceController {
       if (!invoice) {
         return res.status(404).json({
           success: false,
-          message: 'Invoice not found'
+          message: 'Invoice not found',
+          code: 'INVOICE_NOT_FOUND',
+          details: { invoiceId: id }
         });
       }
 
@@ -91,8 +93,9 @@ class InvoiceController {
       console.error('Error fetching invoice:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch invoice',
-        error: error.message
+        message: 'Failed to fetch invoice due to database error',
+        code: 'DATABASE_ERROR',
+        details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
       });
     }
   }
@@ -146,9 +149,16 @@ class InvoiceController {
       
       // Validate required fields
       if (!invoiceData.patientId || !invoiceData.items || invoiceData.items.length === 0) {
-        return res.status(400).json({
+        return res.status(422).json({
           success: false,
-          message: 'Patient ID and items are required'
+          message: 'Missing required fields for invoice creation',
+          code: 'VALIDATION_ERROR',
+          details: {
+            missingFields: [
+              !invoiceData.patientId && 'patientId',
+              (!invoiceData.items || invoiceData.items.length === 0) && 'items'
+            ].filter(Boolean)
+          }
         });
       }
 
@@ -160,7 +170,9 @@ class InvoiceController {
       if (!patient) {
         return res.status(404).json({
           success: false,
-          message: 'Patient not found'
+          message: 'Patient not found',
+          code: 'PATIENT_NOT_FOUND',
+          details: { patientId: backendInvoiceData.patient_id }
         });
       }
 
@@ -176,8 +188,9 @@ class InvoiceController {
       console.error('Error creating invoice:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to create invoice',
-        error: error.message
+        message: 'Failed to create invoice due to database error',
+        code: 'DATABASE_ERROR',
+        details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
       });
     }
   }

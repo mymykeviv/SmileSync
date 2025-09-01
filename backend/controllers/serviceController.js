@@ -58,7 +58,9 @@ exports.getServiceById = async (req, res) => {
         if (!service) {
             return res.status(404).json({
                 success: false,
-                message: 'Service not found'
+                message: 'Service not found',
+                code: 'SERVICE_NOT_FOUND',
+                details: { serviceId: id }
             });
         }
 
@@ -70,8 +72,9 @@ exports.getServiceById = async (req, res) => {
         console.error('Error getting service:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve service',
-            error: error.message
+            message: 'Failed to retrieve service due to database error',
+            code: 'DATABASE_ERROR',
+            details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
         });
     }
 };
@@ -85,7 +88,9 @@ exports.getServiceByCode = async (req, res) => {
         if (!service) {
             return res.status(404).json({
                 success: false,
-                message: 'Service not found'
+                message: 'Service not found',
+                code: 'SERVICE_NOT_FOUND',
+                details: { serviceCode }
             });
         }
 
@@ -97,8 +102,9 @@ exports.getServiceByCode = async (req, res) => {
         console.error('Error getting service by code:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve service',
-            error: error.message
+            message: 'Failed to retrieve service due to database error',
+            code: 'DATABASE_ERROR',
+            details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
         });
     }
 };
@@ -110,13 +116,21 @@ exports.createService = async (req, res) => {
         
         // Validate required fields
         const requiredFields = ['name', 'category', 'base_price', 'duration_minutes'];
-        for (const field of requiredFields) {
-            if (!serviceData[field]) {
-                return res.status(400).json({
-                    success: false,
-                    message: `${field} is required`
-                });
-            }
+        const missingFields = requiredFields.filter(field => !serviceData[field]);
+        
+        if (missingFields.length > 0) {
+            return res.status(422).json({
+                success: false,
+                message: 'Validation failed: Missing required fields',
+                error: {
+                    code: 'VALIDATION_ERROR',
+                    details: {
+                        missingFields,
+                        message: `Required fields are missing: ${missingFields.join(', ')}`
+                    }
+                },
+                timestamp: new Date().toISOString()
+            });
         }
 
         // Generate service code if not provided
@@ -136,8 +150,12 @@ exports.createService = async (req, res) => {
         console.error('Error creating service:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to create service',
-            error: error.message
+            message: 'Failed to create service due to database error',
+            error: {
+                code: 'DATABASE_ERROR',
+                details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+            },
+            timestamp: new Date().toISOString()
         });
     }
 };
@@ -152,7 +170,15 @@ exports.updateService = async (req, res) => {
         if (!service) {
             return res.status(404).json({
                 success: false,
-                message: 'Service not found'
+                message: 'Service not found',
+                error: {
+                    code: 'SERVICE_NOT_FOUND',
+                    details: {
+                        serviceId: id,
+                        message: 'The requested service does not exist'
+                    }
+                },
+                timestamp: new Date().toISOString()
             });
         }
 
@@ -169,8 +195,12 @@ exports.updateService = async (req, res) => {
         console.error('Error updating service:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to update service',
-            error: error.message
+            message: 'Failed to update service due to database error',
+            error: {
+                code: 'DATABASE_ERROR',
+                details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+            },
+            timestamp: new Date().toISOString()
         });
     }
 };
@@ -184,7 +214,15 @@ exports.toggleServiceStatus = async (req, res) => {
         if (!service) {
             return res.status(404).json({
                 success: false,
-                message: 'Service not found'
+                message: 'Service not found',
+                error: {
+                    code: 'SERVICE_NOT_FOUND',
+                    details: {
+                        serviceId: id,
+                        message: 'The requested service does not exist'
+                    }
+                },
+                timestamp: new Date().toISOString()
             });
         }
 
@@ -200,8 +238,12 @@ exports.toggleServiceStatus = async (req, res) => {
         console.error('Error toggling service status:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to update service status',
-            error: error.message
+            message: 'Failed to update service status due to database error',
+            error: {
+                code: 'DATABASE_ERROR',
+                details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+            },
+            timestamp: new Date().toISOString()
         });
     }
 };
@@ -215,7 +257,15 @@ exports.deleteService = async (req, res) => {
         if (!service) {
             return res.status(404).json({
                 success: false,
-                message: 'Service not found'
+                message: 'Service not found',
+                error: {
+                    code: 'SERVICE_NOT_FOUND',
+                    details: {
+                        serviceId: id,
+                        message: 'The requested service does not exist'
+                    }
+                },
+                timestamp: new Date().toISOString()
             });
         }
 
@@ -229,8 +279,12 @@ exports.deleteService = async (req, res) => {
         console.error('Error deleting service:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to delete service',
-            error: error.message
+            message: 'Failed to delete service due to database error',
+            error: {
+                code: 'DATABASE_ERROR',
+                details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+            },
+            timestamp: new Date().toISOString()
         });
     }
 };
@@ -248,8 +302,12 @@ exports.getServiceCategories = async (req, res) => {
         console.error('Error getting service categories:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve service categories',
-            error: error.message
+            message: 'Failed to retrieve service categories due to database error',
+            error: {
+                code: 'DATABASE_ERROR',
+                details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+            },
+            timestamp: new Date().toISOString()
         });
     }
 };
@@ -267,8 +325,12 @@ exports.getServiceStats = async (req, res) => {
         console.error('Error getting service statistics:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to retrieve service statistics',
-            error: error.message
+            message: 'Failed to retrieve service statistics due to database error',
+            error: {
+                code: 'DATABASE_ERROR',
+                details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+            },
+            timestamp: new Date().toISOString()
         });
     }
 };

@@ -72,10 +72,29 @@ router.post('/', validatePatient, handleValidationErrors, async (req, res) => {
     const result = await PatientController.createPatient(req.body);
     res.status(201).json(result);
   } catch (error) {
-    if (error.message.includes('already exists')) {
-      res.status(409).json({ error: error.message });
+    if (error.code === 'VALIDATION_ERROR') {
+      res.status(422).json({ 
+        error: error.message,
+        code: error.code,
+        details: error.details
+      });
+    } else if (error.code === 'PATIENT_DUPLICATE_EMAIL') {
+      res.status(409).json({ 
+        error: error.message,
+        code: error.code,
+        details: error.details
+      });
+    } else if (error.code === 'DATABASE_ERROR') {
+      res.status(500).json({ 
+        error: error.message,
+        code: error.code,
+        details: error.originalError ? { originalError: error.originalError } : undefined
+      });
     } else {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ 
+        error: 'An unexpected error occurred',
+        code: 'INTERNAL_ERROR'
+      });
     }
   }
 });
@@ -86,12 +105,29 @@ router.put('/:id', validateId, validatePatient, handleValidationErrors, async (r
     const result = await PatientController.updatePatient(req.params.id, req.body);
     res.json(result);
   } catch (error) {
-    if (error.message === 'Patient not found') {
-      res.status(404).json({ error: error.message });
-    } else if (error.message.includes('already exists')) {
-      res.status(409).json({ error: error.message });
+    if (error.code === 'PATIENT_NOT_FOUND') {
+      res.status(404).json({ 
+        error: error.message,
+        code: error.code,
+        details: error.details
+      });
+    } else if (error.code === 'PATIENT_DUPLICATE_EMAIL') {
+      res.status(409).json({ 
+        error: error.message,
+        code: error.code,
+        details: error.details
+      });
+    } else if (error.code === 'DATABASE_ERROR') {
+      res.status(500).json({ 
+        error: error.message,
+        code: error.code,
+        details: error.originalError ? { originalError: error.originalError } : undefined
+      });
     } else {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ 
+        error: 'An unexpected error occurred',
+        code: 'INTERNAL_ERROR'
+      });
     }
   }
 });

@@ -290,6 +290,13 @@ const validatePagination = [
     .withMessage('Limit must be between 1 and 100')
 ];
 
+// Status update validation (for appointment status changes only)
+const validateStatusUpdate = [
+  body('status')
+    .isIn(['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'])
+    .withMessage('Invalid appointment status')
+];
+
 module.exports = {
   handleValidationErrors,
   validatePatient,
@@ -299,5 +306,6 @@ module.exports = {
   validateInvoice,
   validatePayment,
   validateId,
-  validatePagination
+  validatePagination,
+  validateStatusUpdate
 };

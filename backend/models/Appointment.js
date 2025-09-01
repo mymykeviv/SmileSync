@@ -7,7 +7,16 @@ class Appointment {
         this.appointment_number = data.appointment_number;
         this.patient_id = data.patient_id;
         this.dentist_id = data.dentist_id;
-        this.appointment_date = data.appointment_date;
+        
+        // Convert appointment_date to timestamp if it's a string
+        if (data.appointment_date) {
+            if (typeof data.appointment_date === 'string') {
+                this.appointment_date = new Date(data.appointment_date).getTime();
+            } else {
+                this.appointment_date = data.appointment_date;
+            }
+        }
+        
         this.appointment_time = data.appointment_time;
         this.duration_minutes = data.duration_minutes || 60;
         this.status = data.status || 'scheduled';
@@ -35,11 +44,13 @@ class Appointment {
      * Generate a unique appointment number
      */
     static async generateAppointmentNumber() {
-        const year = new Date().getFullYear();
-        const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
-        const prefix = `A${year}${month}`;
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        const prefix = `A/${year}/${month}/${day}/`;
         
-        // Get the last appointment number for this month
+        // Get the last appointment number for this day
         const lastAppointment = await database.get(
             'SELECT appointment_number FROM appointments WHERE appointment_number LIKE ? ORDER BY appointment_number DESC LIMIT 1',
             [`${prefix}%`]
@@ -47,7 +58,8 @@ class Appointment {
         
         let nextNumber = 1;
         if (lastAppointment) {
-            const lastNumber = parseInt(lastAppointment.appointment_number.replace(prefix, ''));
+            const lastNumberStr = lastAppointment.appointment_number.replace(prefix, '');
+            const lastNumber = parseInt(lastNumberStr);
             nextNumber = lastNumber + 1;
         }
         
@@ -91,6 +103,12 @@ class Appointment {
      */
     async update() {
         try {
+            // Ensure appointment_date is a timestamp
+            let appointmentDateTimestamp = this.appointment_date;
+            if (typeof this.appointment_date === 'string') {
+                appointmentDateTimestamp = new Date(this.appointment_date).getTime();
+            }
+            
             const sql = `
                 UPDATE appointments SET
                     patient_id = ?, dentist_id = ?, appointment_date = ?, appointment_time = ?,
@@ -100,7 +118,7 @@ class Appointment {
             `;
 
             const params = [
-                this.patient_id, this.dentist_id, this.appointment_date, this.appointment_time,
+                this.patient_id, this.dentist_id, appointmentDateTimestamp, this.appointment_time,
                 this.duration_minutes, this.status, this.appointment_type, this.chief_complaint,
                 this.treatment_notes, this.next_appointment_recommended, this.next_appointment_notes,
                 this.id
@@ -165,6 +183,17 @@ class Appointment {
      */
     static async findByDate(date, dentistId = null) {
         try {
+            // Convert date string to timestamp for comparison
+            // If date is already a timestamp, use it as is
+            let dateTimestamp;
+            if (typeof date === 'string') {
+                // Parse date string and get timestamp for start of day
+                const dateObj = new Date(date);
+                dateTimestamp = dateObj.getTime();
+            } else {
+                dateTimestamp = date;
+            }
+            
             let sql = `
                 SELECT a.*, 
                        p.first_name as patient_first_name, p.last_name as patient_last_name, p.patient_number, p.phone,
@@ -175,7 +204,7 @@ class Appointment {
                 WHERE a.appointment_date = ?
             `;
             
-            const params = [date];
+            const params = [dateTimestamp];
             
             if (dentistId) {
                 sql += ' AND a.dentist_id = ?';
@@ -197,6 +226,25 @@ class Appointment {
      */
     static async findByDateRange(startDate, endDate, dentistId = null, status = null) {
         try {
+            // Convert date strings to timestamps for comparison
+            let startTimestamp, endTimestamp;
+            
+            if (typeof startDate === 'string') {
+                const startDateObj = new Date(startDate);
+                startTimestamp = startDateObj.getTime();
+            } else {
+                startTimestamp = startDate;
+            }
+            
+            if (typeof endDate === 'string') {
+                const endDateObj = new Date(endDate);
+                // Set to end of day for end date
+                endDateObj.setHours(23, 59, 59, 999);
+                endTimestamp = endDateObj.getTime();
+            } else {
+                endTimestamp = endDate;
+            }
+            
             let sql = `
                 SELECT a.*, 
                        p.first_name as patient_first_name, p.last_name as patient_last_name, p.patient_number, p.phone,
@@ -207,7 +255,7 @@ class Appointment {
                 WHERE a.appointment_date BETWEEN ? AND ?
             `;
             
-            const params = [startDate, endDate];
+            const params = [startTimestamp, endTimestamp];
             
             if (dentistId) {
                 sql += ' AND a.dentist_id = ?';
@@ -280,6 +328,15 @@ class Appointment {
      */
     static async checkConflicts(dentistId, appointmentDate, appointmentTime, durationMinutes, excludeId = null) {
         try {
+            // Convert appointment date to timestamp for comparison
+            let dateTimestamp;
+            if (typeof appointmentDate === 'string') {
+                const dateObj = new Date(appointmentDate);
+                dateTimestamp = dateObj.getTime();
+            } else {
+                dateTimestamp = appointmentDate;
+            }
+            
             // Parse the ISO date and combine with time
             const date = moment(appointmentDate).format('YYYY-MM-DD');
             const startTime = moment(`${date} ${appointmentTime}`, 'YYYY-MM-DD HH:mm');
@@ -304,7 +361,7 @@ class Appointment {
             
             const params = [
                 dentistId, 
-                appointmentDate, 
+                dateTimestamp, 
                 endTime.format('HH:mm:ss'), 
                 appointmentTime,
                 appointmentTime,
@@ -433,8 +490,26 @@ class Appointment {
             }
             
             if (filters.start_date && filters.end_date) {
+                // Convert date strings to timestamps for comparison
+                let startTimestamp, endTimestamp;
+                
+                if (typeof filters.start_date === 'string') {
+                    const startDateObj = new Date(filters.start_date);
+                    startTimestamp = startDateObj.getTime();
+                } else {
+                    startTimestamp = filters.start_date;
+                }
+                
+                if (typeof filters.end_date === 'string') {
+                    const endDateObj = new Date(filters.end_date);
+                    endDateObj.setHours(23, 59, 59, 999);
+                    endTimestamp = endDateObj.getTime();
+                } else {
+                    endTimestamp = filters.end_date;
+                }
+                
                 sql += ' AND a.appointment_date BETWEEN ? AND ?';
-                params.push(filters.start_date, filters.end_date);
+                params.push(startTimestamp, endTimestamp);
             }
             
             const result = await database.get(sql, params);
@@ -450,8 +525,9 @@ class Appointment {
      */
     static async getUpcoming(days = 7, limit = 50) {
         try {
-            const today = moment().format('YYYY-MM-DD');
-            const endDate = moment().add(days, 'days').format('YYYY-MM-DD');
+            // Convert dates to timestamps for comparison
+            const todayTimestamp = moment().startOf('day').valueOf();
+            const endTimestamp = moment().add(days, 'days').endOf('day').valueOf();
             
             const sql = `
                 SELECT a.*, 
@@ -466,7 +542,7 @@ class Appointment {
                 LIMIT ?
             `;
             
-            const rows = await database.all(sql, [today, endDate, limit]);
+            const rows = await database.all(sql, [todayTimestamp, endTimestamp, limit]);
             return rows.map(row => new Appointment(row));
         } catch (error) {
             console.error('Error getting upcoming appointments:', error);
@@ -560,8 +636,26 @@ class Appointment {
             const params = [];
             
             if (startDate && endDate) {
+                // Convert date strings to timestamps for comparison
+                let startTimestamp, endTimestamp;
+                
+                if (typeof startDate === 'string') {
+                    const startDateObj = new Date(startDate);
+                    startTimestamp = startDateObj.getTime();
+                } else {
+                    startTimestamp = startDate;
+                }
+                
+                if (typeof endDate === 'string') {
+                    const endDateObj = new Date(endDate);
+                    endDateObj.setHours(23, 59, 59, 999);
+                    endTimestamp = endDateObj.getTime();
+                } else {
+                    endTimestamp = endDate;
+                }
+                
                 whereClause = 'WHERE appointment_date BETWEEN ? AND ?';
-                params.push(startDate, endDate);
+                params.push(startTimestamp, endTimestamp);
             }
             
             const sql = `
@@ -602,17 +696,22 @@ class Appointment {
      * Get formatted date and time
      */
     getFormattedDateTime() {
-        // Parse the ISO date and combine with time
-        const date = moment(this.appointment_date).format('YYYY-MM-DD');
-        return moment(`${date} ${this.appointment_time}`, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD HH:mm');
+        // Handle both timestamp and date string formats
+        const date = typeof this.appointment_date === 'number' 
+            ? moment(this.appointment_date).format('YYYY-MM-DD')
+            : moment(this.appointment_date).format('YYYY-MM-DD');
+        const appointmentDateTime = moment(`${date} ${this.appointment_time}`, 'YYYY-MM-DD HH:mm');
+        return appointmentDateTime.format('MMM DD, YYYY [at] h:mm A');
     }
 
     /**
      * Get end time
      */
     getEndTime() {
-        // Parse the ISO date and combine with time
-        const date = moment(this.appointment_date).format('YYYY-MM-DD');
+        // Handle both timestamp and date string formats
+        const date = typeof this.appointment_date === 'number' 
+            ? moment(this.appointment_date).format('YYYY-MM-DD')
+            : moment(this.appointment_date).format('YYYY-MM-DD');
         return moment(`${date} ${this.appointment_time}`, 'YYYY-MM-DD HH:mm')
             .add(this.duration_minutes, 'minutes')
             .format('HH:mm');
@@ -622,8 +721,10 @@ class Appointment {
      * Check if appointment is in the past
      */
     isPast() {
-        // Parse the ISO date and combine with time
-        const date = moment(this.appointment_date).format('YYYY-MM-DD');
+        // Handle both timestamp and date string formats
+        const date = typeof this.appointment_date === 'number' 
+            ? moment(this.appointment_date).format('YYYY-MM-DD')
+            : moment(this.appointment_date).format('YYYY-MM-DD');
         const appointmentDateTime = moment(`${date} ${this.appointment_time}`, 'YYYY-MM-DD HH:mm');
         return appointmentDateTime.isBefore(moment());
     }
@@ -632,19 +733,28 @@ class Appointment {
      * Check if appointment is today
      */
     isToday() {
-        return moment(this.appointment_date).isSame(moment(), 'day');
+        // Handle both timestamp and date string formats
+        const appointmentMoment = typeof this.appointment_date === 'number' 
+            ? moment(this.appointment_date)
+            : moment(this.appointment_date);
+        return appointmentMoment.isSame(moment(), 'day');
     }
 
     /**
      * Convert to JSON (for API responses)
      */
     toJSON() {
+        // Convert timestamp back to date string for frontend
+        const appointmentDateStr = typeof this.appointment_date === 'number' 
+            ? moment(this.appointment_date).format('YYYY-MM-DD')
+            : this.appointment_date;
+            
         const result = {
             id: this.id,
             appointmentNumber: this.appointment_number,
             patientId: this.patient_id,
             dentistId: this.dentist_id,
-            appointmentDate: this.appointment_date,
+            appointmentDate: appointmentDateStr,
             appointmentTime: this.appointment_time,
             durationMinutes: this.duration_minutes,
             status: this.status,

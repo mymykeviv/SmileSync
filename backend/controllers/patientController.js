@@ -74,7 +74,17 @@ class PatientController {
       const { firstName, lastName, dateOfBirth, phone, email } = patientData;
       
       if (!firstName || !lastName || !dateOfBirth || !phone) {
-        throw new Error('Missing required fields: firstName, lastName, dateOfBirth, phone');
+        const error = new Error('Missing required fields for patient creation');
+        error.code = 'VALIDATION_ERROR';
+        error.details = {
+          missingFields: [
+            !firstName && 'firstName',
+            !lastName && 'lastName', 
+            !dateOfBirth && 'dateOfBirth',
+            !phone && 'phone'
+          ].filter(Boolean)
+        };
+        throw error;
       }
       
       // Check if email already exists (if provided)
@@ -83,7 +93,10 @@ class PatientController {
         if (existingPatient.length > 0) {
           const emailExists = existingPatient.some(p => p.email === email);
           if (emailExists) {
-            throw new Error('A patient with this email already exists');
+            const error = new Error('A patient with this email address already exists');
+            error.code = 'PATIENT_DUPLICATE_EMAIL';
+            error.details = { email };
+            throw error;
           }
         }
       }
@@ -101,7 +114,13 @@ class PatientController {
         data: savedPatient.toJSON()
       };
     } catch (error) {
-      throw new Error(error.message);
+      if (error.code) {
+        throw error; // Re-throw errors with codes
+      }
+      const dbError = new Error('Failed to create patient due to database error');
+      dbError.code = 'DATABASE_ERROR';
+      dbError.originalError = process.env.NODE_ENV === 'development' ? error.message : undefined;
+      throw dbError;
     }
   }
 
@@ -110,7 +129,10 @@ class PatientController {
     try {
       const patient = await Patient.findById(id);
       if (!patient) {
-        throw new Error('Patient not found');
+        const error = new Error('Patient not found');
+        error.code = 'PATIENT_NOT_FOUND';
+        error.details = { patientId: id };
+        throw error;
       }
       
       // Convert frontend camelCase fields to backend snake_case
@@ -122,7 +144,10 @@ class PatientController {
         if (existingPatient.length > 0) {
           const emailExists = existingPatient.some(p => p.email === backendUpdateData.email && p.id !== id);
           if (emailExists) {
-            throw new Error('A patient with this email already exists');
+            const error = new Error('A patient with this email address already exists');
+            error.code = 'PATIENT_DUPLICATE_EMAIL';
+            error.details = { email: backendUpdateData.email };
+            throw error;
           }
         }
       }
@@ -135,7 +160,13 @@ class PatientController {
         data: updatedPatient.toJSON()
       };
     } catch (error) {
-      throw new Error(error.message);
+      if (error.code) {
+        throw error; // Re-throw errors with codes
+      }
+      const dbError = new Error('Failed to update patient due to database error');
+      dbError.code = 'DATABASE_ERROR';
+      dbError.originalError = process.env.NODE_ENV === 'development' ? error.message : undefined;
+      throw dbError;
     }
   }
 

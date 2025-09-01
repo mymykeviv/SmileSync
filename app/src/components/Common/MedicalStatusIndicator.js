@@ -89,6 +89,13 @@ const MedicalStatusIndicator = ({
         icon: Schedule,
         text: 'Scheduled'
       },
+      in_progress: {
+        color: '#F59E0B',
+        backgroundColor: '#FFFBEB',
+        borderColor: '#FED7AA',
+        icon: MedicalServices,
+        text: 'In Progress'
+      },
       completed: {
         color: '#10B981',
         backgroundColor: '#F0FDF4',
@@ -102,6 +109,13 @@ const MedicalStatusIndicator = ({
         borderColor: '#E5E7EB',
         icon: Error,
         text: 'Cancelled'
+      },
+      no_show: {
+        color: '#DC2626',
+        backgroundColor: '#FEF2F2',
+        borderColor: '#FECACA',
+        icon: Warning,
+        text: 'No Show'
       },
       
       // Payment statuses

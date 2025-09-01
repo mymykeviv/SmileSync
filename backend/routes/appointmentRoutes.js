@@ -1,6 +1,6 @@
 const express = require('express');
 const AppointmentController = require('../controllers/appointmentController');
-const { validateAppointment, validateId, handleValidationErrors } = require('../middleware/validation');
+const { validateAppointment, validateId, validateStatusUpdate, handleValidationErrors } = require('../middleware/validation');
 
 const router = express.Router();
 
@@ -17,20 +17,10 @@ router.get('/number/:appointmentNumber', AppointmentController.getAppointmentByN
 router.post('/', validateAppointment, AppointmentController.createAppointment);
 
 // Update appointment
-router.put('/:id', validateId, validateAppointment, handleValidationErrors, async (req, res) => {
-  try {
-    const result = await AppointmentController.updateAppointment(req.params.id, req.body);
-    res.json(result);
-  } catch (error) {
-    if (error.message === 'Appointment not found') {
-      res.status(404).json({ error: error.message });
-    } else if (error.message.includes('conflict')) {
-      res.status(400).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: error.message });
-    }
-  }
-});
+router.put('/:id', validateId, validateAppointment, handleValidationErrors, AppointmentController.updateAppointment);
+
+// Update appointment status only
+router.patch('/:id/status', validateId, validateStatusUpdate, handleValidationErrors, AppointmentController.updateAppointmentStatus);
 
 // Cancel appointment
 router.patch('/:id/cancel', AppointmentController.cancelAppointment);

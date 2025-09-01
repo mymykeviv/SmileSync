@@ -198,7 +198,15 @@ class UserController {
             if (!user) {
                 return res.status(404).json({
                     success: false,
-                    message: 'User not found'
+                    message: 'User not found',
+                    error: {
+                        code: 'USER_NOT_FOUND',
+                        details: {
+                            userId: id,
+                            message: 'The requested user does not exist'
+                        }
+                    },
+                    timestamp: new Date().toISOString()
                 });
             }
 
@@ -209,9 +217,17 @@ class UserController {
             if (updateData.username && updateData.username !== user.username) {
                 const usernameExists = await User.usernameExists(updateData.username, id);
                 if (usernameExists) {
-                    return res.status(400).json({
+                    return res.status(422).json({
                         success: false,
-                        message: 'Username already exists'
+                        message: 'Username already exists',
+                        error: {
+                            code: 'USERNAME_DUPLICATE',
+                            details: {
+                                username: updateData.username,
+                                message: 'A user with this username already exists'
+                            }
+                        },
+                        timestamp: new Date().toISOString()
                     });
                 }
             }
@@ -220,9 +236,17 @@ class UserController {
             if (updateData.email && updateData.email !== user.email) {
                 const emailExists = await User.emailExists(updateData.email, id);
                 if (emailExists) {
-                    return res.status(400).json({
+                    return res.status(422).json({
                         success: false,
-                        message: 'Email already exists'
+                        message: 'Email already exists',
+                        error: {
+                            code: 'EMAIL_DUPLICATE',
+                            details: {
+                                email: updateData.email,
+                                message: 'A user with this email already exists'
+                            }
+                        },
+                        timestamp: new Date().toISOString()
                     });
                 }
             }
@@ -240,8 +264,12 @@ class UserController {
             console.error('Error updating user:', error);
             res.status(500).json({
                 success: false,
-                message: 'Failed to update user',
-                error: error.message
+                message: 'Failed to update user due to database error',
+                error: {
+                    code: 'DATABASE_ERROR',
+                    details: process.env.NODE_ENV === 'development' ? { originalError: error.message } : undefined
+                },
+                timestamp: new Date().toISOString()
             });
         }
     }
@@ -255,9 +283,17 @@ class UserController {
             const { newPassword } = req.body;
 
             if (!newPassword) {
-                return res.status(400).json({
+                return res.status(422).json({
                     success: false,
-                    message: 'New password is required'
+                    message: 'Validation failed: New password is required',
+                    error: {
+                        code: 'VALIDATION_ERROR',
+                        details: {
+                            missingFields: ['newPassword'],
+                            message: 'New password is required'
+                        }
+                    },
+                    timestamp: new Date().toISOString()
                 });
             }
 
