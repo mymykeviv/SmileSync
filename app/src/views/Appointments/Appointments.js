@@ -174,15 +174,15 @@ function Appointments() {
     }
   };
 
+  // Note: Date and status filtering is already handled by the API in loadAppointments
+  // Only apply client-side search filtering here to avoid double filtering
   const filteredAppointments = appointments.filter(appointment => {
     const matchesSearch = !searchTerm || 
       appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       appointment.appointmentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       appointment.service.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || appointment.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   return (
@@ -231,7 +231,14 @@ function Appointments() {
                 label="Filter by Date"
                 value={selectedDate}
                 onChange={setSelectedDate}
-                renderInput={(params) => <TextField {...params} fullWidth />}
+                slots={{
+                  textField: TextField
+                }}
+                slotProps={{
+                  textField: {
+                    fullWidth: true
+                  }
+                }}
               />
             </Grid>
             <Grid item xs={12} md={3}>

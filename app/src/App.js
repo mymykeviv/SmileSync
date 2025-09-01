@@ -8,6 +8,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 // Components
 import Layout from './components/Layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/Common/ErrorBoundary';
 import Dashboard from './views/Dashboard/Dashboard';
 import Appointments from './views/Appointments/Appointments';
 import AppointmentForm from './views/Appointments/AppointmentForm';
@@ -390,12 +391,13 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <AuthProvider>
-          <Router>
-            <Routes>
+    <ErrorBoundary>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <AuthProvider>
+            <Router>
+              <Routes>
               {/* Public routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
@@ -498,11 +500,12 @@ function App() {
                   </Layout>
                 </ProtectedRoute>
               } />
-            </Routes>
-          </Router>
-        </AuthProvider>
-      </LocalizationProvider>
-    </ThemeProvider>
+              </Routes>
+            </Router>
+          </AuthProvider>
+        </LocalizationProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

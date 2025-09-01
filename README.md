@@ -2,6 +2,19 @@
 
 A comprehensive, production-ready dental clinic management system built with modern technologies. SmileSync provides a complete solution for managing patients, appointments, services, billing, and analytics in a desktop application.
 
+## 🆕 Recent Updates (January 2025)
+
+- **🔐 Role-Based Access Control**: Complete RBAC system with Administrator, Dentist, Assistant, Receptionist, and Staff roles
+- **🎨 Medical Design System**: Professional medical-themed UI with Material-UI components
+- **📱 Mobile-First Design**: Responsive interface optimized for tablets and mobile devices
+- **🔒 Enhanced Security**: JWT authentication, secure login system, and session management
+- **👨‍⚕️ Staff Management**: Comprehensive doctor and staff management with role assignments
+- **📄 PDF Preview**: Interactive invoice preview system with embedded viewer
+- **💰 INR Currency**: Complete conversion from USD to Indian Rupee (₹) across all components
+- **🪟 Windows Deployment**: Offline installation package for Windows environments
+- **🔧 Form Improvements**: Enhanced validation, error handling, and user guidance
+- **📊 Dashboard Sync**: Timeline view synchronized with calendar date selection
+
 ## 🚀 Features
 
 ### Core Functionality
@@ -12,13 +25,24 @@ A comprehensive, production-ready dental clinic management system built with mod
 - **Analytics Dashboard**: Real-time clinic performance metrics with interactive charts and data export
 - **PDF Preview System**: Interactive invoice preview before download with embedded viewer
 - **Localized Currency**: Complete INR (Indian Rupee) support across all financial components
+- **Doctor/Dentist Management**: Comprehensive staff management system with role-based permissions
+- **Role-Based Access Control (RBAC)**: Multi-level permission system for different user roles
+- **Clinic Configuration**: Configurable clinic details and settings management
+
+### Security & Authentication
+- **Secure Login System**: JWT-based authentication with session management
+- **Role-Based Permissions**: Administrator, Dentist, Dental Assistant, Receptionist, and Staff roles
+- **Authentication Guards**: Protected routes and API endpoints
+- **Session Tracking**: Last login tracking and user activity monitoring
 
 ### Technical Features
 - **Desktop Application**: Cross-platform Electron app for Windows, macOS, and Linux
-- **Modern UI**: Responsive React-based interface with professional design
+- **Modern UI**: Responsive React-based interface with medical design system theme
+- **Mobile-First Design**: Responsive design optimized for tablets and mobile devices
 - **Robust Backend**: RESTful API with Node.js and Express
 - **SQLite Database**: Lightweight, embedded database with Sequelize ORM
 - **Comprehensive Testing**: Unit, integration, and end-to-end test coverage
+- **Windows Offline Deployment**: Complete offline installation package for Windows environments
 
 ## 🏗️ Architecture
 
@@ -34,12 +58,15 @@ SmileSync/
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: React 18, CSS3, Recharts for analytics
+- **Frontend**: React 18, Material-UI (MUI), CSS3, Recharts for analytics
+- **UI Framework**: Material-UI with custom medical design system theme
+- **Authentication**: JWT tokens, bcrypt for password hashing
 - **Backend**: Node.js, Express.js, Sequelize ORM
-- **Database**: SQLite3
-- **Desktop**: Electron
+- **Database**: SQLite3 with comprehensive schema
+- **Desktop**: Electron with security preload scripts
 - **Testing**: Jest, React Testing Library, Playwright
 - **Build Tools**: npm scripts, cross-platform shell scripts
+- **Deployment**: Windows offline installer, cross-platform scripts
 
 ## 📋 Prerequisites
 
@@ -91,13 +118,25 @@ npm run electron:prod
 
 ## 📖 Usage
 
+### Authentication & Access Control
+1. **Login**: Use your credentials to access the system with role-based permissions
+2. **User Roles**: Different access levels for Administrator, Dentist, Dental Assistant, Receptionist, and Staff
+3. **Secure Sessions**: Automatic session management with JWT tokens
+4. **Clinic Configuration**: Administrators can configure clinic details and settings
+
 ### Patient Management
 1. Navigate to "Patients" to add new patients or edit existing profiles
 2. View complete patient history and treatment records
 3. Search and filter patients by various criteria
+4. Access patient information based on your role permissions
+
+### Doctor/Staff Management
+1. **Staff Directory**: Manage dentists, assistants, and other clinic staff
+2. **Role Assignment**: Assign appropriate roles and permissions to staff members
+3. **Schedule Management**: View and manage staff schedules and availability
 
 ### Appointment Scheduling
-1. Use "Appointments" to book new appointments
+1. Use "Appointments" to book new appointments with enhanced form validation
 2. View calendar interface with conflict detection
 3. Reschedule or cancel appointments as needed
 
@@ -198,11 +237,27 @@ For support and questions:
 
 ## 🎯 Roadmap
 
+### Recently Completed ✅
+- [x] Role-Based Access Control (RBAC) system
+- [x] Comprehensive authentication and security
+- [x] PDF preview functionality with embedded viewer
+- [x] Complete INR currency conversion
+- [x] Doctor/Dentist management system
+- [x] Medical design system theme
+- [x] Mobile-first responsive design
+- [x] Windows offline deployment package
+- [x] Enhanced form validation and error handling
+- [x] Dashboard timeline synchronization
+
+### Upcoming Features 🚀
 - [ ] Multi-clinic support
-- [ ] Advanced reporting features
+- [ ] Advanced reporting and analytics
 - [ ] Integration with dental equipment
 - [ ] Mobile companion app
-- [ ] Cloud synchronization
+- [ ] Cloud synchronization and backup
+- [ ] Automated appointment reminders
+- [ ] Treatment plan templates
+- [ ] Insurance claim management
 
 ---
 

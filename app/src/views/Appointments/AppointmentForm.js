@@ -365,7 +365,7 @@ const AppointmentForm = () => {
                     label="Patient"
                     required
                     error={!!errors.patient_id}
-                    helperText={errors.patient_id}
+                    helperText={errors.patient_id || "Type to search by name or email"}
                     placeholder="Search and select a patient"
                   />
                 )}
@@ -405,7 +405,7 @@ const AppointmentForm = () => {
                     label="Service"
                     required
                     error={!!errors.service_id}
-                    helperText={errors.service_id}
+                    helperText={errors.service_id || "Select a service to auto-fill duration"}
                     placeholder="Search and select a service"
                   />
                 )}
@@ -433,16 +433,19 @@ const AppointmentForm = () => {
                 label="Appointment Date"
                 value={formData.appointment_date}
                 onChange={(newValue) => handleInputChange('appointment_date', newValue)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    fullWidth
-                    required
-                    error={!!errors.appointment_date}
-                    helperText={errors.appointment_date}
-                  />
-                )}
+                slots={{
+                  textField: TextField
+                }}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: true,
+                    error: !!errors.appointment_date,
+                    helperText: errors.appointment_date || "Use the calendar picker to select a date"
+                  }
+                }}
                 minDate={new Date()}
+                maxDate={new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
               />
             </Grid>
 
@@ -452,16 +455,20 @@ const AppointmentForm = () => {
                 label="Appointment Time"
                 value={formData.appointment_time}
                 onChange={(newValue) => handleInputChange('appointment_time', newValue)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    fullWidth
-                    required
-                    error={!!errors.appointment_time}
-                    helperText={errors.appointment_time || (calculateEndTime() && `Ends at: ${calculateEndTime()}`)}
-                  />
-                )}
+                slots={{
+                  textField: TextField
+                }}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: true,
+                    error: !!errors.appointment_time,
+                    helperText: errors.appointment_time || (calculateEndTime() ? `Ends at: ${calculateEndTime()}` : "Business hours: 8:00 AM - 6:00 PM")
+                  }
+                }}
                 minutesStep={15}
+                minTime={new Date(2000, 0, 1, 8, 0)}
+                maxTime={new Date(2000, 0, 1, 18, 0)}
               />
             </Grid>
 
@@ -475,7 +482,7 @@ const AppointmentForm = () => {
                 onChange={(e) => handleInputChange('duration', e.target.value)}
                 required
                 error={!!errors.duration}
-                helperText={errors.duration || (calculateEndTime() && `Ends at: ${calculateEndTime()}`)}
+                helperText={errors.duration || (calculateEndTime() ? `Ends at: ${calculateEndTime()}` : "15-240 minutes, in 15-minute increments")}
                 inputProps={{
                   min: 15,
                   max: 240,

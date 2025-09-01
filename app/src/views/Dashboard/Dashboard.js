@@ -49,11 +49,11 @@ import ApiService from '../../services/api';
 
 // API service using real backend endpoints
 const api = {
-  getTodaysAppointments: async () => {
+  getAppointmentsByDate: async (date) => {
     try {
-      const today = format(new Date(), 'yyyy-MM-dd');
+      const dateStr = format(date, 'yyyy-MM-dd');
       const response = await ApiService.getAppointments({
-        date: today,
+        date: dateStr,
         limit: 10
       });
       return {
@@ -61,7 +61,7 @@ const api = {
         data: response.data || []
       };
     } catch (error) {
-      console.error('Failed to load today\'s appointments:', error);
+      console.error('Failed to load appointments for date:', format(date, 'yyyy-MM-dd'), error);
       return { success: false, data: [] };
     }
   },
@@ -98,7 +98,7 @@ const api = {
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [todaysAppointments, setTodaysAppointments] = useState([]);
+  const [selectedDateAppointments, setSelectedDateAppointments] = useState([]);
   const [stats, setStats] = useState({
     todaysAppointments: 0,
     totalPatients: 0,
@@ -127,12 +127,12 @@ function Dashboard() {
     try {
       setLoading(true);
       const [appointmentsResponse, statsResponse] = await Promise.all([
-        api.getTodaysAppointments(),
+        api.getAppointmentsByDate(selectedDate),
         api.getDashboardStats()
       ]);
       
       if (appointmentsResponse.success) {
-        setTodaysAppointments(appointmentsResponse.data);
+        setSelectedDateAppointments(appointmentsResponse.data);
       }
       
       if (statsResponse.success) {
@@ -147,7 +147,7 @@ function Dashboard() {
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [selectedDate]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -404,23 +404,23 @@ function Dashboard() {
           <Paper sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Typography variant="h6" component="h2" sx={{ fontWeight: 600, color: '#1F2937' }}>
-                Today's Schedule
+                {format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? "Today's Schedule" : "Schedule"}
               </Typography>
               <Typography variant="body2" sx={{ color: '#4B5563', fontWeight: 500 }}>
-                {format(new Date(), 'EEEE, MMMM d, yyyy')}
+                {format(selectedDate, 'EEEE, MMMM d, yyyy')}
               </Typography>
             </Box>
             
-            {todaysAppointments.length === 0 ? (
+            {selectedDateAppointments.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 6 }}>
                 <Avatar sx={{ bgcolor: 'primary.light', mx: 'auto', mb: 2, width: 64, height: 64 }}>
                   <CalendarIcon sx={{ fontSize: 32 }} />
                 </Avatar>
                 <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                  No appointments today
+                  {format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? "No appointments today" : "No appointments on this date"}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  Your schedule is clear for today
+                  {format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? "Your schedule is clear for today" : "No appointments scheduled for this date"}
                 </Typography>
                 <Button
                   variant="contained"
@@ -432,7 +432,7 @@ function Dashboard() {
               </Box>
             ) : (
               <Timeline position="left">
-                {todaysAppointments.map((appointment, index) => (
+                {selectedDateAppointments.map((appointment, index) => (
                   <TimelineItem key={appointment.id}>
                     <TimelineOppositeContent sx={{ m: 'auto 0', minWidth: 80 }}>
                       <Typography variant="body2" sx={{ color: '#4B5563', fontWeight: 500 }}>
@@ -449,7 +449,7 @@ function Dashboard() {
                       >
                         <MedicalIcon sx={{ fontSize: 16 }} />
                       </TimelineDot>
-                      {index < todaysAppointments.length - 1 && <TimelineConnector />}
+                      {index < selectedDateAppointments.length - 1 && <TimelineConnector />}
                     </TimelineSeparator>
                     <TimelineContent>
                       <Card 
@@ -503,7 +503,7 @@ function Dashboard() {
               </Timeline>
             )}
             
-            {todaysAppointments.length > 0 && (
+            {selectedDateAppointments.length > 0 && (
               <Box sx={{ textAlign: 'center', mt: 3 }}>
                 <Button
                   variant="outlined"
