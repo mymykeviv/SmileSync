@@ -6,22 +6,37 @@ import {
   CardContent,
   Typography,
   Button,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
   Avatar,
   Chip,
   IconButton,
   Paper,
+  Divider,
+  Stack,
 } from '@mui/material';
+import MedicalPageHeader from '../../components/Common/MedicalPageHeader';
+import MedicalStatusIndicator from '../../components/Common/MedicalStatusIndicator';
 import {
-  CalendarToday as CalendarIcon,
-  People as PeopleIcon,
+  Timeline,
+  TimelineItem,
+  TimelineSeparator,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineOppositeContent,
+} from '@mui/lab';
+import {
+  EventNote as CalendarIcon,
+  PersonAdd as PeopleIcon,
   TrendingUp as TrendingUpIcon,
   AttachMoney as MoneyIcon,
   Add as AddIcon,
   Refresh as RefreshIcon,
+  AccessTime as TimeIcon,
+  MedicalServices as MedicalIcon,
+  Event as EventIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  Dashboard as DashboardIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -86,6 +101,7 @@ function Dashboard() {
     completionRate: 0
   });
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const loadDashboardData = async () => {
     try {
@@ -176,16 +192,18 @@ function Dashboard() {
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" component="h1">
-          Dashboard
-        </Typography>
-        <Box>
-          <IconButton onClick={loadDashboardData} disabled={loading}>
-            <RefreshIcon />
-          </IconButton>
+      {/* Medical Page Header */}
+      <MedicalPageHeader
+        title="Clinical Dashboard"
+        subtitle="Real-time overview of your dental practice operations and patient care metrics"
+        icon={DashboardIcon}
+        status="Live"
+        showRefresh={true}
+        onRefresh={loadDashboardData}
+        gradient={true}
+        actions={[
           <Button
+            key="new-appointment"
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => navigate('/appointments/new')}
@@ -193,8 +211,8 @@ function Dashboard() {
           >
             New Appointment
           </Button>
-        </Box>
-      </Box>
+        ]}
+      />
 
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
@@ -229,13 +247,116 @@ function Dashboard() {
         ))}
       </Grid>
 
-      {/* Today's Appointments */}
+      {/* Calendar Widget and Appointment Timeline */}
       <Grid container spacing={3}>
-        <Grid item xs={12} lg={8}>
-          <Paper sx={{ p: 3 }}>
+        {/* Calendar Widget */}
+        <Grid item xs={12} lg={4}>
+          <Paper sx={{ p: 3, height: 'fit-content' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6" component="h2">
-                Today's Appointments
+                Calendar
+              </Typography>
+              <Box>
+                <IconButton size="small" onClick={() => {
+                  const newDate = new Date(selectedDate);
+                  newDate.setMonth(newDate.getMonth() - 1);
+                  setSelectedDate(newDate);
+                }}>
+                  <ChevronLeftIcon />
+                </IconButton>
+                <IconButton size="small" onClick={() => {
+                  const newDate = new Date(selectedDate);
+                  newDate.setMonth(newDate.getMonth() + 1);
+                  setSelectedDate(newDate);
+                }}>
+                  <ChevronRightIcon />
+                </IconButton>
+              </Box>
+            </Box>
+            
+            <Typography variant="subtitle1" sx={{ mb: 2, textAlign: 'center', fontWeight: 600 }}>
+              {format(selectedDate, 'MMMM yyyy')}
+            </Typography>
+            
+            {/* Mini Calendar Grid */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, mb: 2 }}>
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <Typography key={day} variant="caption" sx={{ textAlign: 'center', fontWeight: 600, color: 'text.secondary' }}>
+                  {day}
+                </Typography>
+              ))}
+            </Box>
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1 }}>
+              {Array.from({ length: 35 }, (_, i) => {
+                const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+                const startOfCalendar = new Date(startOfMonth);
+                startOfCalendar.setDate(startOfCalendar.getDate() - startOfMonth.getDay());
+                const currentDate = new Date(startOfCalendar);
+                currentDate.setDate(currentDate.getDate() + i);
+                
+                const isCurrentMonth = currentDate.getMonth() === selectedDate.getMonth();
+                const isToday = format(currentDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+                const hasAppointments = Math.random() > 0.7; // Mock data for demonstration
+                
+                return (
+                  <Box
+                    key={i}
+                    sx={{
+                      p: 1,
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      borderRadius: 1,
+                      position: 'relative',
+                      backgroundColor: isToday ? 'primary.main' : 'transparent',
+                      color: isToday ? 'white' : isCurrentMonth ? 'text.primary' : 'text.disabled',
+                      '&:hover': {
+                        backgroundColor: isToday ? 'primary.dark' : 'action.hover'
+                      }
+                    }}
+                    onClick={() => setSelectedDate(currentDate)}
+                  >
+                    <Typography variant="caption">
+                      {currentDate.getDate()}
+                    </Typography>
+                    {hasAppointments && isCurrentMonth && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 2,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: 4,
+                          height: 4,
+                          borderRadius: '50%',
+                          backgroundColor: isToday ? 'white' : 'primary.main'
+                        }}
+                      />
+                    )}
+                  </Box>
+                );
+              })}
+            </Box>
+            
+            <Divider sx={{ my: 2 }} />
+            
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<EventIcon />}
+              onClick={() => navigate('/appointments')}
+            >
+              View Full Calendar
+            </Button>
+          </Paper>
+        </Grid>
+        
+        {/* Appointment Timeline */}
+        <Grid item xs={12} lg={8}>
+          <Paper sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" component="h2">
+                Today's Schedule
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {format(new Date(), 'EEEE, MMMM d, yyyy')}
@@ -243,75 +364,103 @@ function Dashboard() {
             </Box>
             
             {todaysAppointments.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body1" color="text.secondary">
-                  No appointments scheduled for today
+              <Box sx={{ textAlign: 'center', py: 6 }}>
+                <Avatar sx={{ bgcolor: 'primary.light', mx: 'auto', mb: 2, width: 64, height: 64 }}>
+                  <CalendarIcon sx={{ fontSize: 32 }} />
+                </Avatar>
+                <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+                  No appointments today
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Your schedule is clear for today
                 </Typography>
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   startIcon={<AddIcon />}
                   onClick={() => navigate('/appointments/new')}
-                  sx={{ mt: 2 }}
                 >
                   Schedule Appointment
                 </Button>
               </Box>
             ) : (
-              <List>
-                {todaysAppointments.map((appointment) => (
-                  <ListItem
-                    key={appointment.id}
-                    sx={{
-                      border: '1px solid #e0e0e0',
-                      borderRadius: 2,
-                      mb: 1,
-                      cursor: 'pointer',
-                      '&:hover': {
-                        backgroundColor: '#f5f5f5'
-                      }
-                    }}
-                    onClick={() => navigate(`/appointments/${appointment.id}`)}
-                  >
-                    <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: 'primary.main' }}>
-                        {appointment.patientName ? appointment.patientName.charAt(0) : '?'}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <span style={{ fontSize: '1rem', fontWeight: 500 }}>
-                            {appointment.patientName || 'Unknown Patient'}
-                          </span>
-                          <Chip
-                            label={getStatusLabel(appointment.status)}
-                            color={getStatusColor(appointment.status)}
-                            size="small"
-                          />
-                        </Box>
-                      }
-                      secondary={
-                        <Box sx={{ mt: 0.5 }}>
-                          <div style={{ fontSize: '0.875rem', color: 'rgba(0, 0, 0, 0.6)' }}>
-                            {appointment.time} - {appointment.service}
-                          </div>
-                          <div style={{ fontSize: '0.75rem', color: 'rgba(0, 0, 0, 0.6)' }}>
-                            {appointment.appointmentNumber}
-                          </div>
-                        </Box>
-                      }
-                    />
-                  </ListItem>
+              <Timeline position="left">
+                {todaysAppointments.map((appointment, index) => (
+                  <TimelineItem key={appointment.id}>
+                    <TimelineOppositeContent sx={{ m: 'auto 0', minWidth: 80 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {appointment.time || '10:00 AM'}
+                      </Typography>
+                    </TimelineOppositeContent>
+                    <TimelineSeparator>
+                      <TimelineDot 
+                        sx={{ 
+                          bgcolor: getStatusColor(appointment.status) === 'success' ? 'success.main' :
+                                  getStatusColor(appointment.status) === 'warning' ? 'warning.main' :
+                                  getStatusColor(appointment.status) === 'error' ? 'error.main' : 'primary.main'
+                        }}
+                      >
+                        <MedicalIcon sx={{ fontSize: 16 }} />
+                      </TimelineDot>
+                      {index < todaysAppointments.length - 1 && <TimelineConnector />}
+                    </TimelineSeparator>
+                    <TimelineContent>
+                      <Card 
+                        sx={{ 
+                          mb: 2, 
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            transform: 'translateX(4px)',
+                            boxShadow: 2
+                          }
+                        }}
+                        onClick={() => navigate(`/appointments/${appointment.id}`)}
+                      >
+                        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                              {appointment.patientName || 'Unknown Patient'}
+                            </Typography>
+                            <MedicalStatusIndicator
+                              type="appointment"
+                              status={appointment.status}
+                              size="small"
+                              variant="chip"
+                            />
+                          </Box>
+                          <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <MedicalIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                              <Typography variant="body2" color="text.secondary">
+                                {appointment.service || 'General Checkup'}
+                              </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <TimeIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                              <Typography variant="body2" color="text.secondary">
+                                30 min
+                              </Typography>
+                            </Box>
+                          </Stack>
+                          {appointment.appointmentNumber && (
+                            <Typography variant="caption" color="text.secondary">
+                              #{appointment.appointmentNumber}
+                            </Typography>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </TimelineContent>
+                  </TimelineItem>
                 ))}
-              </List>
+              </Timeline>
             )}
             
             {todaysAppointments.length > 0 && (
-              <Box sx={{ textAlign: 'center', mt: 2 }}>
+              <Box sx={{ textAlign: 'center', mt: 3 }}>
                 <Button
                   variant="outlined"
                   onClick={() => navigate('/appointments')}
+                  startIcon={<CalendarIcon />}
                 >
                   View All Appointments
                 </Button>

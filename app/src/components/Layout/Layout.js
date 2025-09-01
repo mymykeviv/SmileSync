@@ -14,18 +14,26 @@ import {
   Typography,
   useTheme,
   useMediaQuery,
+  Chip,
+  Divider,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Dashboard as DashboardIcon,
-  CalendarToday as CalendarIcon,
-  People as PeopleIcon,
-  Receipt as ReceiptIcon,
-  Inventory as InventoryIcon,
-  Analytics as AnalyticsIcon,
-  AdminPanelSettings as StaffIcon,
+  LocalHospital as DashboardIcon,
+  EventNote as CalendarIcon,
+  PersonAdd as PeopleIcon,
+  Payment as ReceiptIcon,
+  MedicalServices as InventoryIcon,
+  Assessment as AnalyticsIcon,
+  Badge as StaffIcon,
+  Phone as PhoneIcon,
+  LocationOn as LocationIcon,
 } from '@mui/icons-material';
+import NotificationCenter from '../Common/NotificationCenter';
 import { useNavigate, useLocation } from 'react-router-dom';
+import SmileSyncLogo from './SmileSyncLogo';
+import MedicalFooter from './MedicalFooter';
+import MobileBottomNav from './MobileBottomNav';
 
 const drawerWidth = 240;
 
@@ -71,8 +79,8 @@ function Layout({ children }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -87,12 +95,34 @@ function Layout({ children }) {
 
   const drawer = (
     <div>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold', color: '#FFFFFF' }}>
-          SmileSync
-        </Typography>
+      <Toolbar sx={{ flexDirection: 'column', alignItems: 'flex-start', py: 2 }}>
+        <SmileSyncLogo variant="full" color="white" size="medium" />
+        <Box sx={{ mt: 1, width: '100%' }}>
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              color: 'rgba(255, 255, 255, 0.7)', 
+              fontSize: '0.75rem',
+              display: 'block'
+            }}
+          >
+            Professional Dental Care
+          </Typography>
+          <Chip 
+            label="Online" 
+            size="small" 
+            sx={{ 
+              mt: 0.5,
+              backgroundColor: '#4AA98B', 
+              color: 'white',
+              fontSize: '0.7rem',
+              height: 20
+            }} 
+          />
+        </Box>
       </Toolbar>
-      <List>
+      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)' }} />
+      <List sx={{ pt: 1 }}>
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path || 
             (item.path !== '/' && location.pathname.startsWith(item.path));
@@ -147,21 +177,86 @@ function Layout({ children }) {
         sx={{
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
+          backgroundColor: '#FFFFFF',
+          color: '#1F2937',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          borderBottom: '1px solid #E5E7EB'
         }}
       >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Dental Practice Management
-          </Typography>
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2, display: { md: 'none' } }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Box>
+              <Typography 
+                variant="h6" 
+                component="div" 
+                sx={{ 
+                  fontWeight: 600, 
+                  color: '#1F2937',
+                  fontSize: { xs: '1rem', sm: '1.25rem' },
+                  display: { xs: 'none', sm: 'block' }
+                }}
+              >
+                Dental Practice Management
+              </Typography>
+              <Typography 
+                variant="h6" 
+                component="div" 
+                sx={{ 
+                  fontWeight: 600, 
+                  color: '#1F2937',
+                  fontSize: '1rem',
+                  display: { xs: 'block', sm: 'none' }
+                }}
+              >
+                SmileSync
+              </Typography>
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  color: '#6B7280', 
+                  fontSize: '0.75rem',
+                  display: { xs: 'none', sm: 'block' }
+                }}
+              >
+                SmileSync Professional Suite
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1 }}>
+              <PhoneIcon sx={{ fontSize: 16, color: '#6B7280' }} />
+              <Typography variant="caption" sx={{ color: '#6B7280' }}>
+                (555) 123-SMILE
+              </Typography>
+            </Box>
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
+              <LocationIcon sx={{ fontSize: 16, color: '#6B7280' }} />
+              <Typography variant="caption" sx={{ color: '#6B7280' }}>
+                Downtown Dental Center
+              </Typography>
+            </Box>
+            <Chip 
+              label="Dr. Smith's Practice" 
+              size="small" 
+              sx={{ 
+                backgroundColor: '#2A7FAA', 
+                color: 'white',
+                fontSize: '0.7rem'
+              }} 
+            />
+            <NotificationCenter 
+              onNotificationClick={(url) => navigate(url)}
+            />
+          </Box>
         </Toolbar>
       </AppBar>
       <Box
@@ -210,15 +305,25 @@ function Layout({ children }) {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          display: 'flex',
+          flexDirection: 'column',
           width: { md: `calc(100% - ${drawerWidth}px)` },
           minHeight: '100vh',
           backgroundColor: theme.palette.background.default,
         }}
       >
         <Toolbar />
-        {children}
+        <Box sx={{ 
+          flexGrow: 1, 
+          p: { xs: 2, sm: 3 },
+          px: { xs: 1, sm: 3 },
+          pb: { xs: 10, md: 3 }
+        }}>
+          {children}
+        </Box>
+        <MedicalFooter />
       </Box>
+      <MobileBottomNav onMenuClick={handleDrawerToggle} />
     </Box>
   );
 }

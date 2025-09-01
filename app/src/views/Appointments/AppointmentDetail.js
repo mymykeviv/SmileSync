@@ -24,7 +24,7 @@ import {
   ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
-  Person as PersonIcon,
+  PersonAdd as PersonIcon,
   Schedule as ScheduleIcon,
   MedicalServices as MedicalServicesIcon,
   Notes as NotesIcon

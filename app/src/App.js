@@ -29,6 +29,15 @@ import Users from './views/Users/Users';
 
 // Theme configuration
 const theme = createTheme({
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 900,
+      lg: 1200,
+      xl: 1536,
+    },
+  },
   palette: {
     primary: {
       main: '#2A7FAA',
@@ -56,15 +65,90 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontWeight: 700,
+      fontSize: '1.75rem',
+      '@media (min-width:600px)': {
+        fontSize: '2.5rem',
+      },
+      lineHeight: 1.2,
+      color: '#1F2937',
+    },
+    h2: {
+      fontWeight: 700,
+      fontSize: '1.5rem',
+      '@media (min-width:600px)': {
+        fontSize: '2rem',
+      },
+      lineHeight: 1.3,
+      color: '#1F2937',
+    },
+    h3: {
+      fontWeight: 600,
+      fontSize: '1.375rem',
+      '@media (min-width:600px)': {
+        fontSize: '1.75rem',
+      },
+      lineHeight: 1.3,
+      color: '#1F2937',
+    },
     h4: {
       fontWeight: 600,
+      fontSize: '1.25rem',
+      '@media (min-width:600px)': {
+        fontSize: '1.5rem',
+      },
+      lineHeight: 1.4,
+      color: '#1F2937',
     },
     h5: {
       fontWeight: 600,
+      fontSize: '1.125rem',
+      '@media (min-width:600px)': {
+        fontSize: '1.25rem',
+      },
+      lineHeight: 1.4,
+      color: '#1F2937',
     },
     h6: {
       fontWeight: 600,
+      fontSize: '1rem',
+      '@media (min-width:600px)': {
+        fontSize: '1.125rem',
+      },
+      lineHeight: 1.4,
+      color: '#1F2937',
+    },
+    subtitle1: {
+      fontSize: '1rem',
+      fontWeight: 500,
+      color: '#4B5563',
+      lineHeight: 1.5,
+    },
+    subtitle2: {
+      fontSize: '0.875rem',
+      fontWeight: 500,
+      color: '#6B7280',
+      lineHeight: 1.5,
+    },
+    body1: {
+      fontSize: '1rem',
+      fontWeight: 400,
+      color: '#1F2937',
+      lineHeight: 1.6,
+    },
+    body2: {
+      fontSize: '0.875rem',
+      fontWeight: 400,
+      color: '#4B5563',
+      lineHeight: 1.6,
+    },
+    caption: {
+      fontSize: '0.75rem',
+      fontWeight: 400,
+      color: '#6B7280',
+      lineHeight: 1.4,
     },
   },
   components: {
@@ -73,16 +157,29 @@ const theme = createTheme({
         root: {
           textTransform: 'none',
           borderRadius: 4,
-          padding: '12px 24px',
+          padding: '16px 24px',
           fontWeight: 500,
+          minHeight: '48px',
+          '@media (min-width:600px)': {
+            padding: '12px 24px',
+            minHeight: 'auto',
+          },
         },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        sizeSmall: {
+          padding: '12px 16px',
+          minHeight: '44px',
+          '@media (min-width:600px)': {
+            padding: '8px 16px',
+            minHeight: 'auto',
+          },
+        },
+        sizeLarge: {
+          padding: '20px 32px',
+          minHeight: '56px',
+          '@media (min-width:600px)': {
+            padding: '16px 32px',
+            minHeight: 'auto',
+          },
         },
       },
     },
@@ -98,6 +195,10 @@ const theme = createTheme({
         root: {
           '& .MuiOutlinedInput-root': {
             borderRadius: 4,
+            minHeight: '48px',
+            '@media (min-width:600px)': {
+              minHeight: 'auto',
+            },
             '& fieldset': {
               borderColor: '#CBD5E1',
             },
@@ -109,19 +210,175 @@ const theme = createTheme({
               borderWidth: '2px',
             },
           },
+          '& .MuiOutlinedInput-input': {
+            padding: '16px 14px',
+            '@media (min-width:600px)': {
+              padding: '12px 14px',
+            },
+            '&::placeholder': {
+              color: '#6B7280',
+              opacity: 1,
+            },
+          },
           '& .MuiInputLabel-root': {
             color: '#1F2937',
             fontSize: '14px',
           },
-          '& .MuiOutlinedInput-input::placeholder': {
-            color: '#6B7280',
-            opacity: 1,
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: 6,
+          fontWeight: 500,
+        },
+        colorPrimary: {
+          backgroundColor: '#2A7FAA',
+          color: '#FFFFFF',
+        },
+        colorSecondary: {
+          backgroundColor: '#4AA98B',
+          color: '#FFFFFF',
+        },
+      },
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          fontWeight: 500,
+        },
+        standardSuccess: {
+          backgroundColor: '#F0FDF4',
+          color: '#166534',
+          border: '1px solid #BBF7D0',
+        },
+        standardError: {
+          backgroundColor: '#FEF2F2',
+          color: '#991B1B',
+          border: '1px solid #FECACA',
+        },
+        standardWarning: {
+          backgroundColor: '#FFFBEB',
+          color: '#92400E',
+          border: '1px solid #FED7AA',
+        },
+        standardInfo: {
+          backgroundColor: '#EFF6FF',
+          color: '#1E40AF',
+          border: '1px solid #BFDBFE',
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#FFFFFF',
+          color: '#1F2937',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        },
+      },
+    },
+    MuiTableHead: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#F9FAFB',
+          '& .MuiTableCell-head': {
+            fontWeight: 600,
+            color: '#374151',
+            borderBottom: '2px solid #E5E7EB',
           },
         },
       },
     },
-  },
-});
+    MuiTableRow: {
+      styleOverrides: {
+        root: {
+          '&:nth-of-type(even)': {
+            backgroundColor: '#F9FAFB',
+          },
+          '&:hover': {
+            backgroundColor: '#F3F4F6',
+          },
+        },
+      },
+    },
+    MuiTableContainer: {
+      styleOverrides: {
+        root: {
+          '@media (max-width:600px)': {
+            '& .MuiTable-root': {
+              minWidth: '100%',
+            },
+            '& .MuiTableCell-root': {
+              padding: '8px 4px',
+              fontSize: '0.875rem',
+            },
+            '& .MuiTableCell-head': {
+              fontSize: '0.75rem',
+              fontWeight: 600,
+            },
+          },
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          '@media (max-width:600px)': {
+            margin: '8px 0',
+            borderRadius: 6,
+          },
+        },
+       },
+     },
+     MuiDialog: {
+       styleOverrides: {
+         paper: {
+           '@media (max-width:600px)': {
+             margin: 8,
+             width: 'calc(100% - 16px)',
+             maxHeight: 'calc(100% - 16px)',
+           },
+         },
+       },
+     },
+     MuiDialogTitle: {
+       styleOverrides: {
+         root: {
+           '@media (max-width:600px)': {
+             padding: '16px',
+             fontSize: '1.125rem',
+           },
+         },
+       },
+     },
+     MuiDialogContent: {
+       styleOverrides: {
+         root: {
+           '@media (max-width:600px)': {
+             padding: '8px 16px',
+           },
+         },
+       },
+     },
+     MuiDialogActions: {
+       styleOverrides: {
+         root: {
+           '@media (max-width:600px)': {
+             padding: '8px 16px 16px',
+             '& .MuiButton-root': {
+               minWidth: '100px',
+             },
+           },
+         },
+       },
+     },
+   },
+ });
 
 function App() {
   return (

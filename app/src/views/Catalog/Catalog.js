@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import {
   MedicalServices as ServicesIcon,
-  Inventory as ProductsIcon,
+  LocalPharmacy as ProductsIcon,
   Add as AddIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';

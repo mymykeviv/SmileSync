@@ -349,10 +349,120 @@ const exportAnalytics = async (req, res) => {
   }
 };
 
+/**
+ * Get billing analytics
+ */
+const getBillingAnalytics = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const end = endDate || new Date().toISOString().split('T')[0];
+
+    // Get revenue by payment method
+    const revenueByMethod = await database.all(
+      'SELECT payment_method as method, SUM(amount) as amount FROM payments WHERE payment_date BETWEEN ? AND ? GROUP BY payment_method',
+      [start, end]
+    );
+
+    // Get outstanding invoices
+    const outstandingResult = await database.get(
+      'SELECT COUNT(*) as count, SUM(total_amount) as amount FROM invoices WHERE status IN ("pending", "overdue")'
+    );
+
+    // Get overdue invoices
+    const overdueResult = await database.get(
+      'SELECT SUM(total_amount) as amount FROM invoices WHERE status = "overdue"'
+    );
+
+    // Get due soon invoices (due within 7 days)
+    const dueSoonDate = new Date();
+    dueSoonDate.setDate(dueSoonDate.getDate() + 7);
+    const dueSoonResult = await database.get(
+      'SELECT SUM(total_amount) as amount FROM invoices WHERE status = "pending" AND due_date <= ?',
+      [dueSoonDate.toISOString().split('T')[0]]
+    );
+
+    res.json({
+      revenueByMethod: revenueByMethod.map(item => ({
+        method: item.method || 'Cash',
+        amount: parseFloat(parseFloat(item.amount || 0).toFixed(2))
+      })),
+      outstandingCount: outstandingResult.count || 0,
+      outstandingAmount: parseFloat(parseFloat(outstandingResult.amount || 0).toFixed(2)),
+      overdueAmount: parseFloat(parseFloat(overdueResult.amount || 0).toFixed(2)),
+      dueSoonAmount: parseFloat(parseFloat(dueSoonResult.amount || 0).toFixed(2)),
+      dateRange: { start, end }
+    });
+  } catch (error) {
+    console.error('Error getting billing analytics:', error);
+    res.status(500).json({ error: 'Failed to get billing analytics' });
+  }
+};
+
+/**
+ * Get payment analytics
+ */
+const getPaymentAnalytics = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const end = endDate || new Date().toISOString().split('T')[0];
+
+    // Get payment status breakdown
+    const statusBreakdown = await database.all(
+      'SELECT status, COUNT(*) as value FROM invoices WHERE created_at BETWEEN ? AND ? GROUP BY status',
+      [start + ' 00:00:00', end + ' 23:59:59']
+    );
+
+    // Get collection rate trend (mock data for now)
+    const collectionTrend = [];
+    const days = 30;
+    for (let i = days; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      // Calculate collection rate for this date
+      const totalInvoicesResult = await database.get(
+        'SELECT COUNT(*) as count FROM invoices WHERE DATE(created_at) = ?',
+        [dateStr]
+      );
+      
+      const paidInvoicesResult = await database.get(
+        'SELECT COUNT(*) as count FROM invoices WHERE DATE(created_at) = ? AND status = "paid"',
+        [dateStr]
+      );
+      
+      const totalInvoices = totalInvoicesResult.count || 0;
+      const paidInvoices = paidInvoicesResult.count || 0;
+      const rate = totalInvoices > 0 ? (paidInvoices / totalInvoices) * 100 : 0;
+      
+      collectionTrend.push({
+        date: dateStr,
+        rate: parseFloat(rate.toFixed(1))
+      });
+    }
+
+    res.json({
+      statusBreakdown: statusBreakdown.map(item => ({
+        name: item.status.charAt(0).toUpperCase() + item.status.slice(1),
+        value: item.value
+      })),
+      collectionTrend,
+      dateRange: { start, end }
+    });
+  } catch (error) {
+    console.error('Error getting payment analytics:', error);
+    res.status(500).json({ error: 'Failed to get payment analytics' });
+  }
+};
+
 module.exports = {
   getDashboardOverview,
   getAppointmentAnalytics,
   getRevenueAnalytics,
   getPatientAnalytics,
+  getBillingAnalytics,
+  getPaymentAnalytics,
   exportAnalytics
 };

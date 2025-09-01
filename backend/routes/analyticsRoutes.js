@@ -5,6 +5,8 @@ const {
   getAppointmentAnalytics,
   getRevenueAnalytics,
   getPatientAnalytics,
+  getBillingAnalytics,
+  getPaymentAnalytics,
   exportAnalytics
 } = require('../controllers/analyticsController');
 
@@ -45,10 +47,28 @@ router.get('/revenue', getRevenueAnalytics);
 router.get('/patients', getPatientAnalytics);
 
 /**
+ * @route GET /api/analytics/billing
+ * @desc Get billing analytics data
+ * @access Public
+ * @query startDate - Start date for analytics (YYYY-MM-DD)
+ * @query endDate - End date for analytics (YYYY-MM-DD)
+ */
+router.get('/billing', getBillingAnalytics);
+
+/**
+ * @route GET /api/analytics/payments
+ * @desc Get payment analytics data
+ * @access Public
+ * @query startDate - Start date for analytics (YYYY-MM-DD)
+ * @query endDate - End date for analytics (YYYY-MM-DD)
+ */
+router.get('/payments', getPaymentAnalytics);
+
+/**
  * @route GET /api/analytics/export
  * @desc Export analytics data as CSV
  * @access Public
- * @query type - Type of data to export (appointments, revenue, patients)
+ * @query type - Type of data to export (appointments, revenue, patients, billing, payments)
  * @query startDate - Start date for export (YYYY-MM-DD)
  * @query endDate - End date for export (YYYY-MM-DD)
  */

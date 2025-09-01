@@ -37,7 +37,13 @@ import {
   CalendarToday,
   AttachMoney,
   Download,
-  DateRange
+  DateRange,
+  Payment as PaymentIcon,
+  Receipt as InvoiceIcon,
+  Warning as WarningIcon,
+  CheckCircle as PaidIcon,
+  Schedule as PendingIcon,
+  Cancel as OverdueIcon
 } from '@mui/icons-material';
 import { analyticsService } from '../../services/analyticsService';
 
@@ -84,6 +90,8 @@ const Analytics = () => {
   const [appointmentData, setAppointmentData] = useState(null);
   const [revenueData, setRevenueData] = useState(null);
   const [patientData, setPatientData] = useState(null);
+  const [billingData, setBillingData] = useState(null);
+  const [paymentData, setPaymentData] = useState(null);
 
   useEffect(() => {
     loadAnalyticsData();
@@ -94,17 +102,21 @@ const Analytics = () => {
       setLoading(true);
       setError(null);
       
-      const [dashboard, appointments, revenue, patients] = await Promise.all([
+      const [dashboard, appointments, revenue, patients, billing, payment] = await Promise.all([
         analyticsService.getDashboardOverview(dateRange.startDate, dateRange.endDate),
         analyticsService.getAppointmentAnalytics(dateRange.startDate, dateRange.endDate),
         analyticsService.getRevenueAnalytics(dateRange.startDate, dateRange.endDate),
-        analyticsService.getPatientAnalytics(dateRange.startDate, dateRange.endDate)
+        analyticsService.getPatientAnalytics(dateRange.startDate, dateRange.endDate),
+        analyticsService.getBillingAnalytics(dateRange.startDate, dateRange.endDate),
+        analyticsService.getPaymentAnalytics(dateRange.startDate, dateRange.endDate)
       ]);
       
       setDashboardData(dashboard);
       setAppointmentData(appointments);
       setRevenueData(revenue);
       setPatientData(patients);
+      setBillingData(billing);
+      setPaymentData(payment);
     } catch (err) {
       setError('Failed to load analytics data. Please try again.');
       console.error('Analytics loading error:', err);
@@ -356,13 +368,133 @@ const Analytics = () => {
         )}
       </Grid>
 
+      {/* Billing Dashboard */}
+      <Grid container spacing={3} sx={{ mt: 2 }}>
+        <Grid item xs={12}>
+          <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <PaymentIcon color="primary" />
+            Billing Dashboard
+          </Typography>
+        </Grid>
+        
+        {/* Payment Status Overview */}
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <PaidIcon color="success" />
+                Payment Status
+              </Typography>
+              {paymentData && (
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={paymentData.statusBreakdown || []}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={60}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {(paymentData.statusBreakdown || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Revenue by Payment Method */}
+        <Grid item xs={12} md={8}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AttachMoney color="primary" />
+                Revenue by Payment Method
+              </Typography>
+              {billingData && (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={billingData.revenueByMethod || []}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="method" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Revenue']} />
+                    <Bar dataKey="amount" fill="#2A7FAA" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Outstanding Invoices */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <WarningIcon color="warning" />
+                Outstanding Invoices
+              </Typography>
+              {billingData && (
+                <Box>
+                  <Typography variant="h4" color="warning.main">
+                    ${(billingData.outstandingAmount || 0).toLocaleString()}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {billingData.outstandingCount || 0} invoices pending
+                  </Typography>
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Overdue:</span>
+                      <span style={{ color: '#EF4444' }}>${(billingData.overdueAmount || 0).toLocaleString()}</span>
+                    </Typography>
+                    <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Due Soon:</span>
+                      <span style={{ color: '#F59E0B' }}>${(billingData.dueSoonAmount || 0).toLocaleString()}</span>
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Payment Trends */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TrendingUp color="primary" />
+                Payment Collection Rate
+              </Typography>
+              {paymentData && (
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={paymentData.collectionTrend || []}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip formatter={(value) => [`${value}%`, 'Collection Rate']} />
+                    <Line type="monotone" dataKey="rate" stroke="#10B981" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
       {/* Export Section */}
-      <Paper sx={{ p: 3, mt: 4 }}>
+      <Paper sx={{ p: 3, mt: 3 }}>
         <Typography variant="h6" gutterBottom>
           Export Data
         </Typography>
-        <Box display="flex" gap={2} alignItems="center">
-          <FormControl size="small" sx={{ minWidth: 200 }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Export Type</InputLabel>
             <Select
               value={exportType}
@@ -370,8 +502,10 @@ const Analytics = () => {
               onChange={(e) => setExportType(e.target.value)}
             >
               <MenuItem value="appointments">Appointments</MenuItem>
-              <MenuItem value="revenue">Revenue</MenuItem>
               <MenuItem value="patients">Patients</MenuItem>
+              <MenuItem value="revenue">Revenue</MenuItem>
+              <MenuItem value="billing">Billing</MenuItem>
+              <MenuItem value="payments">Payments</MenuItem>
             </Select>
           </FormControl>
           <Button

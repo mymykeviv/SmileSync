@@ -38,10 +38,10 @@ import {
   Visibility as ViewIcon,
   MoreVert as MoreVertIcon,
   Refresh as RefreshIcon,
-  Inventory as ProductsIcon,
-  Warning as WarningIcon,
+  LocalPharmacy as ProductsIcon,
+  ReportProblem as WarningIcon,
   TrendingDown as LowStockIcon,
-  Settings as SettingsIcon,
+  MedicalServices as SettingsIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 

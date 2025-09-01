@@ -26,6 +26,11 @@ import {
   Fab,
   Menu,
   MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  Collapse,
+  Divider,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -35,7 +40,15 @@ import {
   Visibility as ViewIcon,
   MoreVert as MoreVertIcon,
   Refresh as RefreshIcon,
-  Person as PersonIcon,
+  PersonAdd as PersonIcon,
+  Warning as WarningIcon,
+  CheckCircle as CheckCircleIcon,
+  MedicalServices as MedicalIcon,
+  LocalPharmacy as PharmacyIcon,
+  FilterList as FilterIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { format, parseISO, differenceInYears } from 'date-fns';
@@ -53,6 +66,17 @@ function Patients() {
   
   // Search and filters
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    ageRange: '',
+    gender: '',
+    insuranceProvider: '',
+    hasAllergies: '',
+    hasMedications: '',
+    isActive: '',
+    lastVisitFrom: '',
+    lastVisitTo: ''
+  });
   
   // Dialog states
   const [deleteDialog, setDeleteDialog] = useState({ open: false, patient: null });
@@ -144,6 +168,79 @@ function Patients() {
     }
   };
 
+  const getMedicalStatusIndicators = (patient) => {
+    const indicators = [];
+    
+    // Check for allergies
+    if (patient.allergies && patient.allergies.trim() !== '') {
+      indicators.push({
+        label: 'Allergies',
+        color: 'warning',
+        icon: <WarningIcon sx={{ fontSize: 14 }} />
+      });
+    }
+    
+    // Check for medications
+    if (patient.medications && patient.medications.trim() !== '') {
+      indicators.push({
+        label: 'Medications',
+        color: 'info',
+        icon: <PharmacyIcon sx={{ fontSize: 14 }} />
+      });
+    }
+    
+    // Check for medical history
+    if (patient.medicalHistory && patient.medicalHistory.trim() !== '') {
+      indicators.push({
+        label: 'Medical History',
+        color: 'secondary',
+        icon: <MedicalIcon sx={{ fontSize: 14 }} />
+      });
+    }
+    
+    // Active status
+    if (patient.isActive) {
+      indicators.push({
+        label: 'Active',
+        color: 'success',
+        icon: <CheckCircleIcon sx={{ fontSize: 14 }} />
+      });
+    }
+    
+    return indicators;
+  };
+
+  const getPatientStatusColor = (patient) => {
+    if (!patient.isActive) return 'error';
+    if (patient.allergies && patient.allergies.trim() !== '') return 'warning';
+    return 'success';
+  };
+
+  const handleFilterChange = (filterName, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterName]: value
+    }));
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setFilters({
+      ageRange: '',
+      gender: '',
+      insuranceProvider: '',
+      hasAllergies: '',
+      hasMedications: '',
+      isActive: '',
+      lastVisitFrom: '',
+      lastVisitTo: ''
+    });
+  };
+
+  const hasActiveFilters = () => {
+    return searchTerm || Object.values(filters).some(value => value !== '');
+  };
+
   return (
     <Box>
       {/* Header */}
@@ -166,7 +263,7 @@ function Patients() {
         </Box>
       </Box>
 
-      {/* Search */}
+      {/* Search and Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2} alignItems="center">
@@ -186,15 +283,153 @@ function Patients() {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <Button
-                variant="outlined"
-                onClick={() => setSearchTerm('')}
-                disabled={!searchTerm}
-              >
-                Clear Search
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                <Button
+                  variant="outlined"
+                  startIcon={showAdvancedFilters ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  endIcon={<FilterIcon />}
+                >
+                  Advanced Filters
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<ClearIcon />}
+                  onClick={clearAllFilters}
+                  disabled={!hasActiveFilters()}
+                >
+                  Clear All
+                </Button>
+              </Box>
             </Grid>
           </Grid>
+          
+          <Collapse in={showAdvancedFilters}>
+            <Divider sx={{ my: 2 }} />
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Age Range</InputLabel>
+                  <Select
+                    value={filters.ageRange}
+                    label="Age Range"
+                    onChange={(e) => handleFilterChange('ageRange', e.target.value)}
+                  >
+                    <MenuItem value="">All Ages</MenuItem>
+                    <MenuItem value="0-17">0-17 years</MenuItem>
+                    <MenuItem value="18-30">18-30 years</MenuItem>
+                    <MenuItem value="31-50">31-50 years</MenuItem>
+                    <MenuItem value="51-70">51-70 years</MenuItem>
+                    <MenuItem value="70+">70+ years</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Gender</InputLabel>
+                  <Select
+                    value={filters.gender}
+                    label="Gender"
+                    onChange={(e) => handleFilterChange('gender', e.target.value)}
+                  >
+                    <MenuItem value="">All Genders</MenuItem>
+                    <MenuItem value="male">Male</MenuItem>
+                    <MenuItem value="female">Female</MenuItem>
+                    <MenuItem value="other">Other</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Medical Status</InputLabel>
+                  <Select
+                    value={filters.hasAllergies}
+                    label="Medical Status"
+                    onChange={(e) => handleFilterChange('hasAllergies', e.target.value)}
+                  >
+                    <MenuItem value="">All Patients</MenuItem>
+                    <MenuItem value="true">Has Allergies</MenuItem>
+                    <MenuItem value="false">No Allergies</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Patient Status</InputLabel>
+                  <Select
+                    value={filters.isActive}
+                    label="Patient Status"
+                    onChange={(e) => handleFilterChange('isActive', e.target.value)}
+                  >
+                    <MenuItem value="">All Patients</MenuItem>
+                    <MenuItem value="true">Active</MenuItem>
+                    <MenuItem value="false">Inactive</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Last Visit From"
+                  type="date"
+                  value={filters.lastVisitFrom}
+                  onChange={(e) => handleFilterChange('lastVisitFrom', e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Last Visit To"
+                  type="date"
+                  value={filters.lastVisitTo}
+                  onChange={(e) => handleFilterChange('lastVisitTo', e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Insurance Provider</InputLabel>
+                  <Select
+                    value={filters.insuranceProvider}
+                    label="Insurance Provider"
+                    onChange={(e) => handleFilterChange('insuranceProvider', e.target.value)}
+                  >
+                    <MenuItem value="">All Providers</MenuItem>
+                    <MenuItem value="Blue Cross">Blue Cross</MenuItem>
+                    <MenuItem value="Aetna">Aetna</MenuItem>
+                    <MenuItem value="Cigna">Cigna</MenuItem>
+                    <MenuItem value="UnitedHealth">UnitedHealth</MenuItem>
+                    <MenuItem value="Humana">Humana</MenuItem>
+                    <MenuItem value="Other">Other</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Medications</InputLabel>
+                  <Select
+                    value={filters.hasMedications}
+                    label="Medications"
+                    onChange={(e) => handleFilterChange('hasMedications', e.target.value)}
+                  >
+                    <MenuItem value="">All Patients</MenuItem>
+                    <MenuItem value="true">Has Medications</MenuItem>
+                    <MenuItem value="false">No Medications</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Collapse>
         </CardContent>
       </Card>
 
@@ -217,10 +452,14 @@ function Patients() {
                 <TableRow key={patient.id} hover>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar sx={{ bgcolor: 'primary.main' }}>
+                      <Avatar sx={{ 
+                        bgcolor: `${getPatientStatusColor(patient)}.main`,
+                        border: patient.allergies ? '2px solid' : 'none',
+                        borderColor: 'warning.main'
+                      }}>
                         {getInitials(patient.firstName, patient.lastName)}
                       </Avatar>
-                      <Box>
+                      <Box sx={{ flex: 1 }}>
                         <Typography
                           variant="body1"
                           fontWeight="medium"
@@ -229,9 +468,27 @@ function Patients() {
                         >
                           {patient.firstName} {patient.lastName}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
                           {patient.patientNumber}
                         </Typography>
+                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                          {getMedicalStatusIndicators(patient).map((indicator, index) => (
+                            <Chip
+                              key={index}
+                              label={indicator.label}
+                              color={indicator.color}
+                              size="small"
+                              icon={indicator.icon}
+                              variant="outlined"
+                              sx={{ 
+                                fontSize: '0.7rem',
+                                height: 20,
+                                '& .MuiChip-label': { px: 0.5 },
+                                '& .MuiChip-icon': { fontSize: 12 }
+                              }}
+                            />
+                          ))}
+                        </Box>
                       </Box>
                     </Box>
                   </TableCell>

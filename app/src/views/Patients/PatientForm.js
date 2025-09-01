@@ -22,7 +22,7 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
   ArrowBack as ArrowBackIcon,
-  Person as PersonIcon,
+  PersonAdd as PersonIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format } from 'date-fns';

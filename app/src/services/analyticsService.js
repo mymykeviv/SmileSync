@@ -69,6 +69,40 @@ class AnalyticsService {
     }
   }
 
+  async getBillingAnalytics(startDate, endDate) {
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+      
+      const response = await fetch(`${API_BASE_URL}/analytics/billing?${params}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching billing analytics:', error);
+      throw error;
+    }
+  }
+
+  async getPaymentAnalytics(startDate, endDate) {
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+      
+      const response = await fetch(`${API_BASE_URL}/analytics/payments?${params}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching payment analytics:', error);
+      throw error;
+    }
+  }
+
   async exportData(type, startDate, endDate) {
     try {
       const params = new URLSearchParams();

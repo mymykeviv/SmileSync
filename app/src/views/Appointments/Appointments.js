@@ -15,16 +15,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
   Paper,
   InputAdornment,
   Fab,
+  Avatar,
+  CardActions,
+  Divider,
+  Stack,
+  Pagination,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -35,6 +33,9 @@ import {
   Schedule as ScheduleIcon,
   CheckCircle as CheckCircleIcon,
   Refresh as RefreshIcon,
+  PersonAdd as PersonIcon,
+  AccessTime as AccessTimeIcon,
+  MedicalServices as MedicalServicesIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useNavigate } from 'react-router-dom';
@@ -266,85 +267,146 @@ function Appointments() {
         </CardContent>
       </Card>
 
-      {/* Appointments Table */}
-      <Paper>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Appointment #</TableCell>
-                <TableCell>Patient</TableCell>
-                <TableCell>Date & Time</TableCell>
-                <TableCell>Service</TableCell>
-                <TableCell>Dentist</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Duration</TableCell>
-                <TableCell align="center">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredAppointments
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((appointment) => (
-                <TableRow key={appointment.id} hover>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight="medium">
-                      {appointment.appointmentNumber}
+      {/* Appointments Cards */}
+      <Grid container spacing={3}>
+        {filteredAppointments
+          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+          .map((appointment) => (
+            <Grid item xs={12} md={6} lg={4} key={appointment.id}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: 3,
+                  },
+                  border: '1px solid',
+                  borderColor: 'divider',
+                }}
+              >
+                <CardContent sx={{ flexGrow: 1, pb: 1 }}>
+                  {/* Header with appointment number and status */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                      #{appointment.appointmentNumber}
                     </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ cursor: 'pointer', color: 'primary.main' }}
-                      onClick={() => navigate(`/patients/${appointment.patientId}`)}
-                    >
-                      {appointment.patientName}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {formatAppointmentDate(appointment.date)}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {appointment.time}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{appointment.service}</TableCell>
-                  <TableCell>{appointment.dentist}</TableCell>
-                  <TableCell>
                     <Chip
                       label={getStatusLabel(appointment.status)}
                       color={getStatusColor(appointment.status)}
                       size="small"
+                      sx={{ fontWeight: 500 }}
                     />
-                  </TableCell>
-                  <TableCell>{appointment.duration} min</TableCell>
-                  <TableCell align="center">
-                    <IconButton
-                      onClick={(e) => handleMenuOpen(e, appointment)}
-                      size="small"
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredAppointments.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={(e, newPage) => setPage(newPage)}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
-        />
-      </Paper>
+                  </Box>
+
+                  {/* Patient Info */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Avatar sx={{ bgcolor: 'primary.light', mr: 2, width: 40, height: 40 }}>
+                      <PersonIcon />
+                    </Avatar>
+                    <Box>
+                      <Typography 
+                        variant="subtitle1" 
+                        sx={{ 
+                          fontWeight: 600,
+                          cursor: 'pointer', 
+                          color: 'text.primary',
+                          '&:hover': { color: 'primary.main' }
+                        }}
+                        onClick={() => navigate(`/patients/${appointment.patientId}`)}
+                      >
+                        {appointment.patientName}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Patient ID: {appointment.patientId}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Date & Time */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <AccessTimeIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }} />
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {formatAppointmentDate(appointment.date)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {appointment.time} ({appointment.duration} min)
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Service & Dentist */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <MedicalServicesIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }} />
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {appointment.service}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Dr. {appointment.dentist}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+
+                <Divider />
+                <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
+                  <IconButton
+                    onClick={(e) => handleMenuOpen(e, appointment)}
+                    size="small"
+                    sx={{ 
+                      bgcolor: 'action.hover',
+                      '&:hover': { bgcolor: 'action.selected' }
+                    }}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))
+        }
+      </Grid>
+
+      {/* Pagination */}
+      {filteredAppointments.length > 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Pagination
+            count={Math.ceil(filteredAppointments.length / rowsPerPage)}
+            page={page + 1}
+            onChange={(e, newPage) => setPage(newPage - 1)}
+            color="primary"
+            size="large"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+      )}
+
+      {/* Empty State */}
+      {filteredAppointments.length === 0 && (
+        <Paper sx={{ p: 6, textAlign: 'center', mt: 3 }}>
+          <ScheduleIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No appointments found
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            {searchTerm || statusFilter !== 'all' || selectedDate 
+              ? 'Try adjusting your filters to see more results.'
+              : 'Get started by scheduling your first appointment.'}
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/appointments/new')}
+          >
+            Schedule Appointment
+          </Button>
+        </Paper>
+      )}
 
       {/* Action Menu */}
       <Menu
