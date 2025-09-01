@@ -41,7 +41,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import ApiService from '../../services/api';
-import { analyticsService } from '../../services/analyticsService';
 
 // API service using real backend endpoints
 const api = {
@@ -66,7 +65,8 @@ const api = {
       const today = format(new Date(), 'yyyy-MM-dd');
       const startOfMonth = format(new Date(new Date().getFullYear(), new Date().getMonth(), 1), 'yyyy-MM-dd');
       
-      const response = await analyticsService.getDashboardOverview(startOfMonth, today);
+      // Use ApiService.request to ensure proper authentication
+      const response = await ApiService.request(`/analytics/dashboard?startDate=${startOfMonth}&endDate=${today}`);
       return {
         success: true,
         data: {
