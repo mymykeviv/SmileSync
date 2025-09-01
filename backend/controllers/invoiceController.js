@@ -1,4 +1,5 @@
 const { Invoice, Patient, Service, Product, Payment } = require('../models');
+const ClinicConfig = require('../models/ClinicConfig');
 const { convertInvoiceToBackend, convertPaymentToBackend } = require('../utils/fieldMapping');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
@@ -303,6 +304,9 @@ class InvoiceController {
         });
       }
 
+      // Get clinic configuration
+      const clinicConfig = await ClinicConfig.get();
+      
       // Get invoice items
       const items = await invoice.getItems();
       
@@ -316,19 +320,37 @@ class InvoiceController {
       // Pipe PDF to response
       doc.pipe(res);
       
-      // Add content to PDF
-      doc.fontSize(20).text('SmileSync Dental Clinic', 50, 50);
-      doc.fontSize(16).text('Invoice', 50, 80);
+      // Add clinic header to PDF
+      doc.fontSize(20).text(clinicConfig.clinicName || 'SmileSync Dental Clinic', 50, 50);
+      
+      // Add clinic contact information
+      let yPos = 75;
+      if (clinicConfig.clinicAddress) {
+        doc.fontSize(10).text(clinicConfig.clinicAddress, 50, yPos);
+        yPos += 15;
+      }
+      if (clinicConfig.contactPhone) {
+        doc.fontSize(10).text(`Phone: ${clinicConfig.contactPhone}`, 50, yPos);
+        yPos += 15;
+      }
+      if (clinicConfig.email) {
+        doc.fontSize(10).text(`Email: ${clinicConfig.email}`, 50, yPos);
+        yPos += 15;
+      }
+      
+      // Invoice title
+      doc.fontSize(16).text('Invoice', 50, yPos + 10);
+      yPos += 40;
       
       // Invoice details
       doc.fontSize(12)
-         .text(`Invoice Number: ${invoice.invoiceNumber}`, 50, 120)
-         .text(`Date: ${new Date(invoice.invoiceDate).toLocaleDateString()}`, 50, 140)
-         .text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}`, 50, 160)
-         .text(`Patient ID: ${invoice.patientId}`, 50, 180);
+         .text(`Invoice Number: ${invoice.invoiceNumber}`, 50, yPos)
+         .text(`Date: ${new Date(invoice.invoiceDate).toLocaleDateString()}`, 50, yPos + 20)
+         .text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}`, 50, yPos + 40)
+         .text(`Patient ID: ${invoice.patientId}`, 50, yPos + 60);
       
       // Items table header
-      let yPosition = 220;
+      let yPosition = yPos + 100;
       doc.text('Description', 50, yPosition)
          .text('Quantity', 200, yPosition)
          .text('Unit Price', 300, yPosition)

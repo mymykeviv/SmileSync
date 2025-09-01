@@ -327,3 +327,18 @@ CREATE TRIGGER IF NOT EXISTS update_invoice_totals_after_item_delete
             balance_due = subtotal + tax_amount - discount_amount - amount_paid
         WHERE id = OLD.invoice_id;
     END;
+
+-- Clinic Configuration table for storing customizable clinic details
+CREATE TABLE IF NOT EXISTS clinic_config (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    clinic_name TEXT NOT NULL DEFAULT 'Dental Practice Management',
+    clinic_subtitle TEXT NOT NULL DEFAULT 'SmileSync Professional Dental Practice Management Suite',
+    contact_phone TEXT NOT NULL DEFAULT '(555) 123-SMILE',
+    clinic_address TEXT NOT NULL DEFAULT 'Downtown Dental Center',
+    practice_name TEXT NOT NULL DEFAULT 'Dr. Smith''s Practice',
+    email TEXT DEFAULT 'info@smilesync.com',
+    website TEXT DEFAULT 'www.smilesync.com',
+    logo_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

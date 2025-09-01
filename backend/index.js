@@ -12,6 +12,7 @@ const serviceRoutes = require('./routes/serviceRoutes');
 const productRoutes = require('./routes/productRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const userRoutes = require('./routes/users');
+const clinicConfigRoutes = require('./routes/clinicConfigRoutes');
 
 // Import authentication middleware
 const { authenticateToken, requireRole } = require('./middleware/auth');
@@ -48,6 +49,7 @@ app.get('/health', (req, res) => {
 // API routes
 // Public routes (no authentication required)
 app.use('/api/auth', authRoutes);
+app.use('/api/clinic', clinicConfigRoutes);
 
 // Protected routes (authentication required)
 app.use('/api/appointments', authenticateToken, appointmentRoutes);

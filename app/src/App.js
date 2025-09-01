@@ -28,6 +28,7 @@ import CategorySupplierManager from './views/Products/CategorySupplierManager';
 import Catalog from './views/Catalog/Catalog';
 import Analytics from './views/Analytics/Analytics';
 import Users from './views/Users/Users';
+import SystemSettings from './views/Settings/SystemSettings';
 import Login from './views/Auth/Login';
 import Unauthorized from './views/Auth/Unauthorized';
 
@@ -479,6 +480,13 @@ function App() {
                       
                       {/* Analytics */}
                       <Route path="/analytics" element={<Analytics />} />
+                      
+                      {/* System Settings - Admin only */}
+                      <Route path="/settings" element={
+                        <ProtectedRoute requiredRole="admin">
+                          <SystemSettings />
+                        </ProtectedRoute>
+                      } />
                       
                       {/* Catch all route */}
                       <Route path="*" element={<Navigate to="/" replace />} />

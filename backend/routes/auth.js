@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const { User } = require('../models');
 const { convertUserToFrontend } = require('../utils/fieldMapping');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -85,7 +86,7 @@ router.post('/login', loginValidation, async (req, res) => {
  * @desc    Logout user (client-side token removal)
  * @access  Private
  */
-router.post('/logout', (req, res) => {
+router.post('/logout', authenticateToken, (req, res) => {
     // In a stateless JWT system, logout is handled client-side by removing the token
     // In the future, we could implement token blacklisting here
     res.json({
@@ -99,16 +100,10 @@ router.post('/logout', (req, res) => {
  * @desc    Get current user profile
  * @access  Private
  */
-router.get('/me', async (req, res) => {
+router.get('/me', authenticateToken, async (req, res) => {
     try {
-        // This route requires authentication middleware
-        const userId = req.user?.userId;
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: 'Authentication required'
-            });
-        }
+        // Authentication middleware ensures req.user is populated
+        const userId = req.user.userId;
 
         const user = await User.findById(userId);
         if (!user) {
@@ -138,7 +133,7 @@ router.get('/me', async (req, res) => {
  * @desc    Change user password
  * @access  Private
  */
-router.post('/change-password', [
+router.post('/change-password', authenticateToken, [
     body('currentPassword')
         .notEmpty()
         .withMessage('Current password is required'),

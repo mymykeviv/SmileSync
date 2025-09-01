@@ -380,9 +380,21 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  // Clinic Configuration API methods
+  static async getClinicConfig() {
+    return this.request('/clinic/config');
+  }
+
+  static async updateClinicConfig(configData) {
+    return this.request('/clinic/config', {
+      method: 'PUT',
+      body: configData,
+    });
+  }
 }
 
-// Initialize auth token from localStorage on app start
+// Initialize auth token from localStorage
 const storedToken = localStorage.getItem('authToken');
 if (storedToken) {
   ApiService.setAuthToken(storedToken);

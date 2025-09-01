@@ -12,7 +12,7 @@ import {
   Paper
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import ApiService from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Login = ({ onLogin }) => {
   const [formData, setFormData] = useState({
@@ -22,6 +22,7 @@ const Login = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,30 +40,22 @@ const Login = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await ApiService.post('/auth/login', formData);
+      const result = await login(formData);
       
-      if (response.success) {
-        // Store token in localStorage
-        localStorage.setItem('authToken', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        
-        // Set authorization header for future requests
-        ApiService.setAuthToken(response.data.token);
-        
+      if (result.success) {
         // Call onLogin callback if provided
         if (onLogin) {
-          onLogin(response.data.user);
+          onLogin(result.user);
         }
         
         // Navigate to dashboard (root path)
         navigate('/');
       } else {
-        setError(response.message || 'Login failed');
+        setError(result.message || 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
       setError(
-        error.response?.data?.message || 
         error.message || 
         'An error occurred during login'
       );

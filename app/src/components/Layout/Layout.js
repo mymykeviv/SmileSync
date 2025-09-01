@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Box,
@@ -34,10 +34,12 @@ import {
   LocationOn as LocationIcon,
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import NotificationCenter from '../Common/NotificationCenter';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import ApiService from '../../services/api';
 import SmileSyncLogo from './SmileSyncLogo';
 import MedicalFooter from './MedicalFooter';
 import MobileBottomNav from './MobileBottomNav';
@@ -80,6 +82,12 @@ const menuItems = [
     icon: <AnalyticsIcon />,
     path: '/analytics',
   },
+  {
+    text: 'Settings',
+    icon: <SettingsIcon />,
+    path: '/settings',
+    adminOnly: true,
+  },
 ];
 
 function Layout({ children }) {
@@ -87,9 +95,30 @@ function Layout({ children }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [clinicConfig, setClinicConfig] = useState({
+    clinicName: 'Dental Practice Management',
+    clinicSubtitle: 'SmileSync Professional Suite',
+    contactPhone: '(555) 123-SMILE',
+    clinicAddress: 'Downtown Dental Center',
+    practiceName: 'Dr. Smith\'s Practice'
+  });
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  useEffect(() => {
+    const fetchClinicConfig = async () => {
+      try {
+        const config = await ApiService.getClinicConfig();
+        setClinicConfig(config);
+      } catch (error) {
+        console.error('Failed to fetch clinic configuration:', error);
+        // Keep default values if fetch fails
+      }
+    };
+
+    fetchClinicConfig();
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -150,7 +179,9 @@ function Layout({ children }) {
       </Toolbar>
       <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)' }} />
       <List sx={{ pt: 1 }}>
-        {menuItems.map((item) => {
+        {menuItems
+          .filter(item => !item.adminOnly || user?.role === 'admin')
+          .map((item) => {
           const isActive = location.pathname === item.path || 
             (item.path !== '/' && location.pathname.startsWith(item.path));
           
@@ -232,7 +263,7 @@ function Layout({ children }) {
                   display: { xs: 'none', sm: 'block' }
                 }}
               >
-                Dental Practice Management
+                {clinicConfig?.clinicName || 'Dental Practice Management'}
               </Typography>
               <Typography 
                 variant="h6" 
@@ -244,7 +275,7 @@ function Layout({ children }) {
                   display: { xs: 'block', sm: 'none' }
                 }}
               >
-                SmileSync
+                {clinicConfig?.clinicName?.split(' ')[0] || 'SmileSync'}
               </Typography>
               <Typography 
                 variant="caption" 
@@ -254,7 +285,7 @@ function Layout({ children }) {
                   display: { xs: 'none', sm: 'block' }
                 }}
               >
-                SmileSync Professional Suite
+                {clinicConfig?.clinicSubtitle || 'SmileSync Professional Suite'}
               </Typography>
             </Box>
           </Box>
@@ -262,17 +293,17 @@ function Layout({ children }) {
             <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1 }}>
               <PhoneIcon sx={{ fontSize: 16, color: '#6B7280' }} />
               <Typography variant="caption" sx={{ color: '#6B7280' }}>
-                (555) 123-SMILE
+                {clinicConfig?.contactPhone || '(555) 123-SMILE'}
               </Typography>
             </Box>
             <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }}>
               <LocationIcon sx={{ fontSize: 16, color: '#6B7280' }} />
               <Typography variant="caption" sx={{ color: '#6B7280' }}>
-                Downtown Dental Center
+                {clinicConfig?.clinicAddress || 'Downtown Dental Center'}
               </Typography>
             </Box>
             <Chip 
-              label="Dr. Smith's Practice" 
+              label={clinicConfig?.practiceName || "Dr. Smith's Practice"} 
               size="small" 
               sx={{ 
                 backgroundColor: '#2A7FAA', 
