@@ -1,17 +1,15 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+import ApiService from './api';
 
 class AnalyticsService {
   async getDashboardOverview(startDate, endDate) {
     try {
-      const params = new URLSearchParams();
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
+      const params = {};
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
       
-      const response = await fetch(`${API_BASE_URL}/analytics/dashboard?${params}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      const queryString = new URLSearchParams(params).toString();
+      const endpoint = `/analytics/dashboard${queryString ? `?${queryString}` : ''}`;
+      return await ApiService.request(endpoint);
     } catch (error) {
       console.error('Error fetching dashboard overview:', error);
       throw error;
@@ -20,15 +18,13 @@ class AnalyticsService {
 
   async getAppointmentAnalytics(startDate, endDate) {
     try {
-      const params = new URLSearchParams();
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
+      const params = {};
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
       
-      const response = await fetch(`${API_BASE_URL}/analytics/appointments?${params}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      const queryString = new URLSearchParams(params).toString();
+      const endpoint = `/analytics/appointments${queryString ? `?${queryString}` : ''}`;
+      return await ApiService.request(endpoint);
     } catch (error) {
       console.error('Error fetching appointment analytics:', error);
       throw error;
@@ -37,15 +33,13 @@ class AnalyticsService {
 
   async getRevenueAnalytics(startDate, endDate) {
     try {
-      const params = new URLSearchParams();
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
+      const params = {};
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
       
-      const response = await fetch(`${API_BASE_URL}/analytics/revenue?${params}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      const queryString = new URLSearchParams(params).toString();
+      const endpoint = `/analytics/revenue${queryString ? `?${queryString}` : ''}`;
+      return await ApiService.request(endpoint);
     } catch (error) {
       console.error('Error fetching revenue analytics:', error);
       throw error;
@@ -54,15 +48,13 @@ class AnalyticsService {
 
   async getPatientAnalytics(startDate, endDate) {
     try {
-      const params = new URLSearchParams();
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
+      const params = {};
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
       
-      const response = await fetch(`${API_BASE_URL}/analytics/patients?${params}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      const queryString = new URLSearchParams(params).toString();
+      const endpoint = `/analytics/patients${queryString ? `?${queryString}` : ''}`;
+      return await ApiService.request(endpoint);
     } catch (error) {
       console.error('Error fetching patient analytics:', error);
       throw error;
@@ -71,15 +63,13 @@ class AnalyticsService {
 
   async getBillingAnalytics(startDate, endDate) {
     try {
-      const params = new URLSearchParams();
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
+      const params = {};
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
       
-      const response = await fetch(`${API_BASE_URL}/analytics/billing?${params}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      const queryString = new URLSearchParams(params).toString();
+      const endpoint = `/analytics/billing${queryString ? `?${queryString}` : ''}`;
+      return await ApiService.request(endpoint);
     } catch (error) {
       console.error('Error fetching billing analytics:', error);
       throw error;
@@ -88,15 +78,13 @@ class AnalyticsService {
 
   async getPaymentAnalytics(startDate, endDate) {
     try {
-      const params = new URLSearchParams();
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
+      const params = {};
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
       
-      const response = await fetch(`${API_BASE_URL}/analytics/payments?${params}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      const queryString = new URLSearchParams(params).toString();
+      const endpoint = `/analytics/payments${queryString ? `?${queryString}` : ''}`;
+      return await ApiService.request(endpoint);
     } catch (error) {
       console.error('Error fetching payment analytics:', error);
       throw error;
@@ -105,12 +93,23 @@ class AnalyticsService {
 
   async exportData(type, startDate, endDate) {
     try {
-      const params = new URLSearchParams();
-      params.append('type', type);
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
+      const params = { type };
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
       
-      const response = await fetch(`${API_BASE_URL}/analytics/export?${params}`);
+      const queryString = new URLSearchParams(params).toString();
+      const endpoint = `/analytics/export${queryString ? `?${queryString}` : ''}`;
+      
+      // For file downloads, we need to use fetch directly with the auth token
+      const token = ApiService.getAuthToken();
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+      
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: {
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+      });
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
