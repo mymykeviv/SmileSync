@@ -27,6 +27,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { format, addMinutes, parseISO } from 'date-fns';
 import ApiService from '../../services/api';
+import ErrorDisplay, { useErrorHandler } from '../../components/Common/ErrorDisplay';
 
 const AppointmentForm = () => {
   const navigate = useNavigate();
@@ -214,6 +215,8 @@ const AppointmentForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const { error: submitError, handleError, clearError, retry } = useErrorHandler();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -226,8 +229,13 @@ const AppointmentForm = () => {
       return;
     }
 
+    await performSubmit();
+  };
+
+  const performSubmit = async () => {
     try {
       setLoading(true);
+      clearError(); // Clear any previous errors
       
       const appointmentData = {
         patient_id: parseInt(formData.patient_id),
@@ -263,14 +271,14 @@ const AppointmentForm = () => {
       }
     } catch (error) {
       console.error('Failed to save appointment:', error);
-      setAlert({
-        show: true,
-        message: error.message || `Failed to ${isEdit ? 'update' : 'create'} appointment.`,
-        severity: 'error',
-      });
+      handleError(error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRetrySubmit = () => {
+    retry(performSubmit);
   };
 
   const handleCancel = () => {
@@ -344,6 +352,17 @@ const AppointmentForm = () => {
         >
           {alert.message}
         </Alert>
+      )}
+
+      {/* Enhanced Error Display */}
+      {submitError && (
+        <ErrorDisplay
+          error={submitError}
+          onRetry={handleRetrySubmit}
+          onClose={clearError}
+          showDetails={false}
+          variant="standard"
+        />
       )}
 
       {/* Form */}

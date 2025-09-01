@@ -38,6 +38,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { format, addDays } from 'date-fns';
 import ApiService from '../../services/api';
+import ErrorDisplay from '../../components/Common/ErrorDisplay';
 
 function InvoiceForm() {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ function InvoiceForm() {
   const isEditing = Boolean(id);
 
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const [patients, setPatients] = useState([]);
   const [services, setServices] = useState([]);
   const [products, setProducts] = useState([]);
@@ -294,6 +296,7 @@ function InvoiceForm() {
 
     try {
       setLoading(true);
+      setSubmitError(null);
       const { subtotal, tax, total } = calculateTotals();
       
       const invoiceData = {
@@ -310,8 +313,19 @@ function InvoiceForm() {
 
       if (response.success) {
         navigate('/billing');
+      } else {
+        setSubmitError({
+          code: response.errorCode || 'UNKNOWN_ERROR',
+          message: response.error || 'Failed to save invoice',
+          details: response.details || null
+        });
       }
     } catch (error) {
+      setSubmitError({
+        code: 'NETWORK_ERROR',
+        message: 'Failed to save invoice',
+        details: error.message
+      });
       console.error('Failed to save invoice:', error);
     } finally {
       setLoading(false);
@@ -331,6 +345,15 @@ function InvoiceForm() {
           {isEditing ? 'Edit Invoice' : 'Create New Invoice'}
         </Typography>
       </Box>
+
+      {submitError && (
+        <ErrorDisplay
+          error={submitError}
+          onRetry={() => handleSubmit({ preventDefault: () => {} })}
+          onClose={() => setSubmitError(null)}
+          sx={{ mb: 3 }}
+        />
+      )}
 
       <form onSubmit={handleSubmit}>
         <Grid container spacing={3}>

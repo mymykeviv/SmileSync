@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Grid,
@@ -123,7 +123,7 @@ function Dashboard() {
     handleDropdownClose();
   };
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       const [appointmentsResponse, statsResponse] = await Promise.all([
@@ -143,11 +143,11 @@ function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate]);
 
   useEffect(() => {
     loadDashboardData();
-  }, [selectedDate]);
+  }, [loadDashboardData]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -158,6 +158,8 @@ function Dashboard() {
       case 'completed':
         return 'success';
       case 'cancelled':
+        return 'error';
+      case 'no_show':
         return 'error';
       default:
         return 'default';
@@ -174,6 +176,8 @@ function Dashboard() {
         return 'Completed';
       case 'cancelled':
         return 'Cancelled';
+      case 'no_show':
+        return 'No Show';
       default:
         return status;
     }
@@ -411,7 +415,7 @@ function Dashboard() {
               </Typography>
             </Box>
             
-            {selectedDateAppointments.length === 0 ? (
+            {selectedDateAppointments.filter(appointment => ['scheduled', 'in_progress'].includes(appointment.status)).length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 6 }}>
                 <Avatar sx={{ bgcolor: 'primary.light', mx: 'auto', mb: 2, width: 64, height: 64 }}>
                   <CalendarIcon sx={{ fontSize: 32 }} />
@@ -432,7 +436,9 @@ function Dashboard() {
               </Box>
             ) : (
               <Timeline position="left">
-                {selectedDateAppointments.map((appointment, index) => (
+                {selectedDateAppointments
+                  .filter(appointment => ['scheduled', 'in_progress'].includes(appointment.status))
+                  .map((appointment, index) => (
                   <TimelineItem key={appointment.id}>
                     <TimelineOppositeContent sx={{ m: 'auto 0', minWidth: 80 }}>
                       <Typography variant="body2" sx={{ color: '#4B5563', fontWeight: 500 }}>

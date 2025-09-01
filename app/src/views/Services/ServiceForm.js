@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams, Link as RouterLink } from 'react-router-dom';
 import ApiService from '../../services/api';
+import ErrorDisplay, { useErrorHandler } from '../../components/Common/ErrorDisplay';
 
 const ServiceForm = () => {
   const navigate = useNavigate();
@@ -44,8 +45,9 @@ const ServiceForm = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState('');
+  const { error: submitError, handleError, clearError, retry } = useErrorHandler();
 
   // Predefined service categories
   const defaultCategories = [
@@ -98,11 +100,11 @@ const ServiceForm = () => {
           is_active: service.is_active !== undefined ? service.is_active : true
         });
       } else {
-        setError('Failed to load service details');
+        handleError('Failed to load service details');
       }
     } catch (error) {
       console.error('Error loading service:', error);
-      setError('Failed to load service details');
+      handleError('Failed to load service details');
     } finally {
       setLoading(false);
     }
@@ -113,7 +115,11 @@ const ServiceForm = () => {
       ...prev,
       [field]: value
     }));
-    setError('');
+    // Clear field-specific error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    clearError();
     setSuccess('');
   };
 
@@ -160,15 +166,8 @@ const ServiceForm = () => {
       newErrors.description = 'Description must be less than 1000 characters';
     }
     
-    // Set all errors at once
-    if (Object.keys(newErrors).length > 0) {
-      setError('Please correct the errors in the form');
-      // You might want to implement field-specific error display here
-      return false;
-    }
-    
-    setError('');
-    return true;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
@@ -178,9 +177,13 @@ const ServiceForm = () => {
       return;
     }
 
+    await performSubmit();
+  };
+
+  const performSubmit = async () => {
     try {
       setSaving(true);
-      setError('');
+      clearError();
       setSuccess('');
 
       const serviceData = {
@@ -202,14 +205,26 @@ const ServiceForm = () => {
           navigate('/services');
         }, 1500);
       } else {
-        setError(response.data.message || 'Failed to save service');
+        handleError({
+          code: response.data.errorCode || 'SERVICE_SAVE_ERROR',
+          message: response.data.message || 'Failed to save service',
+          details: response.data.details || null
+        });
       }
     } catch (error) {
       console.error('Error saving service:', error);
-      setError('Failed to save service. Please try again.');
+      handleError({
+        code: 'NETWORK_ERROR',
+        message: 'Failed to save service due to network error',
+        details: { originalError: error.message }
+      });
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleRetrySubmit = () => {
+    retry(performSubmit);
   };
 
   const handleCancel = () => {
@@ -245,11 +260,11 @@ const ServiceForm = () => {
       </Box>
 
       {/* Alerts */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
+      <ErrorDisplay 
+        error={submitError} 
+        onRetry={handleRetrySubmit}
+        sx={{ mb: 3 }}
+      />
       {success && (
         <Alert severity="success" sx={{ mb: 3 }}>
           {success}
@@ -270,12 +285,14 @@ const ServiceForm = () => {
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
                   placeholder="e.g., Dental Cleaning"
+                  error={!!errors.name}
+                  helperText={errors.name}
                 />
               </Grid>
 
               {/* Category */}
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
+                <FormControl fullWidth required error={!!errors.category}>
                   <InputLabel>Category</InputLabel>
                   <Select
                     value={formData.category}
@@ -288,6 +305,11 @@ const ServiceForm = () => {
                       </MenuItem>
                     ))}
                   </Select>
+                  {errors.category && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                      {errors.category}
+                    </Typography>
+                  )}
                 </FormControl>
               </Grid>
 
@@ -307,6 +329,8 @@ const ServiceForm = () => {
                     min: 0,
                     step: 0.01
                   }}
+                  error={!!errors.base_price}
+                  helperText={errors.base_price}
                 />
               </Grid>
 
@@ -326,6 +350,8 @@ const ServiceForm = () => {
                     min: 1,
                     step: 1
                   }}
+                  error={!!errors.duration_minutes}
+                  helperText={errors.duration_minutes}
                 />
               </Grid>
 
@@ -339,6 +365,8 @@ const ServiceForm = () => {
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   placeholder="Describe the service..."
+                  error={!!errors.description}
+                  helperText={errors.description}
                 />
               </Grid>
 

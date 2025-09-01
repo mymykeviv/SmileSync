@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import ApiService from '../../services/api';
+import ErrorDisplay from '../../components/Common/ErrorDisplay';
 
 const UserForm = ({ open, user, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -193,11 +194,19 @@ const UserForm = ({ open, user, onClose, onSave }) => {
       if (response.success) {
         onSave();
       } else {
-        throw new Error(response.message || 'Failed to save user');
+        setSubmitError({
+          code: response.errorCode || 'UNKNOWN_ERROR',
+          message: response.message || 'Failed to save user',
+          details: response.details || null
+        });
       }
     } catch (error) {
       console.error('Error saving user:', error);
-      setSubmitError(error.message || 'Failed to save user');
+      setSubmitError({
+        code: 'NETWORK_ERROR',
+        message: 'Failed to save user',
+        details: error.message
+      });
     } finally {
       setLoading(false);
     }
@@ -226,9 +235,12 @@ const UserForm = ({ open, user, onClose, onSave }) => {
       
       <DialogContent>
         {submitError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {submitError}
-          </Alert>
+          <ErrorDisplay
+            error={submitError}
+            onRetry={() => handleSubmit({ preventDefault: () => {} })}
+            onClose={() => setSubmitError(null)}
+            sx={{ mb: 2 }}
+          />
         )}
 
         <Grid container spacing={2} sx={{ mt: 1 }}>

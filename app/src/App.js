@@ -35,6 +35,7 @@ import Unauthorized from './views/Auth/Unauthorized';
 
 // Context
 import { AuthProvider } from './contexts/AuthContext';
+import { NetworkProvider } from './components/Common/NetworkStatus';
 
 // Theme configuration
 const theme = createTheme({
@@ -395,8 +396,9 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <AuthProvider>
-            <Router>
+          <NetworkProvider>
+            <AuthProvider>
+              <Router>
               <Routes>
               {/* Public routes */}
               <Route path="/login" element={<Login />} />
@@ -500,9 +502,10 @@ function App() {
                   </Layout>
                 </ProtectedRoute>
               } />
-              </Routes>
-            </Router>
-          </AuthProvider>
+                </Routes>
+              </Router>
+            </AuthProvider>
+          </NetworkProvider>
         </LocalizationProvider>
       </ThemeProvider>
     </ErrorBoundary>

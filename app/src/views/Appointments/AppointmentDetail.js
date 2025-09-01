@@ -10,8 +10,6 @@ import {
   Grid,
   Divider,
   IconButton,
-  Menu,
-  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -23,7 +21,6 @@ import {
 import {
   ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
-  MoreVert as MoreVertIcon,
   PersonAdd as PersonIcon,
   Schedule as ScheduleIcon,
   MedicalServices as MedicalServicesIcon,
@@ -38,7 +35,7 @@ function AppointmentDetail() {
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [anchorEl, setAnchorEl] = useState(null);
+
   const [statusDialog, setStatusDialog] = useState(false);
   const [cancelDialog, setCancelDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
@@ -95,13 +92,7 @@ function AppointmentDetail() {
     }
   };
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
 
   const handleStatusChange = async (newStatus) => {
     try {
@@ -109,10 +100,11 @@ function AppointmentDetail() {
       await ApiService.updateAppointmentStatus(id, newStatus);
       await loadAppointment();
       setStatusDialog(false);
-      handleMenuClose();
     } catch (error) {
       console.error('Error updating appointment status:', error);
-      setError('Failed to update appointment status');
+      // Use the error message from the API if available, otherwise use a generic message
+      const errorMessage = error.message || 'Failed to update appointment status';
+      setError(errorMessage);
     } finally {
       setUpdating(false);
     }
@@ -125,10 +117,11 @@ function AppointmentDetail() {
       await loadAppointment();
       setCancelDialog(false);
       setCancelReason('');
-      handleMenuClose();
     } catch (error) {
       console.error('Error cancelling appointment:', error);
-      setError('Failed to cancel appointment');
+      // Use the error message from the API if available, otherwise use a generic message
+      const errorMessage = error.message || 'Failed to cancel appointment';
+      setError(errorMessage);
     } finally {
       setUpdating(false);
     }
@@ -188,7 +181,7 @@ function AppointmentDetail() {
             Appointment Details
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           <Button
             variant="outlined"
             startIcon={<EditIcon />}
@@ -196,9 +189,62 @@ function AppointmentDetail() {
           >
             Edit
           </Button>
-          <IconButton onClick={handleMenuOpen}>
-            <MoreVertIcon />
-          </IconButton>
+          {appointment.status === 'scheduled' && (
+            <>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handleStatusChange('in_progress')}
+                disabled={updating}
+              >
+                Start Appointment
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => handleStatusChange('completed')}
+                disabled={updating}
+              >
+                Mark as Completed
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => setCancelDialog(true)}
+                disabled={updating}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="outlined"
+                color="warning"
+                onClick={() => handleStatusChange('no_show')}
+                disabled={updating}
+              >
+                Mark as No Show
+              </Button>
+            </>
+          )}
+          {appointment.status === 'in_progress' && (
+            <>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => handleStatusChange('completed')}
+                disabled={updating}
+              >
+                Mark as Completed
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => setCancelDialog(true)}
+                disabled={updating}
+              >
+                Cancel
+              </Button>
+            </>
+          )}
         </Box>
       </Box>
 
@@ -336,35 +382,7 @@ function AppointmentDetail() {
         </CardContent>
       </Card>
 
-      {/* Action Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        {appointment.status === 'scheduled' && [
-          <MenuItem key="start" onClick={() => handleStatusChange('in_progress')}>
-            Start Appointment
-          </MenuItem>,
-          <MenuItem key="complete" onClick={() => handleStatusChange('completed')}>
-            Mark as Completed
-          </MenuItem>,
-          <MenuItem key="cancel" onClick={() => setCancelDialog(true)}>
-            Cancel Appointment
-          </MenuItem>,
-          <MenuItem key="no-show" onClick={() => handleStatusChange('no_show')}>
-            Mark as No Show
-          </MenuItem>
-        ]}
-        {appointment.status === 'in_progress' && [
-          <MenuItem key="complete" onClick={() => handleStatusChange('completed')}>
-            Mark as Completed
-          </MenuItem>,
-          <MenuItem key="cancel" onClick={() => setCancelDialog(true)}>
-            Cancel Appointment
-          </MenuItem>
-        ]}
-      </Menu>
+
 
       {/* Cancel Dialog */}
       <Dialog open={cancelDialog} onClose={() => setCancelDialog(false)} maxWidth="sm" fullWidth>

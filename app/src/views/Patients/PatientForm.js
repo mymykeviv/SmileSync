@@ -27,6 +27,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import ApiService from '../../services/api';
+import ErrorDisplay from '../../components/Common/ErrorDisplay';
 
 function PatientForm() {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ function PatientForm() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [submitError, setSubmitError] = useState(null);
   const [success, setSuccess] = useState('');
   
   const [formData, setFormData] = useState({
@@ -174,6 +176,7 @@ function PatientForm() {
     try {
       setSaving(true);
       setError('');
+      setSubmitError(null);
       
       const response = isEditing 
         ? await ApiService.updatePatient(id, formData)
@@ -185,10 +188,18 @@ function PatientForm() {
           navigate('/patients');
         }, 1500);
       } else {
-        setError(response.error || 'Failed to save patient');
+        setSubmitError({
+          code: response.errorCode || 'UNKNOWN_ERROR',
+          message: response.error || 'Failed to save patient',
+          details: response.details || null
+        });
       }
     } catch (error) {
-      setError('Failed to save patient');
+      setSubmitError({
+        code: 'NETWORK_ERROR',
+        message: 'Failed to save patient',
+        details: error.message
+      });
       console.error('Error saving patient:', error);
     } finally {
       setSaving(false);
@@ -247,6 +258,15 @@ function PatientForm() {
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
           {error}
         </Alert>
+      )}
+      
+      {submitError && (
+        <ErrorDisplay
+          error={submitError}
+          onRetry={() => handleSubmit({ preventDefault: () => {} })}
+          onClose={() => setSubmitError(null)}
+          sx={{ mb: 3 }}
+        />
       )}
       
       {success && (
