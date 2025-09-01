@@ -391,8 +391,22 @@ function convertUserToBackend(userData) {
 function convertUserToFrontend(userData) {
   const converted = {};
   
+  // List of sensitive fields to exclude from frontend responses
+  const excludedFields = ['password_hash', 'passwordHash'];
+  
   for (const [key, value] of Object.entries(userData)) {
+    // Skip sensitive fields
+    if (excludedFields.includes(key)) {
+      continue;
+    }
+    
     const frontendKey = USER_FIELD_MAPPINGS.backendToFrontend[key] || snakeToCamel(key);
+    
+    // Double-check to exclude sensitive fields after mapping
+    if (excludedFields.includes(frontendKey)) {
+      continue;
+    }
+    
     converted[frontendKey] = value;
   }
   

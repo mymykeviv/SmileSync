@@ -54,8 +54,8 @@ const Login = ({ onLogin }) => {
           onLogin(response.data.user);
         }
         
-        // Redirect to dashboard
-        navigate('/dashboard');
+        // Navigate to dashboard (root path)
+        navigate('/');
       } else {
         setError(response.message || 'Login failed');
       }
