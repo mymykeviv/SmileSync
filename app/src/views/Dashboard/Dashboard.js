@@ -200,7 +200,7 @@ function Dashboard() {
         status="Live"
         showRefresh={true}
         onRefresh={loadDashboardData}
-        gradient={true}
+        gradient={false}
         actions={[
           <Button
             key="new-appointment"
@@ -234,11 +234,11 @@ function Dashboard() {
                   <Avatar sx={{ bgcolor: card.color, mr: 2 }}>
                     {card.icon}
                   </Avatar>
-                  <Typography variant="h6" component="div">
+                  <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: '#1F2937' }}>
                     {card.value}
                   </Typography>
                 </Box>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" sx={{ color: '#4B5563', fontWeight: 500 }}>
                   {card.title}
                 </Typography>
               </CardContent>
@@ -253,7 +253,7 @@ function Dashboard() {
         <Grid item xs={12} lg={4}>
           <Paper sx={{ p: 3, height: 'fit-content' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6" component="h2">
+              <Typography variant="h6" component="h2" sx={{ fontWeight: 600, color: '#1F2937' }}>
                 Calendar
               </Typography>
               <Box>
@@ -274,14 +274,14 @@ function Dashboard() {
               </Box>
             </Box>
             
-            <Typography variant="subtitle1" sx={{ mb: 2, textAlign: 'center', fontWeight: 600 }}>
+            <Typography variant="subtitle1" sx={{ mb: 2, textAlign: 'center', fontWeight: 600, color: '#1F2937' }}>
               {format(selectedDate, 'MMMM yyyy')}
             </Typography>
             
             {/* Mini Calendar Grid */}
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, mb: 2 }}>
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <Typography key={day} variant="caption" sx={{ textAlign: 'center', fontWeight: 600, color: 'text.secondary' }}>
+                <Typography key={day} variant="caption" sx={{ textAlign: 'center', fontWeight: 600, color: '#374151', fontSize: '0.75rem' }}>
                   {day}
                 </Typography>
               ))}
@@ -316,7 +316,7 @@ function Dashboard() {
                     }}
                     onClick={() => setSelectedDate(currentDate)}
                   >
-                    <Typography variant="caption">
+                    <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
                       {currentDate.getDate()}
                     </Typography>
                     {hasAppointments && isCurrentMonth && (
@@ -355,10 +355,10 @@ function Dashboard() {
         <Grid item xs={12} lg={8}>
           <Paper sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h6" component="h2">
+              <Typography variant="h6" component="h2" sx={{ fontWeight: 600, color: '#1F2937' }}>
                 Today's Schedule
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ color: '#4B5563', fontWeight: 500 }}>
                 {format(new Date(), 'EEEE, MMMM d, yyyy')}
               </Typography>
             </Box>
@@ -387,7 +387,7 @@ function Dashboard() {
                 {todaysAppointments.map((appointment, index) => (
                   <TimelineItem key={appointment.id}>
                     <TimelineOppositeContent sx={{ m: 'auto 0', minWidth: 80 }}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" sx={{ color: '#4B5563', fontWeight: 500 }}>
                         {appointment.time || '10:00 AM'}
                       </Typography>
                     </TimelineOppositeContent>
@@ -418,7 +418,7 @@ function Dashboard() {
                       >
                         <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1F2937' }}>
                               {appointment.patientName || 'Unknown Patient'}
                             </Typography>
                             <MedicalStatusIndicator
@@ -430,20 +430,20 @@ function Dashboard() {
                           </Box>
                           <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <MedicalIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                              <Typography variant="body2" color="text.secondary">
+                              <MedicalIcon sx={{ fontSize: 16, color: '#6B7280' }} />
+                              <Typography variant="body2" sx={{ color: '#4B5563', fontWeight: 500 }}>
                                 {appointment.service || 'General Checkup'}
                               </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <TimeIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                              <Typography variant="body2" color="text.secondary">
+                              <TimeIcon sx={{ fontSize: 16, color: '#6B7280' }} />
+                              <Typography variant="body2" sx={{ color: '#4B5563', fontWeight: 500 }}>
                                 30 min
                               </Typography>
                             </Box>
                           </Stack>
                           {appointment.appointmentNumber && (
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography variant="caption" sx={{ color: '#6B7280', fontWeight: 500 }}>
                               #{appointment.appointmentNumber}
                             </Typography>
                           )}
