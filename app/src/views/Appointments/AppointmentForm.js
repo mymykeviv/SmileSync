@@ -43,19 +43,13 @@ const AppointmentForm = () => {
     duration: 30,
     status: 'scheduled',
     notes: '',
-    dentist: '',
+    dentist_id: '',
     appointment_type: 'checkup',
   });
 
   const [patients, setPatients] = useState([]);
   const [services, setServices] = useState([]);
-  const [dentists] = useState([
-    'Dr. Smith',
-    'Dr. Johnson',
-    'Dr. Williams',
-    'Dr. Brown',
-    'Dr. Davis',
-  ]);
+  const [dentists, setDentists] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [alert, setAlert] = useState({ show: false, message: '', severity: 'success' });
@@ -87,9 +81,10 @@ const AppointmentForm = () => {
 
   const loadInitialData = async () => {
     try {
-      const [patientsResponse, servicesResponse] = await Promise.all([
+      const [patientsResponse, servicesResponse, dentistsResponse] = await Promise.all([
         ApiService.getPatients({ limit: 1000 }),
         ApiService.getServices({ limit: 1000, status: 'active' }),
+        ApiService.getDentists({ limit: 1000 }),
       ]);
 
       if (patientsResponse.success) {
@@ -97,6 +92,9 @@ const AppointmentForm = () => {
       }
       if (servicesResponse.success) {
         setServices(servicesResponse.data || []);
+      }
+      if (dentistsResponse.success) {
+        setDentists(dentistsResponse.data || []);
       }
     } catch (error) {
       console.error('Failed to load initial data:', error);
@@ -122,7 +120,7 @@ const AppointmentForm = () => {
           duration: appointment.durationMinutes || 30,
           status: appointment.status || 'scheduled',
           notes: appointment.treatmentNotes || '',
-          dentist: appointment.dentistName || '',
+          dentist_id: appointment.dentistId || '',
           appointment_type: appointment.appointmentType || 'checkup',
         });
       }
@@ -195,10 +193,8 @@ const AppointmentForm = () => {
       }
     }
     
-    if (!formData.dentist || !formData.dentist.trim()) {
-      newErrors.dentist = 'Dentist is required';
-    } else if (formData.dentist.trim().length > 100) {
-      newErrors.dentist = 'Dentist name must be less than 100 characters';
+    if (!formData.dentist_id) {
+      newErrors.dentist_id = 'Dentist is required';
     }
     
     if (!formData.duration || formData.duration < 15 || formData.duration > 480) {
@@ -241,7 +237,7 @@ const AppointmentForm = () => {
         duration: parseInt(formData.duration),
         status: formData.status,
         notes: formData.notes,
-        dentist: formData.dentist,
+        dentist_id: parseInt(formData.dentist_id),
         appointment_type: formData.appointment_type,
       };
 
@@ -490,22 +486,22 @@ const AppointmentForm = () => {
 
             {/* Dentist */}
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth required error={!!errors.dentist}>
+              <FormControl fullWidth required error={!!errors.dentist_id}>
                 <InputLabel>Dentist</InputLabel>
                 <Select
-                  value={formData.dentist}
-                  onChange={(e) => handleInputChange('dentist', e.target.value)}
+                  value={formData.dentist_id}
+                  onChange={(e) => handleInputChange('dentist_id', e.target.value)}
                   label="Dentist"
                 >
                   {dentists.map((dentist) => (
-                    <MenuItem key={dentist} value={dentist}>
-                      {dentist}
+                    <MenuItem key={dentist.id} value={dentist.id}>
+                      {dentist.getDisplayName ? dentist.getDisplayName() : `Dr. ${dentist.firstName} ${dentist.lastName}`}
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.dentist && (
+                {errors.dentist_id && (
                   <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
-                    {errors.dentist}
+                    {errors.dentist_id}
                   </Typography>
                 )}
               </FormControl>

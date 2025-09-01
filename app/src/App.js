@@ -7,6 +7,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 // Components
 import Layout from './components/Layout/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './views/Dashboard/Dashboard';
 import Appointments from './views/Appointments/Appointments';
 import AppointmentForm from './views/Appointments/AppointmentForm';
@@ -15,6 +16,7 @@ import Patients from './views/Patients/Patients';
 import PatientForm from './views/Patients/PatientForm';
 import PatientDetail from './views/Patients/PatientDetail';
 import Services from './views/Services/Services';
+import ServiceDetail from './views/Services/ServiceDetail';
 import Products from './views/Products/Products';
 import Billing from './views/Billing/Billing';
 import InvoiceDetail from './views/Billing/InvoiceDetail';
@@ -26,6 +28,11 @@ import CategorySupplierManager from './views/Products/CategorySupplierManager';
 import Catalog from './views/Catalog/Catalog';
 import Analytics from './views/Analytics/Analytics';
 import Users from './views/Users/Users';
+import Login from './views/Auth/Login';
+import Unauthorized from './views/Auth/Unauthorized';
+
+// Context
+import { AuthProvider } from './contexts/AuthContext';
 
 // Theme configuration
 const theme = createTheme({
@@ -385,57 +392,103 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Router>
-          <Layout>
+        <AuthProvider>
+          <Router>
             <Routes>
-              {/* Dashboard */}
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Navigate to="/" replace />} />
+              {/* Public routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
               
-              {/* Appointments */}
-                <Route path="/appointments" element={<Appointments />} />
-                <Route path="/appointments/new" element={<AppointmentForm />} />
-                <Route path="/appointments/:id" element={<AppointmentDetail />} />
-                <Route path="/appointments/:id/edit" element={<AppointmentForm />} />
-              
-              {/* Patients */}
-                <Route path="/patients" element={<Patients />} />
-                <Route path="/patients/new" element={<PatientForm />} />
-                <Route path="/patients/:id/edit" element={<PatientForm />} />
-                <Route path="/patients/:id" element={<PatientDetail />} />
-              
-              {/* Services */}
-              <Route path="/services" element={<Services />} />
-              <Route path="/services/new" element={<ServiceForm />} />
-            <Route path="/services/:id/edit" element={<ServiceForm />} />
-            <Route path="/products/new" element={<ProductForm />} />
-            <Route path="/products/:id/edit" element={<ProductForm />} />
-              
-              {/* Products */}
-              <Route path="/products" element={<Products />} />
-              <Route path="/products/settings" element={<CategorySupplierManager />} />
-              
-              {/* Billing */}
-              <Route path="/billing" element={<Billing />} />
-              <Route path="/billing/:id" element={<InvoiceDetail />} />
-              <Route path="/billing/:id/payment" element={<PaymentForm />} />
-              <Route path="/billing/invoices/new" element={<InvoiceForm />} />
-              <Route path="/billing/invoices/:id/edit" element={<InvoiceForm />} />
-              
-              {/* Catalog */}
-              <Route path="/catalog" element={<Catalog />} />
-              
-              {/* Staff */}
-              <Route path="/staff" element={<Users />} />
-              
-              {/* Analytics */}
-              <Route path="/analytics" element={<Analytics />} />
-              
-              {/* Catch all route */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+              {/* Protected routes */}
+              <Route path="/*" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Routes>
+                      {/* Dashboard */}
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                      
+                      {/* Appointments */}
+                      <Route path="/appointments" element={<Appointments />} />
+                      <Route path="/appointments/new" element={<AppointmentForm />} />
+                      <Route path="/appointments/:id" element={<AppointmentDetail />} />
+                      <Route path="/appointments/:id/edit" element={<AppointmentForm />} />
+                      
+                      {/* Patients */}
+                      <Route path="/patients" element={<Patients />} />
+                      <Route path="/patients/new" element={<PatientForm />} />
+                      <Route path="/patients/:id/edit" element={<PatientForm />} />
+                      <Route path="/patients/:id" element={<PatientDetail />} />
+                      
+                      {/* Services */}
+                      <Route path="/services" element={<Services />} />
+                      <Route path="/services/new" element={
+                        <ProtectedRoute requiredPermission="create_services">
+                          <ServiceForm />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/services/:id" element={<ServiceDetail />} />
+                      <Route path="/services/:id/edit" element={
+                        <ProtectedRoute requiredPermission="edit_services">
+                          <ServiceForm />
+                        </ProtectedRoute>
+                      } />
+                      
+                      {/* Products */}
+                      <Route path="/products" element={<Products />} />
+                      <Route path="/products/new" element={
+                        <ProtectedRoute requiredPermission="create_products">
+                          <ProductForm />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/products/:id/edit" element={
+                        <ProtectedRoute requiredPermission="edit_products">
+                          <ProductForm />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/products/settings" element={
+                        <ProtectedRoute requiredRole="admin">
+                          <CategorySupplierManager />
+                        </ProtectedRoute>
+                      } />
+                      
+                      {/* Billing */}
+                      <Route path="/billing" element={<Billing />} />
+                      <Route path="/billing/:id" element={<InvoiceDetail />} />
+                      <Route path="/billing/:id/payment" element={<PaymentForm />} />
+                      <Route path="/billing/invoices/new" element={
+                        <ProtectedRoute requiredPermission="create_invoices">
+                          <InvoiceForm />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/billing/invoices/:id/edit" element={
+                        <ProtectedRoute requiredPermission="edit_invoices">
+                          <InvoiceForm />
+                        </ProtectedRoute>
+                      } />
+                      
+                      {/* Catalog */}
+                      <Route path="/catalog" element={<Catalog />} />
+                      
+                      {/* Staff - Admin only */}
+                      <Route path="/staff" element={
+                        <ProtectedRoute requiredRole="admin">
+                          <Users />
+                        </ProtectedRoute>
+                      } />
+                      
+                      {/* Analytics */}
+                      <Route path="/analytics" element={<Analytics />} />
+                      
+                      {/* Catch all route */}
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                  </Layout>
+                </ProtectedRoute>
+              } />
             </Routes>
-          </Layout>
-        </Router>
+          </Router>
+        </AuthProvider>
       </LocalizationProvider>
     </ThemeProvider>
   );

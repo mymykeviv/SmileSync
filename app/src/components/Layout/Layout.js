@@ -16,6 +16,10 @@ import {
   useMediaQuery,
   Chip,
   Divider,
+  Avatar,
+  Menu,
+  MenuItem,
+  Button,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -28,9 +32,12 @@ import {
   Badge as StaffIcon,
   Phone as PhoneIcon,
   LocationOn as LocationIcon,
+  AccountCircle as AccountIcon,
+  Logout as LogoutIcon,
 } from '@mui/icons-material';
 import NotificationCenter from '../Common/NotificationCenter';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import SmileSyncLogo from './SmileSyncLogo';
 import MedicalFooter from './MedicalFooter';
 import MobileBottomNav from './MobileBottomNav';
@@ -79,8 +86,10 @@ function Layout({ children }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -91,6 +100,24 @@ function Layout({ children }) {
     if (isMobile) {
       setMobileOpen(false);
     }
+  };
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+    handleMenuClose();
   };
 
   const drawer = (
@@ -256,6 +283,57 @@ function Layout({ children }) {
             <NotificationCenter 
               onNotificationClick={(url) => navigate(url)}
             />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 1 }}>
+              <Button
+                onClick={handleMenuOpen}
+                startIcon={
+                  <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main }}>
+                    {user?.first_name?.charAt(0) || user?.username?.charAt(0) || 'U'}
+                  </Avatar>
+                }
+                sx={{
+                  color: '#1F2937',
+                  textTransform: 'none',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                  },
+                }}
+              >
+                <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'left' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
+                    {user?.first_name && user?.last_name 
+                      ? `${user.first_name} ${user.last_name}`
+                      : user?.username || 'User'
+                    }
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#6B7280', lineHeight: 1 }}>
+                    {user?.role || 'Staff'}
+                  </Typography>
+                </Box>
+              </Button>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem onClick={handleMenuClose}>
+                  <AccountIcon sx={{ mr: 1 }} />
+                  Profile
+                </MenuItem>
+                <MenuItem onClick={handleLogout}>
+                  <LogoutIcon sx={{ mr: 1 }} />
+                  Logout
+                </MenuItem>
+              </Menu>
+            </Box>
           </Box>
         </Toolbar>
       </AppBar>

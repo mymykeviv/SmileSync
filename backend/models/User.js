@@ -44,14 +44,13 @@ class User {
             const sql = `
                 INSERT INTO users (
                     username, email, password_hash, first_name, last_name, role,
-                    phone, license_number, specialization, is_active, created_by
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    phone, is_active
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `;
 
             const params = [
                 this.username, this.email, this.password_hash, this.first_name, this.last_name,
-                this.role, this.phone, this.license_number, this.specialization, this.is_active,
-                this.created_by
+                this.role, this.phone, this.is_active
             ];
 
             const result = await database.run(sql, params);

@@ -4,6 +4,7 @@ const path = require('path');
 const database = require('./database/init');
 
 // Import routes
+const authRoutes = require('./routes/auth');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const patientRoutes = require('./routes/patientRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
@@ -11,6 +12,9 @@ const serviceRoutes = require('./routes/serviceRoutes');
 const productRoutes = require('./routes/productRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const userRoutes = require('./routes/users');
+
+// Import authentication middleware
+const { authenticateToken, requireRole } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,13 +46,17 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-app.use('/api/appointments', appointmentRoutes);
-app.use('/api/patients', patientRoutes);
-app.use('/api/invoices', invoiceRoutes);
-app.use('/api/services', serviceRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/users', userRoutes);
+// Public routes (no authentication required)
+app.use('/api/auth', authRoutes);
+
+// Protected routes (authentication required)
+app.use('/api/appointments', authenticateToken, appointmentRoutes);
+app.use('/api/patients', authenticateToken, patientRoutes);
+app.use('/api/invoices', authenticateToken, invoiceRoutes);
+app.use('/api/services', authenticateToken, serviceRoutes);
+app.use('/api/products', authenticateToken, productRoutes);
+app.use('/api/analytics', authenticateToken, analyticsRoutes);
+app.use('/api/users', authenticateToken, userRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

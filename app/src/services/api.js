@@ -1,11 +1,30 @@
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
 
 class ApiService {
+  static authToken = null;
+
+  static setAuthToken(token) {
+    this.authToken = token;
+  }
+
+  static getAuthToken() {
+    return this.authToken || localStorage.getItem('authToken');
+  }
+
+  static clearAuthToken() {
+    this.authToken = null;
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+  }
+
   static async request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
+    const token = this.getAuthToken();
+    
     const config = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
@@ -305,8 +324,68 @@ class ApiService {
   }
 
   static async getUserStats() {
-    return this.request('/users/stats/roles');
+    return this.request('/users/stats');
   }
+
+  // Authentication API methods
+  static async login(credentials) {
+    return this.request('/auth/login', {
+      method: 'POST',
+      body: credentials,
+    });
+  }
+
+  static async logout() {
+    try {
+      await this.request('/auth/logout', {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      this.clearAuthToken();
+    }
+  }
+
+  static async getCurrentUser() {
+    return this.request('/auth/me');
+  }
+
+  static async changePassword(passwordData) {
+    return this.request('/auth/change-password', {
+      method: 'POST',
+      body: passwordData,
+    });
+  }
+
+  // Convenience method for POST requests
+  static async post(endpoint, data) {
+    return this.request(endpoint, {
+      method: 'POST',
+      body: data,
+    });
+  }
+
+  // Convenience method for PUT requests
+  static async put(endpoint, data) {
+    return this.request(endpoint, {
+      method: 'PUT',
+      body: data,
+    });
+  }
+
+  // Convenience method for DELETE requests
+  static async delete(endpoint) {
+    return this.request(endpoint, {
+      method: 'DELETE',
+    });
+  }
+}
+
+// Initialize auth token from localStorage on app start
+const storedToken = localStorage.getItem('authToken');
+if (storedToken) {
+  ApiService.setAuthToken(storedToken);
 }
 
 export default ApiService;
