@@ -38,9 +38,9 @@ const SystemSettings = () => {
   const fetchConfig = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/clinic/config');
-      if (response.data.success) {
-        setConfig(response.data.data);
+      const response = await api.getClinicConfig();
+      if (response.success) {
+        setConfig(response.data);
       }
     } catch (error) {
       console.error('Error fetching clinic config:', error);
@@ -109,16 +109,16 @@ const SystemSettings = () => {
       setSaving(true);
       setMessage({ type: '', text: '' });
       
-      const response = await api.put('/clinic/config', config);
+      const response = await api.updateClinicConfig(config);
       
-      if (response.data.success) {
+      if (response.success) {
         setMessage({
           type: 'success',
           text: 'Clinic configuration updated successfully!'
         });
         
         // Update the config with the response data
-        setConfig(response.data.data);
+        setConfig(response.data);
         
         // Clear message after 5 seconds
         setTimeout(() => {

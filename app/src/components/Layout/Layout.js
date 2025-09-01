@@ -109,8 +109,10 @@ function Layout({ children }) {
   useEffect(() => {
     const fetchClinicConfig = async () => {
       try {
-        const config = await ApiService.getClinicConfig();
-        setClinicConfig(config);
+        const response = await ApiService.getClinicConfig();
+        if (response.success && response.data) {
+          setClinicConfig(response.data);
+        }
       } catch (error) {
         console.error('Failed to fetch clinic configuration:', error);
         // Keep default values if fetch fails

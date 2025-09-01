@@ -224,7 +224,7 @@ const MedicalPageHeader = ({
               <Typography 
                 variant="body1" 
                 sx={{ 
-                  color: gradient ? 'rgba(255, 255, 255, 0.9)' : '#6B7280',
+                  color: gradient ? '#FFFFFF' : '#6B7280',
                   lineHeight: 1.5
                 }}
               >
