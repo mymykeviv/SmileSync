@@ -43,15 +43,15 @@ const Login = ({ onLogin }) => {
       
       if (response.success) {
         // Store token in localStorage
-        localStorage.setItem('authToken', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
         
         // Set authorization header for future requests
-        ApiService.setAuthToken(response.token);
+        ApiService.setAuthToken(response.data.token);
         
         // Call onLogin callback if provided
         if (onLogin) {
-          onLogin(response.user);
+          onLogin(response.data.user);
         }
         
         // Redirect to dashboard

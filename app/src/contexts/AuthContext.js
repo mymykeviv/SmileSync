@@ -31,10 +31,10 @@ export const AuthProvider = ({ children }) => {
           try {
             const currentUser = await ApiService.getCurrentUser();
             if (currentUser.success) {
-              setUser(currentUser.user);
+              setUser(currentUser.data);
               setIsAuthenticated(true);
               // Update stored user data
-              localStorage.setItem('user', JSON.stringify(currentUser.user));
+              localStorage.setItem('user', JSON.stringify(currentUser.data));
             } else {
               // Token is invalid, clear auth
               logout();
@@ -62,17 +62,17 @@ export const AuthProvider = ({ children }) => {
       
       if (response.success) {
         // Store token and user data
-        localStorage.setItem('authToken', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
         
         // Set token in API service
-        ApiService.setAuthToken(response.token);
+        ApiService.setAuthToken(response.data.token);
         
         // Update state
-        setUser(response.user);
+        setUser(response.data.user);
         setIsAuthenticated(true);
         
-        return { success: true, user: response.user };
+        return { success: true, user: response.data.user };
       } else {
         return { success: false, message: response.message };
       }
