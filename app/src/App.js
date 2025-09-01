@@ -424,13 +424,13 @@ function App() {
                       {/* Services */}
                       <Route path="/services" element={<Services />} />
                       <Route path="/services/new" element={
-                        <ProtectedRoute requiredPermission="create_services">
+                        <ProtectedRoute requiredPermission="SERVICES_CREATE">
                           <ServiceForm />
                         </ProtectedRoute>
                       } />
                       <Route path="/services/:id" element={<ServiceDetail />} />
                       <Route path="/services/:id/edit" element={
-                        <ProtectedRoute requiredPermission="edit_services">
+                        <ProtectedRoute requiredPermission="SERVICES_EDIT">
                           <ServiceForm />
                         </ProtectedRoute>
                       } />
@@ -438,17 +438,17 @@ function App() {
                       {/* Products */}
                       <Route path="/products" element={<Products />} />
                       <Route path="/products/new" element={
-                        <ProtectedRoute requiredPermission="create_products">
+                        <ProtectedRoute requiredPermission="PRODUCTS_CREATE">
                           <ProductForm />
                         </ProtectedRoute>
                       } />
                       <Route path="/products/:id/edit" element={
-                        <ProtectedRoute requiredPermission="edit_products">
+                        <ProtectedRoute requiredPermission="PRODUCTS_EDIT">
                           <ProductForm />
                         </ProtectedRoute>
                       } />
                       <Route path="/products/settings" element={
-                        <ProtectedRoute requiredRole="admin">
+                        <ProtectedRoute requiredPermissions={["PRODUCTS_MANAGE", "SYSTEM_SETTINGS"]} requireAllPermissions={false}>
                           <CategorySupplierManager />
                         </ProtectedRoute>
                       } />
@@ -456,14 +456,18 @@ function App() {
                       {/* Billing */}
                       <Route path="/billing" element={<Billing />} />
                       <Route path="/billing/:id" element={<InvoiceDetail />} />
-                      <Route path="/billing/:id/payment" element={<PaymentForm />} />
+                      <Route path="/billing/:id/payment" element={
+                        <ProtectedRoute requiredPermission="PAYMENTS_CREATE">
+                          <PaymentForm />
+                        </ProtectedRoute>
+                      } />
                       <Route path="/billing/invoices/new" element={
-                        <ProtectedRoute requiredPermission="create_invoices">
+                        <ProtectedRoute requiredPermission="INVOICES_CREATE">
                           <InvoiceForm />
                         </ProtectedRoute>
                       } />
                       <Route path="/billing/invoices/:id/edit" element={
-                        <ProtectedRoute requiredPermission="edit_invoices">
+                        <ProtectedRoute requiredPermission="INVOICES_EDIT">
                           <InvoiceForm />
                         </ProtectedRoute>
                       } />
@@ -471,9 +475,9 @@ function App() {
                       {/* Catalog */}
                       <Route path="/catalog" element={<Catalog />} />
                       
-                      {/* Staff - Admin only */}
+                      {/* Staff - User Management */}
                       <Route path="/staff" element={
-                        <ProtectedRoute requiredRole="admin">
+                        <ProtectedRoute requiredPermissions={["USERS_VIEW", "USERS_MANAGE"]} requireAllPermissions={false}>
                           <Users />
                         </ProtectedRoute>
                       } />

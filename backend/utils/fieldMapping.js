@@ -413,6 +413,65 @@ function convertUserToFrontend(userData) {
   return converted;
 }
 
+/**
+ * Product-specific field mappings
+ */
+const PRODUCT_FIELD_MAPPINGS = {
+  // Frontend (camelCase) -> Backend (snake_case)
+  frontendToBackend: {
+    productCode: 'product_code',
+    unitPrice: 'unit_price',
+    unitOfMeasure: 'unit_of_measure',
+    currentStock: 'current_stock',
+    minimumStock: 'minimum_stock',
+    isActive: 'is_active',
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    createdBy: 'created_by'
+  },
+  
+  // Backend (snake_case) -> Frontend (camelCase)
+  backendToFrontend: {
+    product_code: 'productCode',
+    unit_price: 'unitPrice',
+    unit_of_measure: 'unitOfMeasure',
+    current_stock: 'currentStock',
+    minimum_stock: 'minimumStock',
+    is_active: 'isActive',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+    created_by: 'createdBy'
+  }
+};
+
+/**
+ * Convert product data from frontend format to backend format
+ */
+function convertProductToBackend(productData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(productData)) {
+    const backendKey = PRODUCT_FIELD_MAPPINGS.frontendToBackend[key] || camelToSnake(key);
+    converted[backendKey] = value;
+  }
+  
+  return converted;
+}
+
+/**
+ * Convert product data from backend format to frontend format
+ */
+function convertProductToFrontend(productData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(productData)) {
+    const frontendKey = PRODUCT_FIELD_MAPPINGS.backendToFrontend[key] || snakeToCamel(key);
+    converted[frontendKey] = value;
+  }
+  
+  return converted;
+}
+
 module.exports = {
   camelToSnake,
   snakeToCamel,
@@ -428,9 +487,12 @@ module.exports = {
   convertPaymentToFrontend,
   convertUserToBackend,
   convertUserToFrontend,
+  convertProductToBackend,
+  convertProductToFrontend,
   PATIENT_FIELD_MAPPINGS,
   APPOINTMENT_FIELD_MAPPINGS,
   INVOICE_FIELD_MAPPINGS,
   PAYMENT_FIELD_MAPPINGS,
-  USER_FIELD_MAPPINGS
+  USER_FIELD_MAPPINGS,
+  PRODUCT_FIELD_MAPPINGS
 };

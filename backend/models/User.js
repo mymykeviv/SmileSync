@@ -529,16 +529,32 @@ class User {
      * Check if user has permission
      */
     hasPermission(permission) {
-        const rolePermissions = {
-            'admin': ['all'],
-            'dentist': ['patients', 'appointments', 'treatment_plans', 'invoices', 'reports'],
-            'hygienist': ['patients', 'appointments', 'basic_reports'],
-            'receptionist': ['patients', 'appointments', 'invoices'],
-            'staff': ['patients', 'appointments']
-        };
-        
-        const userPermissions = rolePermissions[this.role] || [];
-        return userPermissions.includes('all') || userPermissions.includes(permission);
+        const { hasPermission } = require('../config/permissions');
+        return hasPermission(this.role, permission);
+    }
+
+    /**
+     * Get all permissions for this user's role
+     */
+    getPermissions() {
+        const { getRolePermissions } = require('../config/permissions');
+        return getRolePermissions(this.role);
+    }
+
+    /**
+     * Check if user has any of the specified permissions
+     */
+    hasAnyPermission(permissions) {
+        const { hasAnyPermission } = require('../config/permissions');
+        return hasAnyPermission(this.role, permissions);
+    }
+
+    /**
+     * Check if user has all of the specified permissions
+     */
+    hasAllPermissions(permissions) {
+        const { hasAllPermissions } = require('../config/permissions');
+        return hasAllPermissions(this.role, permissions);
     }
 
     /**

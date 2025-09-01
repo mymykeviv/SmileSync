@@ -85,7 +85,7 @@ function PaymentForm() {
       
       const paymentData = {
         amount: parseFloat(paymentAmount),
-        method: paymentMethod,
+        paymentMethod: paymentMethod,
         reference: paymentReference || null,
         notes: paymentNotes || null,
       };

@@ -105,7 +105,88 @@ const requirePermission = (permission) => {
         if (!user.hasPermission(permission)) {
             return res.status(403).json({
                 success: false,
-                message: 'Insufficient permissions'
+                message: `Access denied. Required permission: ${permission}`
+            });
+        }
+
+        next();
+    };
+};
+
+/**
+ * Multiple permissions authorization middleware
+ * Checks if user has ANY of the specified permissions
+ */
+const requireAnyPermission = (...permissions) => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        const user = req.user.fullUser;
+        if (!user.hasAnyPermission(permissions)) {
+            return res.status(403).json({
+                success: false,
+                message: `Access denied. Required permissions: ${permissions.join(' OR ')}`
+            });
+        }
+
+        next();
+    };
+};
+
+/**
+ * Multiple permissions authorization middleware
+ * Checks if user has ALL of the specified permissions
+ */
+const requireAllPermissions = (...permissions) => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        const user = req.user.fullUser;
+        if (!user.hasAllPermissions(permissions)) {
+            return res.status(403).json({
+                success: false,
+                message: `Access denied. Required permissions: ${permissions.join(' AND ')}`
+            });
+        }
+
+        next();
+    };
+};
+
+/**
+ * Resource ownership middleware
+ * Checks if user owns the resource or has admin privileges
+ */
+const requireOwnership = (resourceUserIdField = 'userId') => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required'
+            });
+        }
+
+        // Admin can access any resource
+        if (req.user.role === 'admin') {
+            return next();
+        }
+
+        // Check if user owns the resource
+        const resourceUserId = req.params[resourceUserIdField] || req.body[resourceUserIdField];
+        if (resourceUserId && resourceUserId.toString() !== req.user.userId.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. You can only access your own resources.'
             });
         }
 
@@ -148,5 +229,8 @@ module.exports = {
     authenticateToken,
     requireRole,
     requirePermission,
+    requireAnyPermission,
+    requireAllPermissions,
+    requireOwnership,
     optionalAuth
 };

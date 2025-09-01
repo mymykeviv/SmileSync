@@ -114,46 +114,53 @@ export const AuthProvider = ({ children }) => {
     // Admin has all permissions
     if (user.role === 'admin') return true;
     
-    // Define role-based permissions
     const rolePermissions = {
-      dentist: [
-        'view_patients',
-        'create_patients',
-        'edit_patients',
-        'view_appointments',
-        'create_appointments',
-        'edit_appointments',
-        'view_services',
-        'view_products',
-        'view_invoices',
-        'create_invoices',
-        'edit_invoices'
+      'dentist': [
+        'PATIENTS_VIEW', 'PATIENTS_CREATE', 'PATIENTS_EDIT', 'PATIENTS_DELETE',
+        'APPOINTMENTS_VIEW', 'APPOINTMENTS_CREATE', 'APPOINTMENTS_EDIT', 'APPOINTMENTS_DELETE',
+        'SERVICES_VIEW', 'SERVICES_CREATE', 'SERVICES_EDIT',
+        'PRODUCTS_VIEW', 'PRODUCTS_CREATE', 'PRODUCTS_EDIT',
+        'INVOICES_VIEW', 'INVOICES_CREATE', 'INVOICES_EDIT',
+        'PAYMENTS_VIEW', 'PAYMENTS_CREATE',
+        'REPORTS_VIEW', 'REPORTS_GENERATE',
+        'ANALYTICS_VIEW'
       ],
-      assistant: [
-        'view_patients',
-        'create_patients',
-        'edit_patients',
-        'view_appointments',
-        'create_appointments',
-        'edit_appointments',
-        'view_services',
-        'view_products'
+      'assistant': [
+        'PATIENTS_VIEW', 'PATIENTS_CREATE', 'PATIENTS_EDIT',
+        'APPOINTMENTS_VIEW', 'APPOINTMENTS_CREATE', 'APPOINTMENTS_EDIT',
+        'SERVICES_VIEW',
+        'PRODUCTS_VIEW',
+        'INVOICES_VIEW'
       ],
-      receptionist: [
-        'view_patients',
-        'create_patients',
-        'edit_patients',
-        'view_appointments',
-        'create_appointments',
-        'edit_appointments',
-        'view_services',
-        'view_products',
-        'view_invoices'
+      'receptionist': [
+        'PATIENTS_VIEW', 'PATIENTS_CREATE', 'PATIENTS_EDIT',
+        'APPOINTMENTS_VIEW', 'APPOINTMENTS_CREATE', 'APPOINTMENTS_EDIT',
+        'SERVICES_VIEW',
+        'PRODUCTS_VIEW',
+        'INVOICES_VIEW', 'INVOICES_CREATE', 'INVOICES_EDIT',
+        'PAYMENTS_VIEW', 'PAYMENTS_CREATE',
+        'ANALYTICS_VIEW'
+      ],
+      'staff': [
+        'PATIENTS_VIEW',
+        'APPOINTMENTS_VIEW',
+        'SERVICES_VIEW',
+        'PRODUCTS_VIEW'
       ]
     };
-
+    
     const userPermissions = rolePermissions[user.role] || [];
     return userPermissions.includes(permission);
+  };
+
+  const hasAnyPermission = (permissions) => {
+    if (!user) return false;
+    return permissions.some(permission => hasPermission(permission));
+  };
+
+  const hasAllPermissions = (permissions) => {
+    if (!user) return false;
+    return permissions.every(permission => hasPermission(permission));
   };
 
   const value = {
@@ -164,7 +171,9 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateUser,
     hasRole,
-    hasPermission
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions
   };
 
   return (

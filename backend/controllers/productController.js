@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const { convertProductToBackend, convertProductToFrontend } = require('../utils/fieldMapping');
 
 // Get all products with search, filter, and pagination
 exports.getAllProducts = async (req, res) => {
@@ -110,7 +111,8 @@ exports.getProductByCode = async (req, res) => {
 // Create new product
 exports.createProduct = async (req, res) => {
     try {
-        const productData = req.body;
+        // Convert frontend camelCase to backend snake_case
+        const productData = convertProductToBackend(req.body);
         
         // Validate required fields
         const requiredFields = ['name', 'category', 'unit_price', 'supplier'];
@@ -150,7 +152,8 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const updateData = req.body;
+        // Convert frontend camelCase to backend snake_case
+        const updateData = convertProductToBackend(req.body);
         
         const product = await Product.findById(id);
         if (!product) {

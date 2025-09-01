@@ -1,6 +1,12 @@
 const express = require('express');
 const { body } = require('express-validator');
 const UserController = require('../controllers/userController');
+const { 
+    authenticateToken, 
+    requirePermission, 
+    requireAnyPermission,
+    requireOwnership 
+} = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -100,7 +106,11 @@ const updateUserValidation = [
  * @access  Private (Admin/Manager)
  * @query   page, limit, role, search, active_only
  */
-router.get('/', UserController.getUsers);
+router.get('/', 
+    authenticateToken, 
+    requireAnyPermission('USERS_VIEW', 'USERS_MANAGE'), 
+    UserController.getUsers
+);
 
 /**
  * @route   GET /api/users/dentists
@@ -108,21 +118,32 @@ router.get('/', UserController.getUsers);
  * @access  Private
  * @query   page, limit
  */
-router.get('/dentists', UserController.getDentists);
+router.get('/dentists', 
+    authenticateToken, 
+    UserController.getDentists
+);
 
 /**
  * @route   GET /api/users/stats/roles
  * @desc    Get user count by role
  * @access  Private (Admin)
  */
-router.get('/stats/roles', UserController.getRoleStats);
+router.get('/stats/roles', 
+    authenticateToken, 
+    requirePermission('ANALYTICS_VIEW'), 
+    UserController.getRoleStats
+);
 
 /**
  * @route   GET /api/users/:id
  * @desc    Get user by ID
  * @access  Private
  */
-router.get('/:id', UserController.getUserById);
+router.get('/:id', 
+    authenticateToken, 
+    requireAnyPermission('USERS_VIEW', 'USERS_MANAGE'), 
+    UserController.getUserById
+);
 
 /**
  * @route   GET /api/users/:id/stats
@@ -130,7 +151,11 @@ router.get('/:id', UserController.getUserById);
  * @access  Private
  * @query   start_date, end_date
  */
-router.get('/:id/stats', UserController.getUserStats);
+router.get('/:id/stats', 
+    authenticateToken, 
+    requireAnyPermission('ANALYTICS_VIEW', 'USERS_VIEW'), 
+    UserController.getUserStats
+);
 
 /**
  * @route   POST /api/users
@@ -138,7 +163,12 @@ router.get('/:id/stats', UserController.getUserStats);
  * @access  Private (Admin)
  * @body    username, email, password, first_name, last_name, role, phone?, license_number?, specialization?
  */
-router.post('/', [...userValidation, ...passwordValidation], UserController.createUser);
+router.post('/', 
+    authenticateToken, 
+    requirePermission('USERS_CREATE'), 
+    [...userValidation, ...passwordValidation], 
+    UserController.createUser
+);
 
 /**
  * @route   PUT /api/users/:id
@@ -146,7 +176,12 @@ router.post('/', [...userValidation, ...passwordValidation], UserController.crea
  * @access  Private (Admin or Self)
  * @body    username?, email?, first_name?, last_name?, role?, phone?, license_number?, specialization?
  */
-router.put('/:id', updateUserValidation, UserController.updateUser);
+router.put('/:id', 
+    authenticateToken, 
+    requireAnyPermission('USERS_EDIT', 'USERS_MANAGE'), 
+    updateUserValidation, 
+    UserController.updateUser
+);
 
 /**
  * @route   PUT /api/users/:id/password
@@ -154,26 +189,39 @@ router.put('/:id', updateUserValidation, UserController.updateUser);
  * @access  Private (Admin or Self)
  * @body    newPassword
  */
-router.put('/:id/password', [
-    body('newPassword')
-        .isLength({ min: 8 })
-        .withMessage('Password must be at least 8 characters long')
-        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-        .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number')
-], UserController.updatePassword);
+router.put('/:id/password', 
+    authenticateToken, 
+    requireOwnership('id'), 
+    [
+        body('newPassword')
+            .isLength({ min: 8 })
+            .withMessage('Password must be at least 8 characters long')
+            .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+            .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number')
+    ], 
+    UserController.updatePassword
+);
 
 /**
  * @route   PUT /api/users/:id/deactivate
  * @desc    Deactivate user
  * @access  Private (Admin)
  */
-router.put('/:id/deactivate', UserController.deactivateUser);
+router.put('/:id/deactivate', 
+    authenticateToken, 
+    requirePermission('USERS_MANAGE'), 
+    UserController.deactivateUser
+);
 
 /**
  * @route   PUT /api/users/:id/activate
  * @desc    Activate user
  * @access  Private (Admin)
  */
-router.put('/:id/activate', UserController.activateUser);
+router.put('/:id/activate', 
+    authenticateToken, 
+    requirePermission('USERS_MANAGE'), 
+    UserController.activateUser
+);
 
 module.exports = router;

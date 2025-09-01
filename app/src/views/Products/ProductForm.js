@@ -30,11 +30,11 @@ const ProductForm = () => {
         description: '',
         category: '',
         supplier: '',
-        unit_price: '',
-        unit_of_measure: 'each',
-        current_stock: '',
-        minimum_stock: '',
-        is_active: true
+        unitPrice: '',
+        unitOfMeasure: 'each',
+        currentStock: '',
+        minimumStock: '',
+        isActive: true
     });
 
     const [categories, setCategories] = useState([]);
@@ -87,11 +87,11 @@ const ProductForm = () => {
                     description: response.data.description || '',
                     category: response.data.category || '',
                     supplier: response.data.supplier || '',
-                    unit_price: response.data.unit_price || '',
-                    unit_of_measure: response.data.unit_of_measure || 'each',
-                    current_stock: response.data.current_stock || '',
-                    minimum_stock: response.data.minimum_stock || '',
-                    is_active: response.data.is_active !== undefined ? response.data.is_active : true
+                    unitPrice: response.data.unitPrice || response.data.unit_price || '',
+                    unitOfMeasure: response.data.unitOfMeasure || response.data.unit_of_measure || 'each',
+                    currentStock: response.data.currentStock || response.data.current_stock || '',
+                    minimumStock: response.data.minimumStock || response.data.minimum_stock || '',
+                    isActive: response.data.isActive !== undefined ? response.data.isActive : (response.data.is_active !== undefined ? response.data.is_active : true)
                 });
             }
         } catch (error) {
@@ -132,14 +132,14 @@ const ProductForm = () => {
             newErrors.supplier = 'Supplier must be less than 200 characters';
         }
         
-        if (!formData.unit_price) {
-            newErrors.unit_price = 'Unit price is required';
+        if (!formData.unitPrice) {
+            newErrors.unitPrice = 'Unit price is required';
         } else {
-            const price = parseFloat(formData.unit_price);
+            const price = parseFloat(formData.unitPrice);
             if (isNaN(price) || price <= 0) {
-                newErrors.unit_price = 'Unit price must be a positive number';
+                newErrors.unitPrice = 'Unit price must be a positive number';
             } else if (price > 999999.99) {
-                newErrors.unit_price = 'Unit price cannot exceed ₹999,999.99';
+                newErrors.unitPrice = 'Unit price cannot exceed ₹999,999.99';
             }
         }
         
@@ -148,21 +148,21 @@ const ProductForm = () => {
             newErrors.description = 'Description must be less than 1000 characters';
         }
         
-        if (formData.current_stock !== '' && formData.current_stock !== null) {
-            const stock = parseInt(formData.current_stock);
+        if (formData.currentStock !== '' && formData.currentStock !== null) {
+            const stock = parseInt(formData.currentStock);
             if (isNaN(stock) || stock < 0) {
-                newErrors.current_stock = 'Current stock must be a non-negative number';
+                newErrors.currentStock = 'Current stock must be a non-negative number';
             } else if (stock > 999999) {
-                newErrors.current_stock = 'Current stock cannot exceed 999,999';
+                newErrors.currentStock = 'Current stock cannot exceed 999,999';
             }
         }
         
-        if (formData.minimum_stock !== '' && formData.minimum_stock !== null) {
-            const minStock = parseInt(formData.minimum_stock);
+        if (formData.minimumStock !== '' && formData.minimumStock !== null) {
+            const minStock = parseInt(formData.minimumStock);
             if (isNaN(minStock) || minStock < 0) {
-                newErrors.minimum_stock = 'Minimum stock must be a non-negative number';
+                newErrors.minimumStock = 'Minimum stock must be a non-negative number';
             } else if (minStock > 999999) {
-                newErrors.minimum_stock = 'Minimum stock cannot exceed 999,999';
+                newErrors.minimumStock = 'Minimum stock cannot exceed 999,999';
             }
         }
         
@@ -191,9 +191,9 @@ const ProductForm = () => {
             
             const submitData = {
                 ...formData,
-                unit_price: parseFloat(formData.unit_price),
-                current_stock: parseInt(formData.current_stock) || 0,
-                minimum_stock: parseInt(formData.minimum_stock) || 0
+                unitPrice: parseFloat(formData.unitPrice),
+                currentStock: parseInt(formData.currentStock) || 0,
+                minimumStock: parseInt(formData.minimumStock) || 0
             };
 
             let response;
@@ -322,8 +322,8 @@ const ProductForm = () => {
                                 <FormControl fullWidth variant="outlined">
                                     <InputLabel>Unit of Measure</InputLabel>
                                     <Select
-                                        name="unit_of_measure"
-                                        value={formData.unit_of_measure}
+                                        name="unitOfMeasure"
+                                        value={formData.unitOfMeasure}
                                         onChange={handleInputChange}
                                         label="Unit of Measure"
                                     >
@@ -340,9 +340,9 @@ const ProductForm = () => {
                                 <TextField
                                     fullWidth
                                     label="Unit Price"
-                                    name="unit_price"
+                                    name="unitPrice"
                                     type="number"
-                                    value={formData.unit_price}
+                                    value={formData.unitPrice}
                                     onChange={handleInputChange}
                                     required
                                     variant="outlined"
@@ -357,9 +357,9 @@ const ProductForm = () => {
                                 <TextField
                                     fullWidth
                                     label="Current Stock"
-                                    name="current_stock"
+                                    name="currentStock"
                                     type="number"
-                                    value={formData.current_stock}
+                                    value={formData.currentStock}
                                     onChange={handleInputChange}
                                     variant="outlined"
                                     InputProps={{
@@ -372,9 +372,9 @@ const ProductForm = () => {
                                 <TextField
                                     fullWidth
                                     label="Minimum Stock"
-                                    name="minimum_stock"
+                                    name="minimumStock"
                                     type="number"
-                                    value={formData.minimum_stock}
+                                    value={formData.minimumStock}
                                     onChange={handleInputChange}
                                     variant="outlined"
                                     InputProps={{
@@ -387,9 +387,9 @@ const ProductForm = () => {
                                 <FormControlLabel
                                     control={
                                         <Switch
-                                            checked={formData.is_active}
+                                            checked={formData.isActive}
                                             onChange={handleInputChange}
-                                            name="is_active"
+                                            name="isActive"
                                             color="primary"
                                         />
                                     }

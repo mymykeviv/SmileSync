@@ -245,10 +245,13 @@ class ApiService {
 
   static async generatePdf(id) {
     const url = `${API_BASE_URL}/invoices/${id}/pdf`;
+    const token = this.getAuthToken();
+    
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
       },
     });
     

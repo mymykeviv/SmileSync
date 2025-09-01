@@ -179,21 +179,21 @@ const validateProduct = [
     .trim()
     .isLength({ min: 1, max: 200 })
     .withMessage('Supplier is required and must be less than 200 characters'),
-  body('unitPrice')
+  body('unit_price')
     .isFloat({ min: 0 })
     .withMessage('Unit price must be a positive number'),
-  body('currentStock')
+  body('current_stock')
     .optional()
     .isInt({ min: 0 })
     .withMessage('Current stock must be a non-negative integer'),
-  body('minimumStock')
+  body('minimum_stock')
     .optional()
     .isInt({ min: 0 })
     .withMessage('Minimum stock must be a non-negative integer'),
-  body('isActive')
+  body('is_active')
     .optional()
     .isBoolean()
-    .withMessage('isActive must be a boolean value')
+    .withMessage('is_active must be a boolean value')
 ];
 
 // Invoice validation rules
@@ -247,14 +247,11 @@ const validateInvoice = [
 
 // Payment validation rules
 const validatePayment = [
-  body('invoiceId')
-    .isInt({ min: 1 })
-    .withMessage('Valid invoice ID is required'),
   body('amount')
     .isFloat({ min: 0.01 })
     .withMessage('Payment amount must be greater than 0'),
   body('paymentMethod')
-    .isIn(['cash', 'credit_card', 'debit_card', 'check', 'bank_transfer', 'insurance'])
+    .isIn(['cash', 'credit_card', 'debit_card', 'check', 'bank_transfer', 'insurance', 'upi', 'other'])
     .withMessage('Invalid payment method'),
   body('paymentDate')
     .optional()
