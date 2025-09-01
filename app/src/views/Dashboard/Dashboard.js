@@ -12,6 +12,9 @@ import {
   Paper,
   Divider,
   Stack,
+  Menu,
+  MenuItem,
+  ButtonGroup,
 } from '@mui/material';
 import MedicalPageHeader from '../../components/Common/MedicalPageHeader';
 import MedicalStatusIndicator from '../../components/Common/MedicalStatusIndicator';
@@ -37,6 +40,8 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   Dashboard as DashboardIcon,
+  ArrowDropDown as ArrowDropDownIcon,
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -102,6 +107,21 @@ function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleDropdownClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleDropdownClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleMenuItemClick = (path) => {
+    navigate(path);
+    handleDropdownClose();
+  };
 
   const loadDashboardData = async () => {
     try {
@@ -202,15 +222,43 @@ function Dashboard() {
         onRefresh={loadDashboardData}
         gradient={false}
         actions={[
-          <Button
-            key="new-appointment"
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate('/appointments/new')}
-            sx={{ ml: 1 }}
+          <ButtonGroup key="quick-actions" variant="contained" sx={{ ml: 1 }}>
+            <Button
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/appointments/new')}
+            >
+              New Appointment
+            </Button>
+            <Button
+              size="small"
+              onClick={handleDropdownClick}
+              sx={{ px: 1 }}
+            >
+              <ArrowDropDownIcon />
+            </Button>
+          </ButtonGroup>,
+          <Menu
+            key="quick-actions-menu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleDropdownClose}
+            MenuListProps={{
+              'aria-labelledby': 'split-button',
+            }}
           >
-            New Appointment
-          </Button>
+            <MenuItem onClick={() => handleMenuItemClick('/patients/new')}>
+              <PeopleIcon sx={{ mr: 1 }} />
+              New Patient
+            </MenuItem>
+            <MenuItem onClick={() => handleMenuItemClick('/patients')}>
+              <SearchIcon sx={{ mr: 1 }} />
+              Search Patients
+            </MenuItem>
+            <MenuItem onClick={() => handleMenuItemClick('/appointments')}>
+              <CalendarIcon sx={{ mr: 1 }} />
+              View Calendar
+            </MenuItem>
+          </Menu>
         ]}
       />
 
@@ -469,46 +517,7 @@ function Dashboard() {
           </Paper>
         </Grid>
         
-        {/* Quick Actions */}
-        <Grid item xs={12} lg={4}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
-              Quick Actions
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Button
-                variant="outlined"
-                fullWidth
-                startIcon={<AddIcon />}
-                onClick={() => navigate('/appointments/new')}
-              >
-                New Appointment
-              </Button>
-              <Button
-                variant="outlined"
-                fullWidth
-                startIcon={<AddIcon />}
-                onClick={() => navigate('/patients/new')}
-              >
-                New Patient
-              </Button>
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={() => navigate('/patients')}
-              >
-                Search Patients
-              </Button>
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={() => navigate('/appointments')}
-              >
-                View Calendar
-              </Button>
-            </Box>
-          </Paper>
-        </Grid>
+
       </Grid>
     </Box>
   );
