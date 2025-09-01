@@ -1,6 +1,19 @@
 # SmileSync Frontend Application
 
-The React-based frontend application for SmileSync dental clinic management system. Built with modern React patterns, responsive design, and comprehensive user interface components.
+The React-based frontend application for SmileSync dental clinic management system. Built with modern React patterns, Material-UI design system, role-based access control, and comprehensive user interface components.
+
+## 🆕 Recent Updates (January 2025)
+
+- **🔐 Authentication System**: JWT-based login with secure session management
+- **👥 Role-Based Access Control**: Administrator, Dentist, Assistant, Receptionist, and Staff roles
+- **🎨 Material-UI Integration**: Professional medical design system with consistent theming
+- **📱 Mobile-First Design**: Responsive interface optimized for tablets and mobile devices
+- **🛡️ Error Boundaries**: Comprehensive error handling and recovery mechanisms
+- **📄 PDF Preview**: Interactive invoice preview with embedded PDF viewer
+- **💰 INR Currency**: Complete conversion to Indian Rupee (₹) across all components
+- **🔧 Enhanced Forms**: Improved validation, error messaging, and user guidance
+- **👨‍⚕️ Staff Management**: Doctor and staff management with role assignments
+- **📊 Dashboard Sync**: Timeline view synchronized with calendar date selection
 
 ## 🏗️ Architecture
 
@@ -44,29 +57,39 @@ app/
 ## 🚀 Features
 
 ### Core Components
+- **Authentication System**: Secure login with JWT tokens and session management
+- **Role-Based Access Control**: Multi-level permissions for different user roles
 - **Layout System**: Responsive navigation with sidebar and header
-- **Dashboard**: Overview cards with key metrics and quick actions
-- **Patient Management**: CRUD operations with search and filtering
-- **Appointment Scheduling**: Calendar interface with conflict detection
-- **Service Catalog**: Management of dental services and products
-- **Invoice Generation**: Billing interface with PDF export
+- **Dashboard**: Overview cards with key metrics and timeline synchronization
+- **Patient Management**: CRUD operations with search, filtering, and role-based access
+- **Appointment Scheduling**: Calendar interface with conflict detection and enhanced forms
+- **Staff Management**: Doctor and staff directory with role assignments
+- **Service Catalog**: Management of dental services and products with INR pricing
+- **Invoice Generation**: Billing interface with PDF preview and export
 - **Analytics Dashboard**: Interactive charts and data visualization
 
 ### UI/UX Features
-- **Responsive Design**: Mobile-first approach with breakpoints
+- **Material-UI Design**: Professional medical theme with consistent components
+- **Responsive Design**: Mobile-first approach optimized for tablets and phones
 - **Modern Interface**: Clean, professional dental clinic aesthetic
 - **Interactive Charts**: Recharts integration for analytics
-- **Form Validation**: Real-time validation with error handling
+- **Enhanced Form Validation**: Real-time validation with improved error messaging
 - **Loading States**: Skeleton screens and loading indicators
-- **Error Handling**: User-friendly error messages and recovery
+- **Error Boundaries**: Comprehensive error handling and recovery
+- **PDF Preview**: Embedded PDF viewer for invoices and documents
+- **Currency Support**: Complete INR (₹) integration across all financial components
 
 ## 🛠️ Technology Stack
 
 - **React 18**: Latest React with hooks and functional components
-- **React Router**: Client-side routing for SPA navigation
+- **Material-UI (MUI)**: Professional design system with medical theme
+- **React Router**: Client-side routing for SPA navigation with protected routes
+- **JWT Authentication**: Secure token-based authentication system
 - **Recharts**: Chart library for analytics visualization
-- **CSS3**: Modern CSS with Flexbox and Grid layouts
-- **Fetch API**: HTTP client for backend communication
+- **PDF.js**: Embedded PDF preview functionality
+- **Date-fns**: Modern date manipulation and formatting
+- **CSS3**: Modern CSS with Flexbox, Grid, and Material-UI theming
+- **Fetch API**: HTTP client with authentication headers
 
 ## 📋 Prerequisites
 
@@ -120,13 +143,17 @@ npx serve -s build
 - **Analytics.js**: Analytics dashboard with charts
 
 ### Common Components
-- **Button.js**: Reusable button component
-- **Input.js**: Form input components
-- **Modal.js**: Modal dialog component
-- **Table.js**: Data table component
-- **Card.js**: Content card component
-- **LoadingSpinner.js**: Loading indicator
-- **ErrorMessage.js**: Error display component
+- **ErrorBoundary.js**: Application-wide error boundary for crash recovery
+- **ProtectedRoute.js**: Route protection based on authentication and roles
+- **Button.js**: Reusable Material-UI button components
+- **Input.js**: Enhanced form input components with validation
+- **Modal.js**: Material-UI modal dialog component
+- **Table.js**: Data table component with sorting and filtering
+- **Card.js**: Material-UI content card component
+- **LoadingSpinner.js**: Loading indicator with skeleton screens
+- **ErrorMessage.js**: Enhanced error display component
+- **PDFPreview.js**: Embedded PDF viewer component
+- **CurrencyDisplay.js**: INR currency formatting component
 
 ## 🔌 API Integration
 
@@ -242,10 +269,15 @@ npm run eject          # Eject from Create React App
 
 ## 🔒 Security Considerations
 
+- **JWT Authentication**: Secure token-based authentication with automatic refresh
+- **Role-Based Access Control**: Multi-level permissions (Administrator, Dentist, Assistant, Receptionist, Staff)
+- **Protected Routes**: Route-level security based on authentication and user roles
 - **Input Sanitization**: All user inputs are validated and sanitized
 - **XSS Prevention**: Proper escaping of dynamic content
 - **CSRF Protection**: Token-based request validation
 - **Secure Communication**: HTTPS-only in production
+- **Session Management**: Automatic logout on token expiration
+- **Error Boundaries**: Secure error handling without exposing sensitive information
 
 ## 🚀 Performance Optimizations
 
