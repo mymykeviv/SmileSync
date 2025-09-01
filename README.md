@@ -2,7 +2,7 @@
 
 A comprehensive, production-ready dental clinic management system built with modern technologies. SmileSync provides a complete solution for managing patients, appointments, services, billing, and analytics in a desktop application.
 
-## 🆕 Recent Updates (January 2025)
+## 🆕 Recent Updates (September 2025)
 
 - **🔐 Role-Based Access Control**: Complete RBAC system with Administrator, Dentist, Assistant, Receptionist, and Staff roles
 - **🎨 Medical Design System**: Professional medical-themed UI with Material-UI components

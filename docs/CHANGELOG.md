@@ -1,6 +1,6 @@
 # SmileSync Changelog
 
-## [Latest] - 2025-01-21
+## [Latest] - 2025-09-01
 
 ### 🚀 New Features
 
