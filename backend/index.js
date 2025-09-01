@@ -47,6 +47,15 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
+// Health check endpoint under /api prefix
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Public routes (no authentication required)
 app.use('/api/auth', authRoutes);
 app.use('/api/clinic', clinicConfigRoutes);
