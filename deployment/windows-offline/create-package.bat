@@ -1,4 +1,9 @@
 @echo off
+REM Force execution in cmd.exe to avoid PowerShell execution policy issues
+if "%COMSPEC%" neq "%SystemRoot%\system32\cmd.exe" (
+    "%SystemRoot%\system32\cmd.exe" /c "%~f0" %*
+    exit /b %errorlevel%
+)
 setlocal enabledelayedexpansion
 
 REM SmileSync Offline Package Creator
@@ -25,33 +30,36 @@ REM Check if we're in the right location
 if not exist "%PROJECT_ROOT%\package.json" (
     echo ERROR: Cannot find SmileSync project root
     echo Please run this script from the deployment/windows-offline directory
-    pause
     exit /b 1
 )
 
 REM Check prerequisites
 echo [1/10] Checking prerequisites...
 
+echo Checking Node.js...
 node --version >nul 2>&1
 if errorlevel 1 (
     echo ERROR: Node.js is required to create the package
-    pause
     exit /b 1
 )
+echo ✓ Node.js found
 
-npm --version >nul 2>&1
-if errorlevel 1 (
+echo Checking npm...
+for /f "delims=" %%i in ('npm --version 2^>nul') do set NPM_VERSION=%%i
+if "%NPM_VERSION%"=="" (
     echo ERROR: npm is required to create the package
-    pause
     exit /b 1
 )
+echo ✓ npm found (version %NPM_VERSION%)
 
+echo Checking tar...
 tar --version >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: tar is required (Windows 10 build 17063 or later)
-    echo Please ensure you have a recent version of Windows 10/11
-    pause
-    exit /b 1
+    echo WARNING: tar not found - package creation will continue without compression
+    set USE_TAR=false
+) else (
+    echo ✓ tar found
+    set USE_TAR=true
 )
 
 echo ✓ Prerequisites check passed
@@ -85,13 +93,13 @@ echo.
 REM Step 4: Download Node.js installer
 echo [4/10] Preparing Node.js installer...
 echo.
-echo NOTE: You need to manually download Node.js installer:
+echo NOTE: Node.js installer download (optional):
 echo 1. Go to https://nodejs.org/en/download/
 echo 2. Download "Windows Installer (.msi)" for x64
 echo 3. Save as: %OUTPUT_DIR%\setup\node-v18.19.0-x64.msi
 echo.
-echo Press any key when you have downloaded the Node.js installer...
-pause >nul
+echo Skipping Node.js installer download (can be added manually later)...
+echo.
 
 if not exist "%OUTPUT_DIR%\setup\node-v18.19.0-x64.msi" (
     echo WARNING: Node.js installer not found
@@ -106,18 +114,18 @@ cd /d "%PROJECT_ROOT%"
 
 REM Create a clean copy of source code
 echo Copying source code...
-xcopy "%PROJECT_ROOT%\*" "%TEMP_DIR%\SmileSync\" /E /I /H /Y /EXCLUDE:"%PACKAGE_DIR%\exclude.txt"
+xcopy "%PROJECT_ROOT%\*" "%TEMP_DIR%\SmileSync\" /E /I /H /Y /EXCLUDE:"%PACKAGE_DIR%exclude.txt"
 
 REM Create exclusion list if it doesn't exist
-if not exist "%PACKAGE_DIR%\exclude.txt" (
-    echo node_modules\ > "%PACKAGE_DIR%\exclude.txt"
-    echo .git\ >> "%PACKAGE_DIR%\exclude.txt"
-    echo .env >> "%PACKAGE_DIR%\exclude.txt"
-    echo *.log >> "%PACKAGE_DIR%\exclude.txt"
-    echo dist\ >> "%PACKAGE_DIR%\exclude.txt"
-    echo build\ >> "%PACKAGE_DIR%\exclude.txt"
-    echo coverage\ >> "%PACKAGE_DIR%\exclude.txt"
-    echo .nyc_output\ >> "%PACKAGE_DIR%\exclude.txt"
+if not exist "%PACKAGE_DIR%exclude.txt" (
+    echo node_modules\ > "%PACKAGE_DIR%exclude.txt"
+    echo .git\ >> "%PACKAGE_DIR%exclude.txt"
+    echo .env >> "%PACKAGE_DIR%exclude.txt"
+    echo *.log >> "%PACKAGE_DIR%exclude.txt"
+    echo dist\ >> "%PACKAGE_DIR%exclude.txt"
+    echo build\ >> "%PACKAGE_DIR%exclude.txt"
+    echo coverage\ >> "%PACKAGE_DIR%exclude.txt"
+    echo .nyc_output\ >> "%PACKAGE_DIR%exclude.txt"
 )
 
 REM Remove node_modules and other unnecessary files from temp copy
@@ -142,8 +150,13 @@ echo Installing root dependencies...
 npm install --production
 if errorlevel 1 (
     echo ERROR: Failed to install root dependencies
-    pause
     exit /b 1
+)
+
+echo Running electron-builder install-app-deps...
+electron-builder install-app-deps
+if errorlevel 1 (
+    echo WARNING: electron-builder install-app-deps failed, continuing...
 )
 
 echo Packaging root dependencies...
@@ -154,7 +167,6 @@ cd /d "%PROJECT_ROOT%\app"
 npm install --production
 if errorlevel 1 (
     echo ERROR: Failed to install frontend dependencies
-    pause
     exit /b 1
 )
 
@@ -166,7 +178,6 @@ cd /d "%PROJECT_ROOT%\backend"
 npm install --production
 if errorlevel 1 (
     echo ERROR: Failed to install backend dependencies
-    pause
     exit /b 1
 )
 
@@ -185,7 +196,6 @@ echo Creating database with default users...
 node scripts\create-admin.js
 if errorlevel 1 (
     echo ERROR: Failed to create template database
-    pause
     exit /b 1
 )
 
@@ -200,11 +210,47 @@ echo.
 
 REM Step 8: Copy scripts
 echo [8/10] Copying deployment scripts...
-xcopy "%PACKAGE_DIR%\scripts\*" "%OUTPUT_DIR%\scripts\" /Y /I
-xcopy "%PACKAGE_DIR%\*.bat" "%OUTPUT_DIR%\" /Y
-xcopy "%PACKAGE_DIR%\README.md" "%OUTPUT_DIR%\" /Y
 
-echo ✓ Scripts copied
+REM Copy scripts from scripts folder
+if exist "%PACKAGE_DIR%\scripts\" (
+    echo Copying scripts from scripts folder...
+    xcopy "%PACKAGE_DIR%\scripts\*" "%OUTPUT_DIR%\scripts\" /Y /I
+    if errorlevel 1 (
+        echo WARNING: Failed to copy some scripts
+    ) else (
+        echo ✓ Scripts copied successfully
+    )
+) else (
+    echo WARNING: Scripts folder not found at %PACKAGE_DIR%\scripts\
+)
+
+REM Copy install.bat
+if exist "%PACKAGE_DIR%\install.bat" (
+    echo Copying install.bat...
+    copy "%PACKAGE_DIR%\install.bat" "%OUTPUT_DIR%\install.bat"
+    if errorlevel 1 (
+        echo WARNING: Failed to copy install.bat
+    ) else (
+        echo ✓ install.bat copied successfully
+    )
+) else (
+    echo WARNING: install.bat not found at %PACKAGE_DIR%\install.bat
+)
+
+REM Copy README.md
+if exist "%PACKAGE_DIR%\README.md" (
+    echo Copying README.md...
+    copy "%PACKAGE_DIR%\README.md" "%OUTPUT_DIR%\README.md"
+    if errorlevel 1 (
+        echo WARNING: Failed to copy README.md
+    ) else (
+        echo ✓ README.md copied successfully
+    )
+) else (
+    echo WARNING: README.md not found at %PACKAGE_DIR%\README.md
+)
+
+echo ✓ Script copying completed
 echo.
 
 REM Step 9: Create package information
@@ -279,5 +325,4 @@ if /i "!OPEN_PACKAGE!" equ "Y" (
 
 echo.
 echo Package creation completed successfully!
-pause
 exit /b 0

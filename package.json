@@ -24,8 +24,7 @@
     "test:backend": "cd backend && npm test",
     "test:e2e": "cd tests/e2e && npm test",
     "install:all": "npm install && cd app && npm install && cd ../backend && npm install && cd ../tests/e2e && npm install",
-    "build": "npm run frontend:build",
-    "postinstall": "electron-builder install-app-deps"
+    "build": "npm run frontend:build"
   },
   "keywords": [
     "dental",
@@ -40,29 +39,29 @@
   "author": "SmileSync Solutions",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^28.0.0",
-    "electron-builder": "^24.9.1",
     "concurrently": "^8.2.2",
-    "wait-on": "^7.2.0",
-    "nodemon": "^3.0.2",
-    "jest": "^29.7.0",
-    "supertest": "^6.3.3",
+    "electron": "^28.3.3",
+    "electron-builder": "^24.9.1",
     "eslint": "^8.56.0",
-    "prettier": "^3.1.1"
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "prettier": "^3.1.1",
+    "supertest": "^6.3.3",
+    "wait-on": "^7.2.0"
   },
   "dependencies": {
-    "sqlite3": "^5.1.6",
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.1.0",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "moment": "^2.29.4",
     "multer": "^1.4.5-lts.1",
     "pdfkit": "^0.14.0",
-    "moment": "^2.29.4",
-    "uuid": "^9.0.1",
-    "dotenv": "^16.3.1"
+    "sqlite3": "^5.1.6",
+    "uuid": "^9.0.1"
   },
   "build": {
     "appId": "com.smilesync.app",
