@@ -142,13 +142,4 @@ coverage/
 # Temporary folders
 tmp/
 temp/
-deployment/SmileSync-Windows-Offline/install.bat
-deployment/SmileSync-Windows-Offline/PACKAGE-INFO.txt
-deployment/SmileSync-Windows-Offline/README.md
-deployment/SmileSync-Windows-Offline/application/SmileSync-source.zip
-deployment/SmileSync-Windows-Offline/dependencies/node_modules.tar.gz
-deployment/SmileSync-Windows-Offline/scripts/backup-data.bat
-deployment/SmileSync-Windows-Offline/scripts/start-application.bat
-deployment/SmileSync-Windows-Offline/scripts/stop-application.bat
-deployment/SmileSync-Windows-Offline/scripts/system-check.bat
-deployment/SmileSync-Windows-Offline/scripts/uninstall.bat
+deployment/SmileSync*

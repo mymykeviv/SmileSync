@@ -274,3 +274,10 @@ For support and questions:
 **SmileSync** - Making dental clinic management simple and efficient. 🦷✨
 
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/ae9a37b8-2ed0-4cb8-9874-085c1577a27e" />
+
+## Build and Deployment Scripts
+
+- See scripts/ for new cross-platform build and deployment scripts, including:
+  - Local dev up scripts (Windows/macOS/Linux)
+  - Offline production package builders for Windows and macOS/Linux (includes nginx, backend, frontend, and start/stop scripts)
+  - Docker production package builder (platform agnostic)

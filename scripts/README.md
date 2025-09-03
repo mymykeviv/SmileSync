@@ -1,5 +1,48 @@
 # SmileSync Scripts Documentation
 
+## New Build & Packaging Scripts (Cross-Platform)
+
+This project now includes simple, dependency-free packaging scripts for development and production deployments.
+
+- Dev orchestration
+  - dev-up.bat / dev-up.sh: Start frontend and backend for local development
+  - dev-down.bat / dev-down.sh: Stop local development services
+
+- Production (without Docker)
+  - package-win.bat: Creates a Windows offline ZIP containing:
+    - Nginx + nginx.conf
+    - Backend server + production node_modules
+    - Frontend build assets
+    - Start/Stop scripts and a README for quick usage
+  - package-unix.sh: Creates a macOS/Linux portable tar.gz with the same contents. Attempts to auto-download portable Nginx and Node runtime for your platform.
+
+- Production (Docker)
+  - package-docker.bat / package-docker.sh: Builds Docker images for backend and frontend (nginx) and outputs a docker-compose bundle with start/stop scripts
+
+Usage
+
+- Windows (PowerShell/Command Prompt)
+  - scripts\dev-up.bat
+  - scripts\dev-down.bat
+  - scripts\package-win.bat
+  - scripts\package-docker.bat
+
+- macOS/Linux (bash)
+  - ./scripts/dev-up.sh
+  - ./scripts/dev-down.sh
+  - ./scripts/package-unix.sh
+  - ./scripts/package-docker.sh
+
+Output
+
+- Windows offline package: deployment/SmileSync-<version>-win64.zip
+- macOS/Linux package: deployment/SmileSync-<version>-<os>-<arch>.tar.gz
+- Docker bundle: deployment/docker-bundle/
+
+Note: The produced offline packages include Nginx and a Node.js runtime, so target machines do not need to pre-install anything. Scripts auto-detect ports and avoid conflicts.
+
+---
+
 Comprehensive collection of development, build, and deployment scripts for the SmileSync dental clinic management system.
 
 ## 📋 Overview
