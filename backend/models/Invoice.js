@@ -23,6 +23,17 @@ class Invoice {
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
         this.created_by = data.created_by;
+        
+        // Patient information (from JOIN queries)
+        this.patient_first_name = data.patient_first_name;
+        this.patient_last_name = data.patient_last_name;
+        this.patient_number = data.patient_number;
+        this.phone = data.phone;
+        this.email = data.email;
+        this.address = data.address;
+        this.city = data.city;
+        this.state = data.state;
+        this.zip_code = data.zip_code;
     }
 
     /**

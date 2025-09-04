@@ -34,9 +34,25 @@ class InvoiceController {
       const totalCount = await Invoice.getCount({ search, status, dateFilter });
       const totalPages = Math.ceil(totalCount / parseInt(limit));
 
+      // Convert invoices to JSON and add patient information
+      const invoicesData = invoices.map(invoice => {
+        const invoiceData = invoice.toJSON();
+        
+        // Add patient information if available
+        if (invoice.patient_first_name || invoice.patient_last_name) {
+          invoiceData.patient = {
+            firstName: invoice.patient_first_name,
+            lastName: invoice.patient_last_name,
+            patientNumber: invoice.patient_number
+          };
+        }
+        
+        return invoiceData;
+      });
+
       res.json({
         success: true,
-        data: invoices,
+        data: invoicesData,
         pagination: {
           currentPage: parseInt(page),
           totalPages,
@@ -84,6 +100,21 @@ class InvoiceController {
         unitPrice: item.unit_price,
         toothNumber: item.tooth_number
       }));
+      
+      // Add patient information if available
+      if (invoice.patient_first_name || invoice.patient_last_name) {
+        invoiceData.patient = {
+          firstName: invoice.patient_first_name,
+          lastName: invoice.patient_last_name,
+          patientNumber: invoice.patient_number,
+          phone: invoice.phone,
+          email: invoice.email,
+          address: invoice.address,
+          city: invoice.city,
+          state: invoice.state,
+          zipCode: invoice.zip_code
+        };
+      }
 
       res.json({
         success: true,
@@ -325,31 +356,46 @@ class InvoiceController {
       // Get invoice items
       const items = await invoice.getItems();
       
-      // Create PDF document
-      const doc = new PDFDocument();
+      // Create PDF document with proper font encoding
+      const doc = new PDFDocument({
+        bufferPages: true
+      });
       
       // Set response headers for PDF download
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="invoice-${invoice.invoiceNumber}.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="invoice-${invoice.invoice_number}.pdf"`);
       
       // Pipe PDF to response
       doc.pipe(res);
       
-      // Add clinic header to PDF
-      doc.fontSize(20).text(clinicConfig.clinic_name || 'SmileSync Dental Clinic', 50, 50);
+      // Add clinic header to PDF - centered
+      const pageWidth = doc.page.width;
+      doc.fontSize(20).text(clinicConfig.clinic_name || 'SmileSync Dental Clinic', 0, 50, {
+        width: pageWidth,
+        align: 'center'
+      });
       
-      // Add clinic contact information
+      // Add clinic contact information - centered
       let yPos = 75;
       if (clinicConfig.clinic_address) {
-        doc.fontSize(10).text(clinicConfig.clinic_address, 50, yPos);
+        doc.fontSize(10).text(clinicConfig.clinic_address, 0, yPos, {
+          width: pageWidth,
+          align: 'center'
+        });
         yPos += 15;
       }
       if (clinicConfig.contact_phone) {
-        doc.fontSize(10).text(`Phone: ${clinicConfig.contact_phone}`, 50, yPos);
+        doc.fontSize(10).text(`Phone: ${clinicConfig.contact_phone}`, 0, yPos, {
+          width: pageWidth,
+          align: 'center'
+        });
         yPos += 15;
       }
       if (clinicConfig.email) {
-        doc.fontSize(10).text(`Email: ${clinicConfig.email}`, 50, yPos);
+        doc.fontSize(10).text(`Email: ${clinicConfig.email}`, 0, yPos, {
+          width: pageWidth,
+          align: 'center'
+        });
         yPos += 15;
       }
       
@@ -357,23 +403,50 @@ class InvoiceController {
       doc.fontSize(16).text('Invoice', 50, yPos + 10);
       yPos += 40;
       
-      // Invoice details
+      // Patient information
+      const patientName = invoice.patient_first_name && invoice.patient_last_name 
+        ? `${invoice.patient_first_name} ${invoice.patient_last_name}` 
+        : 'Unknown Patient';
+      
+      doc.fontSize(14).text('Bill To:', 50, yPos);
+      yPos += 20;
       doc.fontSize(12)
-         .text(`Invoice Number: ${invoice.invoiceNumber}`, 50, yPos)
-         .text(`Date: ${new Date(invoice.invoiceDate).toLocaleDateString()}`, 50, yPos + 20)
-         .text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}`, 50, yPos + 40)
-         .text(`Patient ID: ${invoice.patientId}`, 50, yPos + 60);
+         .text(patientName, 50, yPos)
+         .text(`Patient ID: ${invoice.patient_number || invoice.patient_id || 'N/A'}`, 50, yPos + 15);
+      
+      if (invoice.phone) {
+        doc.text(`Phone: ${invoice.phone}`, 50, yPos + 30);
+        yPos += 15;
+      }
+      if (invoice.email) {
+        doc.text(`Email: ${invoice.email}`, 50, yPos + 30);
+        yPos += 15;
+      }
+      if (invoice.address) {
+        doc.text(`Address: ${invoice.address}`, 50, yPos + 30);
+        yPos += 15;
+      }
+      
+      yPos += 30;
+      
+      // Invoice details - right aligned
+      const rightMargin = 550;
+      doc.fontSize(12)
+         .text(`Invoice Number: ${invoice.invoice_number || 'N/A'}`, 300, yPos, { width: 250, align: 'right' })
+         .text(`Date: ${invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString() : 'N/A'}`, 300, yPos + 20, { width: 250, align: 'right' })
+         .text(`Due Date: ${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A'}`, 300, yPos + 40, { width: 250, align: 'right' });
       
       // Items table header
       let yPosition = yPos + 100;
-      doc.text('Description', 50, yPosition)
-         .text('Quantity', 200, yPosition)
-         .text('Unit Price', 300, yPosition)
-         .text('Total', 400, yPosition);
+      doc.fontSize(12)
+         .text('Description', 50, yPosition)
+         .text('Qty', 250, yPosition, { width: 40, align: 'center' })
+         .text('Unit Price', 300, yPosition, { width: 80, align: 'right' })
+         .text('Total', 420, yPosition, { width: 80, align: 'right' });
       
       // Draw line under header
       doc.moveTo(50, yPosition + 15)
-         .lineTo(500, yPosition + 15)
+         .lineTo(520, yPosition + 15)
          .stroke();
       
       yPosition += 30;
@@ -381,11 +454,25 @@ class InvoiceController {
       // Add items
       if (items && items.length > 0) {
         items.forEach(item => {
-          doc.text(item.description || 'N/A', 50, yPosition)
-             .text(item.quantity?.toString() || '0', 200, yPosition)
-             .text(`₹${(item.unitPrice || 0).toFixed(2)}`, 300, yPosition)
-                .text(`₹${(item.totalPrice || 0).toFixed(2)}`, 400, yPosition);
-          yPosition += 20;
+          const unitPrice = parseFloat(item.unit_price) || 0;
+          const totalPrice = parseFloat(item.total_price) || 0;
+          const quantity = parseInt(item.quantity) || 0;
+          
+          // Item name and description in one column with proper wrapping
+          let itemText = item.item_name || 'N/A';
+          if (item.description && item.description !== item.item_name) {
+            itemText += `\n${item.description}`;
+          }
+          
+          doc.fontSize(10)
+             .text(itemText, 50, yPosition, { width: 190, lineGap: 2 })
+             .text(quantity.toString(), 250, yPosition, { width: 40, align: 'center' })
+             .text(`₹${unitPrice.toFixed(2)}`, 300, yPosition, { width: 80, align: 'right' })
+             .text(`₹${totalPrice.toFixed(2)}`, 420, yPosition, { width: 80, align: 'right' });
+          
+          // Calculate height based on text content
+          const textHeight = Math.max(25, doc.heightOfString(itemText, { width: 190 }) + 10);
+          yPosition += textHeight;
         });
       }
       
@@ -396,15 +483,21 @@ class InvoiceController {
          .stroke();
       
       yPosition += 10;
-      doc.text(`Subtotal: ₹${(invoice.subtotal || 0).toFixed(2)}`, 300, yPosition);
-        yPosition += 20;
-        doc.text(`Tax: ₹${(invoice.taxAmount || 0).toFixed(2)}`, 300, yPosition);
-        yPosition += 20;
-        doc.fontSize(14).text(`Total: ₹${(invoice.totalAmount || 0).toFixed(2)}`, 300, yPosition);
-        yPosition += 30;
-        doc.text(`Amount Paid: ₹${(invoice.amountPaid || 0).toFixed(2)}`, 300, yPosition);
-        yPosition += 20;
-        doc.text(`Balance Due: ₹${(invoice.balanceDue || 0).toFixed(2)}`, 300, yPosition);
+      const subtotal = parseFloat(invoice.subtotal) || 0;
+      const taxAmount = parseFloat(invoice.tax_amount) || 0;
+      const totalAmount = parseFloat(invoice.total_amount) || 0;
+      const amountPaid = parseFloat(invoice.amount_paid) || 0;
+      const balanceDue = parseFloat(invoice.balance_due) || 0;
+      
+      doc.fontSize(12).text(`Subtotal: ₹${subtotal.toFixed(2)}`, 350, yPosition, { width: 150, align: 'right' });
+      yPosition += 20;
+      doc.text(`Tax: ₹${taxAmount.toFixed(2)}`, 350, yPosition, { width: 150, align: 'right' });
+      yPosition += 20;
+      doc.fontSize(14).text(`Total: ₹${totalAmount.toFixed(2)}`, 350, yPosition, { width: 150, align: 'right' });
+      yPosition += 30;
+      doc.fontSize(12).text(`Amount Paid: ₹${amountPaid.toFixed(2)}`, 350, yPosition, { width: 150, align: 'right' });
+      yPosition += 20;
+      doc.text(`Balance Due: ₹${balanceDue.toFixed(2)}`, 350, yPosition, { width: 150, align: 'right' });
       
       // Finalize PDF
       doc.end();
