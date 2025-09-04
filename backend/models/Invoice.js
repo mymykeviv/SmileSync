@@ -599,19 +599,7 @@ class Invoice {
         }
     }
 
-    /**
-     * Mark invoice as sent
-     */
-    async markAsSent() {
-        try {
-            this.status = 'sent';
-            await this.update();
-            return this;
-        } catch (error) {
-            console.error('Error marking invoice as sent:', error);
-            throw error;
-        }
-    }
+    // Mark as sent functionality removed (related to send invoice feature)
 
     /**
      * Delete invoice

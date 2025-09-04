@@ -41,7 +41,6 @@ import {
   Refresh as RefreshIcon,
   Payment as BillingIcon,
   PictureAsPdf as PdfIcon,
-  Email as EmailIcon,
   Payment as PaymentIcon,
   ReportProblem as WarningIcon,
   CheckCircle as PaidIcon,
@@ -129,17 +128,7 @@ function Billing() {
     }
   };
 
-  const handleSendInvoice = async (invoice) => {
-    try {
-      const response = await ApiService.sendInvoice(invoice.id);
-      if (response.success) {
-        // Show success message
-        console.log('Invoice sent successfully');
-      }
-    } catch (error) {
-      console.error('Failed to send invoice:', error);
-    }
-  };
+  // Send invoice functionality removed
 
   const handleGeneratePdf = async (invoice) => {
     try {
@@ -562,16 +551,7 @@ function Billing() {
           <EditIcon sx={{ mr: 1 }} />
           Edit Invoice
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            handleSendInvoice(selectedInvoice);
-            handleMenuClose();
-          }}
-          disabled={selectedInvoice?.status === 'cancelled'}
-        >
-          <EmailIcon sx={{ mr: 1 }} />
-          Send Invoice
-        </MenuItem>
+        {/* Send Invoice option removed */}
         <MenuItem
           onClick={() => {
             navigate(`/billing/${selectedInvoice?.id}/payment`);

@@ -24,8 +24,7 @@ router.put('/:id', validateId, validateInvoice, handleValidationErrors, invoiceC
 // Delete invoice
 router.delete('/:id', invoiceController.deleteInvoice);
 
-// Send invoice via email
-router.post('/:id/send', invoiceController.sendInvoice);
+// Send invoice functionality removed
 
 // Generate PDF for invoice
 router.post('/:id/pdf', invoiceController.generatePdf);

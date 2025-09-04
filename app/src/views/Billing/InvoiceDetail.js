@@ -27,7 +27,6 @@ import {
   ArrowBack as BackIcon,
   Edit as EditIcon,
   PictureAsPdf as PdfIcon,
-  Send as SendIcon,
   Payment as PaymentIcon,
   FileCopy as DuplicateIcon,
   Delete as DeleteIcon,
@@ -72,7 +71,7 @@ function InvoiceDetail() {
   const getStatusConfig = (status) => {
     const configs = {
       draft: { label: 'Draft', color: 'default', icon: <ScheduleIcon /> },
-      sent: { label: 'Sent', color: 'info', icon: <SendIcon /> },
+      sent: { label: 'Sent', color: 'info', icon: <CheckIcon /> },
       pending: { label: 'Pending', color: 'warning', icon: <ScheduleIcon /> },
       paid: { label: 'Paid', color: 'success', icon: <CheckIcon /> },
       overdue: { label: 'Overdue', color: 'error', icon: <WarningIcon /> },
@@ -419,13 +418,7 @@ function InvoiceDetail() {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => {
-          // Handle send invoice
-          handleMenuClose();
-        }}>
-          <SendIcon sx={{ mr: 1 }} />
-          Send Invoice
-        </MenuItem>
+        {/* Send Invoice option removed */}
         <MenuItem onClick={() => {
           // Handle duplicate invoice
           handleMenuClose();

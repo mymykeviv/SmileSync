@@ -274,34 +274,7 @@ class InvoiceController {
     }
   }
 
-  // Send invoice via email
-  static async sendInvoice(req, res) {
-    try {
-      const { id } = req.params;
-      
-      const invoice = await Invoice.findById(id);
-      if (!invoice) {
-        return res.status(404).json({
-          success: false,
-          message: 'Invoice not found'
-        });
-      }
-
-      // TODO: Implement email sending logic
-      // For now, just return success
-      res.json({
-        success: true,
-        message: 'Invoice sent successfully'
-      });
-    } catch (error) {
-      console.error('Error sending invoice:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to send invoice',
-        error: error.message
-      });
-    }
-  }
+  // Send invoice functionality removed
 
   // Generate PDF for invoice
   static async generatePdf(req, res) {
