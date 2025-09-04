@@ -59,7 +59,19 @@ function Appointments() {
   const formatAppointmentDate = (date) => {
     if (!date) return 'Invalid Date';
     try {
-      return format(parseISO(date), 'MMM dd, yyyy');
+      // Handle both timestamp and ISO string formats
+      if (typeof date === 'number') {
+        return format(new Date(date), 'MMM dd, yyyy');
+      } else if (typeof date === 'string') {
+        // Try parsing as ISO string first
+        if (date.includes('T') || date.includes('-')) {
+          return format(parseISO(date), 'MMM dd, yyyy');
+        } else {
+          // Try parsing as timestamp string
+          return format(new Date(parseInt(date)), 'MMM dd, yyyy');
+        }
+      }
+      return 'Invalid Date';
     } catch (error) {
       console.error('Error formatting date:', date, error);
       return 'Invalid Date';
@@ -331,110 +343,99 @@ function Appointments() {
         </CardContent>
       </Card>
 
-      {/* Appointments Cards */}
-      <Grid container spacing={3}>
-        {filteredAppointments
-          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-          .map((appointment) => (
-            <Grid item xs={12} md={6} lg={4} key={appointment.id}>
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: 3,
-                  },
-                  border: '1px solid',
-                  borderColor: 'divider',
-                }}
-              >
-                <CardContent sx={{ flexGrow: 1, pb: 1 }}>
-                  {/* Header with appointment number and status */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                      #{appointment.appointmentNumber}
-                    </Typography>
-                    <Chip
-                      label={getStatusLabel(appointment.status)}
-                      color={getStatusColor(appointment.status)}
-                      size="small"
-                      sx={{ fontWeight: 500 }}
-                    />
-                  </Box>
-
-                  {/* Patient Info */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Avatar sx={{ bgcolor: 'primary.light', mr: 2, width: 40, height: 40 }}>
+      {/* Appointments List */}
+      <Card>
+        <CardContent sx={{ p: 0 }}>
+          {filteredAppointments
+            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+            .map((appointment, index) => (
+              <Box key={appointment.id}>
+                <Box
+                  sx={{
+                    p: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      bgcolor: 'action.hover',
+                    },
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => navigate(`/appointments/${appointment.id}`)}
+                >
+                  {/* Left Section - Patient & Appointment Info */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                    <Avatar sx={{ bgcolor: 'primary.light', mr: 3, width: 48, height: 48 }}>
                       <PersonIcon />
                     </Avatar>
-                    <Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                          #{appointment.appointmentNumber}
+                        </Typography>
+                        <Chip
+                          label={getStatusLabel(appointment.status)}
+                          color={getStatusColor(appointment.status)}
+                          size="small"
+                          sx={{ fontWeight: 500 }}
+                        />
+                      </Box>
                       <Typography 
                         variant="subtitle1" 
                         sx={{ 
                           fontWeight: 600,
-                          cursor: 'pointer', 
                           color: 'text.primary',
-                          '&:hover': { color: 'primary.main' }
+                          mb: 0.5
                         }}
-                        onClick={() => navigate(`/patients/${appointment.patientId || appointment.patient_id}`)}
                       >
-                        {appointment.patientName || 
-                          `${appointment.patient_first_name || ''} ${appointment.patient_last_name || ''}`.trim()}
+                        {appointment.patientName || 'Unknown Patient'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Patient ID: {appointment.patientId || appointment.patient_id}
+                        {appointment.appointmentType || 'General Consultation'} • 
+                        {appointment.dentistName ? `Dr. ${appointment.dentistName}` : 'No doctor assigned'}
                       </Typography>
                     </Box>
                   </Box>
 
-                  {/* Date & Time */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <AccessTimeIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }} />
+                  {/* Center Section - Date & Time */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 200, mr: 3 }}>
+                    <AccessTimeIcon sx={{ color: 'text.secondary', mr: 1.5, fontSize: 20 }} />
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {formatAppointmentDate(appointment.date || appointment.appointment_date)}
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {formatAppointmentDate(appointment.appointmentDate)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {appointment.time || appointment.appointment_time} ({appointment.duration || appointment.appointment_duration} min)
+                        {appointment.appointmentTime} • {appointment.durationMinutes || 60} min
                       </Typography>
                     </Box>
                   </Box>
 
-                  {/* Service & Dentist */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <MedicalServicesIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }} />
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {appointment.service || appointment.service_name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Dr. {appointment.dentist || appointment.dentist_name}
-                      </Typography>
-                    </Box>
+                  {/* Right Section - Actions */}
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMenuOpen(e, appointment);
+                      }}
+                      size="small"
+                      sx={{ 
+                        bgcolor: 'action.hover',
+                        '&:hover': { bgcolor: 'action.selected' }
+                      }}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
                   </Box>
-                </CardContent>
-
-                <Divider />
-                <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
-                  <IconButton
-                    onClick={(e) => handleMenuOpen(e, appointment)}
-                    size="small"
-                    sx={{ 
-                      bgcolor: 'action.hover',
-                      '&:hover': { bgcolor: 'action.selected' }
-                    }}
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))
-        }
-      </Grid>
+                </Box>
+                {index < filteredAppointments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).length - 1 && (
+                  <Divider />
+                )}
+              </Box>
+            ))
+          }
+        </CardContent>
+      </Card>
 
       {/* Pagination */}
       {filteredAppointments.length > 0 && (
