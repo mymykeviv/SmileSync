@@ -318,7 +318,7 @@ class InvoiceController {
       }
 
       // Get clinic configuration
-      const clinicConfig = await ClinicConfig.get();
+      const clinicConfig = await ClinicConfig.getConfig();
       
       // Get invoice items
       const items = await invoice.getItems();
@@ -334,16 +334,16 @@ class InvoiceController {
       doc.pipe(res);
       
       // Add clinic header to PDF
-      doc.fontSize(20).text(clinicConfig.clinicName || 'SmileSync Dental Clinic', 50, 50);
+      doc.fontSize(20).text(clinicConfig.clinic_name || 'SmileSync Dental Clinic', 50, 50);
       
       // Add clinic contact information
       let yPos = 75;
-      if (clinicConfig.clinicAddress) {
-        doc.fontSize(10).text(clinicConfig.clinicAddress, 50, yPos);
+      if (clinicConfig.clinic_address) {
+        doc.fontSize(10).text(clinicConfig.clinic_address, 50, yPos);
         yPos += 15;
       }
-      if (clinicConfig.contactPhone) {
-        doc.fontSize(10).text(`Phone: ${clinicConfig.contactPhone}`, 50, yPos);
+      if (clinicConfig.contact_phone) {
+        doc.fontSize(10).text(`Phone: ${clinicConfig.contact_phone}`, 50, yPos);
         yPos += 15;
       }
       if (clinicConfig.email) {
