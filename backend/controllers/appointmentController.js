@@ -22,12 +22,18 @@ class AppointmentController {
             } = req.query;
             const offset = (parseInt(page) - 1) * parseInt(limit);
             let appointments;
+            let totalCount;
 
             if (search) {
                 appointments = await Appointment.search(search, parseInt(limit), offset);
             } else if (date) {
-                // Handle single date filtering for dashboard
+                // Handle single date filtering with pagination
                 appointments = await Appointment.findByDate(date, dentist_id);
+                // Apply manual pagination for date filtering since the model method doesn't support it
+                const totalAppointments = appointments.length;
+                appointments = appointments.slice(offset, offset + parseInt(limit));
+                // Override totalCount for pagination calculation
+                totalCount = totalAppointments;
             } else if (start_date && end_date) {
                 appointments = await Appointment.findByDateRange(start_date, end_date, parseInt(limit), offset);
             } else if (patient_id) {
@@ -40,14 +46,16 @@ class AppointmentController {
                 appointments = await Appointment.findAll(parseInt(limit), offset);
             }
 
-            // Get total count for pagination
-            const totalCount = await Appointment.getCount({
-                patient_id,
-                dentist_id,
-                status,
-                start_date,
-                end_date
-            });
+            // Get total count for pagination if not already set (for date filtering)
+            if (totalCount === undefined) {
+                totalCount = await Appointment.getCount({
+                    patient_id,
+                    dentist_id,
+                    status,
+                    start_date,
+                    end_date
+                });
+            }
 
             res.json({
                 success: true,

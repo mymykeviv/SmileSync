@@ -122,6 +122,10 @@ function Dashboard() {
     navigate(path);
     handleDropdownClose();
   };
+  
+  const handleRefresh = () => {
+    loadDashboardData();
+  };
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -147,6 +151,14 @@ function Dashboard() {
 
   useEffect(() => {
     loadDashboardData();
+    
+    // Set up an interval to refresh dashboard data every 30 seconds
+    const refreshInterval = setInterval(() => {
+      loadDashboardData();
+    }, 30000);
+    
+    // Clean up the interval when component unmounts
+    return () => clearInterval(refreshInterval);
   }, [loadDashboardData]);
 
   const getStatusColor = (status) => {
@@ -229,7 +241,7 @@ function Dashboard() {
           <ButtonGroup key="quick-actions" variant="contained" sx={{ ml: 1 }}>
             <Button
               startIcon={<AddIcon />}
-              onClick={() => navigate('/appointments/new')}
+              onClick={() => navigate('/appointments/new?referrer=/dashboard')}
             >
               New Appointment
             </Button>
@@ -429,7 +441,7 @@ function Dashboard() {
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
-                  onClick={() => navigate('/appointments/new')}
+                  onClick={() => navigate('/appointments/new?referrer=/dashboard')}
                 >
                   Schedule Appointment
                 </Button>

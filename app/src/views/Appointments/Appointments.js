@@ -47,7 +47,7 @@ function Appointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -67,19 +67,52 @@ function Appointments() {
   };
 
   const loadAppointments = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
+      // Format the date parameter exactly like the Dashboard does
+      const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined;
+      
       const params = {
         page: page + 1,
         limit: rowsPerPage,
         search: searchTerm,
-        date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined,
+        date: dateStr,  // Use the formatted date string
         status: statusFilter !== 'all' ? statusFilter : undefined
       };
       
+      console.log('Fetching appointments with params:', params);
       const response = await ApiService.getAppointments(params);
+      console.log('Appointments response:', response);
       if (response.success) {
-        setAppointments(response.data);
+        // Check if response.data is an array (direct appointments) or has a nested data structure
+        if (Array.isArray(response.data)) {
+          setAppointments(response.data);
+          console.log('Setting appointments from response.data array:', response.data);
+          // If pagination data is in the response object
+          if (response.pagination) {
+            console.log('Setting pagination from response.pagination:', response.pagination);
+          }
+        } else if (response.data && Array.isArray(response.data.appointments)) {
+          // If appointments are in a nested structure
+          setAppointments(response.data.appointments);
+          console.log('Setting appointments from response.data.appointments:', response.data.appointments);
+          // If pagination data is in the response.data object
+          if (response.data.pagination) {
+            console.log('Setting pagination from response.data.pagination:', response.data.pagination);
+          }
+        } else {
+          console.error('Unexpected response format:', response);
+          setAppointments([]);
+        }
+        
+        // Set pagination data if available
+        if (response.pagination) {
+          // Handle pagination if the API returns it
+          console.log('Pagination data:', response.pagination);
+        }
+      } else {
+        console.error('Failed to load appointments:', response.message);
+        setAppointments([]);
       }
     } catch (error) {
       console.error('Failed to load appointments:', error);
@@ -90,11 +123,23 @@ function Appointments() {
 
   useEffect(() => {
     loadAppointments();
+    
+    // Set up an interval to refresh appointments every 30 seconds
+    const refreshInterval = setInterval(() => {
+      loadAppointments();
+    }, 30000);
+    
+    // Clean up the interval when component unmounts
+    return () => clearInterval(refreshInterval);
   }, [page, rowsPerPage, searchTerm, selectedDate, statusFilter]);
 
   const handleMenuOpen = (event, appointment) => {
     setAnchorEl(event.currentTarget);
     setSelectedAppointment(appointment);
+  };
+
+  const handleRefresh = () => {
+    loadAppointments();
   };
 
   const handleMenuClose = () => {
@@ -177,10 +222,22 @@ function Appointments() {
   // Note: Date and status filtering is already handled by the API in loadAppointments
   // Only apply client-side search filtering here to avoid double filtering
   const filteredAppointments = appointments.filter(appointment => {
+    // First check if the appointment object has the required properties
+    if (!appointment || typeof appointment !== 'object') {
+      console.warn('Invalid appointment object:', appointment);
+      return false;
+    }
+
+    // Safely check properties with optional chaining
+    const patientName = appointment.patientName || 
+      `${appointment.patient_first_name || ''} ${appointment.patient_last_name || ''}`.trim();
+    const appointmentNumber = appointment.appointmentNumber || appointment.appointment_number || '';
+    const service = appointment.service || appointment.service_name || '';
+    
     const matchesSearch = !searchTerm || 
-      appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.appointmentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.service.toLowerCase().includes(searchTerm.toLowerCase());
+      patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointmentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesSearch;
   });
@@ -322,12 +379,13 @@ function Appointments() {
                           color: 'text.primary',
                           '&:hover': { color: 'primary.main' }
                         }}
-                        onClick={() => navigate(`/patients/${appointment.patientId}`)}
+                        onClick={() => navigate(`/patients/${appointment.patientId || appointment.patient_id}`)}
                       >
-                        {appointment.patientName}
+                        {appointment.patientName || 
+                          `${appointment.patient_first_name || ''} ${appointment.patient_last_name || ''}`.trim()}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Patient ID: {appointment.patientId}
+                        Patient ID: {appointment.patientId || appointment.patient_id}
                       </Typography>
                     </Box>
                   </Box>
@@ -337,10 +395,10 @@ function Appointments() {
                     <AccessTimeIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }} />
                     <Box>
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {formatAppointmentDate(appointment.date)}
+                        {formatAppointmentDate(appointment.date || appointment.appointment_date)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {appointment.time} ({appointment.duration} min)
+                        {appointment.time || appointment.appointment_time} ({appointment.duration || appointment.appointment_duration} min)
                       </Typography>
                     </Box>
                   </Box>
@@ -350,10 +408,10 @@ function Appointments() {
                     <MedicalServicesIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 20 }} />
                     <Box>
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {appointment.service}
+                        {appointment.service || appointment.service_name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Dr. {appointment.dentist}
+                        Dr. {appointment.dentist || appointment.dentist_name}
                       </Typography>
                     </Box>
                   </Box>

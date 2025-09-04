@@ -185,13 +185,25 @@ class Appointment {
         try {
             // Convert date string to timestamp for comparison
             // If date is already a timestamp, use it as is
-            let dateTimestamp;
+            let startOfDayTimestamp, endOfDayTimestamp;
             if (typeof date === 'string') {
                 // Parse date string and get timestamp for start of day
                 const dateObj = new Date(date);
-                dateTimestamp = dateObj.getTime();
+                // Set to start of day (00:00:00)
+                dateObj.setHours(0, 0, 0, 0);
+                startOfDayTimestamp = dateObj.getTime();
+                
+                // Set to end of day (23:59:59.999)
+                dateObj.setHours(23, 59, 59, 999);
+                endOfDayTimestamp = dateObj.getTime();
             } else {
-                dateTimestamp = date;
+                // If timestamp provided, calculate start and end of that day
+                const dateObj = new Date(date);
+                dateObj.setHours(0, 0, 0, 0);
+                startOfDayTimestamp = dateObj.getTime();
+                
+                dateObj.setHours(23, 59, 59, 999);
+                endOfDayTimestamp = dateObj.getTime();
             }
             
             let sql = `
@@ -201,10 +213,10 @@ class Appointment {
                 FROM appointments a
                 LEFT JOIN patients p ON a.patient_id = p.id
                 LEFT JOIN users u ON a.dentist_id = u.id
-                WHERE a.appointment_date = ?
+                WHERE a.appointment_date BETWEEN ? AND ?
             `;
             
-            const params = [dateTimestamp];
+            const params = [startOfDayTimestamp, endOfDayTimestamp];
             
             if (dentistId) {
                 sql += ' AND a.dentist_id = ?';
@@ -231,9 +243,14 @@ class Appointment {
             
             if (typeof startDate === 'string') {
                 const startDateObj = new Date(startDate);
+                // Set to start of day
+                startDateObj.setHours(0, 0, 0, 0);
                 startTimestamp = startDateObj.getTime();
             } else {
-                startTimestamp = startDate;
+                // If timestamp provided, ensure it's start of day
+                const dateObj = new Date(startDate);
+                dateObj.setHours(0, 0, 0, 0);
+                startTimestamp = dateObj.getTime();
             }
             
             if (typeof endDate === 'string') {
@@ -242,7 +259,10 @@ class Appointment {
                 endDateObj.setHours(23, 59, 59, 999);
                 endTimestamp = endDateObj.getTime();
             } else {
-                endTimestamp = endDate;
+                // If timestamp provided, ensure it's end of day
+                const dateObj = new Date(endDate);
+                dateObj.setHours(23, 59, 59, 999);
+                endTimestamp = dateObj.getTime();
             }
             
             let sql = `
@@ -329,12 +349,24 @@ class Appointment {
     static async checkConflicts(dentistId, appointmentDate, appointmentTime, durationMinutes, excludeId = null) {
         try {
             // Convert appointment date to timestamp for comparison
-            let dateTimestamp;
+            let startOfDayTimestamp, endOfDayTimestamp;
             if (typeof appointmentDate === 'string') {
                 const dateObj = new Date(appointmentDate);
-                dateTimestamp = dateObj.getTime();
+                // Set to start of day
+                dateObj.setHours(0, 0, 0, 0);
+                startOfDayTimestamp = dateObj.getTime();
+                
+                // Set to end of day
+                dateObj.setHours(23, 59, 59, 999);
+                endOfDayTimestamp = dateObj.getTime();
             } else {
-                dateTimestamp = appointmentDate;
+                // If timestamp provided, calculate start and end of that day
+                const dateObj = new Date(appointmentDate);
+                dateObj.setHours(0, 0, 0, 0);
+                startOfDayTimestamp = dateObj.getTime();
+                
+                dateObj.setHours(23, 59, 59, 999);
+                endOfDayTimestamp = dateObj.getTime();
             }
             
             // Parse the ISO date and combine with time
@@ -348,7 +380,7 @@ class Appointment {
                 FROM appointments a
                 LEFT JOIN patients p ON a.patient_id = p.id
                 WHERE a.dentist_id = ? 
-                AND a.appointment_date = ?
+                AND a.appointment_date BETWEEN ? AND ?
                 AND a.status NOT IN ('cancelled', 'no_show')
                 AND (
                     (TIME(a.appointment_time) < TIME(?) AND 
@@ -361,7 +393,8 @@ class Appointment {
             
             const params = [
                 dentistId, 
-                dateTimestamp, 
+                startOfDayTimestamp,
+                endOfDayTimestamp,
                 endTime.format('HH:mm:ss'), 
                 appointmentTime,
                 appointmentTime,
@@ -495,17 +528,26 @@ class Appointment {
                 
                 if (typeof filters.start_date === 'string') {
                     const startDateObj = new Date(filters.start_date);
+                    // Set to start of day
+                    startDateObj.setHours(0, 0, 0, 0);
                     startTimestamp = startDateObj.getTime();
                 } else {
-                    startTimestamp = filters.start_date;
+                    // If timestamp provided, ensure it's start of day
+                    const dateObj = new Date(filters.start_date);
+                    dateObj.setHours(0, 0, 0, 0);
+                    startTimestamp = dateObj.getTime();
                 }
                 
                 if (typeof filters.end_date === 'string') {
                     const endDateObj = new Date(filters.end_date);
+                    // Set to end of day for end date
                     endDateObj.setHours(23, 59, 59, 999);
                     endTimestamp = endDateObj.getTime();
                 } else {
-                    endTimestamp = filters.end_date;
+                    // If timestamp provided, ensure it's end of day
+                    const dateObj = new Date(filters.end_date);
+                    dateObj.setHours(23, 59, 59, 999);
+                    endTimestamp = dateObj.getTime();
                 }
                 
                 sql += ' AND a.appointment_date BETWEEN ? AND ?';
@@ -526,8 +568,14 @@ class Appointment {
     static async getUpcoming(days = 7, limit = 50) {
         try {
             // Convert dates to timestamps for comparison
-            const todayTimestamp = moment().startOf('day').valueOf();
-            const endTimestamp = moment().add(days, 'days').endOf('day').valueOf();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayTimestamp = today.getTime();
+            
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + days);
+            endDate.setHours(23, 59, 59, 999);
+            const endTimestamp = endDate.getTime();
             
             const sql = `
                 SELECT a.*, 

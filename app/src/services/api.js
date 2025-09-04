@@ -149,7 +149,11 @@ class ApiService {
 
   // Appointment API methods
   static async getAppointments(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
+    // Filter out undefined values
+    const filteredParams = Object.fromEntries(
+      Object.entries(params).filter(([key, value]) => value !== undefined && value !== null && value !== '')
+    );
+    const queryString = new URLSearchParams(filteredParams).toString();
     const endpoint = `/appointments${queryString ? `?${queryString}` : ''}`;
     return this.request(endpoint);
   }

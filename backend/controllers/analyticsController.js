@@ -23,8 +23,13 @@ const getDashboardOverview = async (req, res) => {
     const newPatients = newPatientsResult.count;
 
     // Convert date strings to timestamps for comparison
-    const startTimestamp = new Date(start).getTime();
-    const endTimestamp = new Date(end + ' 23:59:59').getTime();
+    const startDateObj = new Date(start);
+    startDateObj.setHours(0, 0, 0, 0);
+    const startTimestamp = startDateObj.getTime();
+    
+    const endDateObj = new Date(end);
+    endDateObj.setHours(23, 59, 59, 999);
+    const endTimestamp = endDateObj.getTime();
 
     // Get appointments in date range
     const totalAppointmentsResult = await database.get(

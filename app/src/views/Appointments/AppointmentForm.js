@@ -35,12 +35,13 @@ const AppointmentForm = () => {
   const [searchParams] = useSearchParams();
   const isEdit = Boolean(id);
   const preselectedPatientId = searchParams.get('patientId');
+  const referrer = searchParams.get('referrer') || '/appointments';
 
   const [formData, setFormData] = useState({
     patient_id: preselectedPatientId || '',
     service_id: '',
-    appointment_date: null,
-    appointment_time: null,
+    appointment_date: new Date(), // Default to today
+    appointment_time: new Date(), // Default to current time
     duration: 30,
     status: 'scheduled',
     notes: '',
@@ -95,7 +96,13 @@ const AppointmentForm = () => {
         setServices(servicesResponse.data || []);
       }
       if (dentistsResponse.success) {
-        setDentists(dentistsResponse.data || []);
+        const dentistsList = dentistsResponse.data || [];
+        setDentists(dentistsList);
+        
+        // Set first dentist as default if not in edit mode and no dentist is selected
+        if (!isEdit && !formData.dentist_id && dentistsList.length > 0) {
+          setFormData(prev => ({ ...prev, dentist_id: dentistsList[0].id }));
+        }
       }
     } catch (error) {
       console.error('Failed to load initial data:', error);
@@ -264,7 +271,7 @@ const AppointmentForm = () => {
         });
         
         setTimeout(() => {
-          navigate('/appointments');
+          navigate(referrer);
         }, 1500);
       } else {
         throw new Error(response.message || 'Failed to save appointment');
@@ -282,7 +289,7 @@ const AppointmentForm = () => {
   };
 
   const handleCancel = () => {
-    navigate('/appointments');
+    navigate(referrer);
   };
 
   const getSelectedPatient = () => {
@@ -437,7 +444,7 @@ const AppointmentForm = () => {
                           {option.name}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {option.category} • ₹{option.base_price} • {option.duration}min
+                          {option.category} • ₹{option.base_price} • {option.duration} mins
                         </Typography>
                       </Box>
                     </Box>

@@ -475,7 +475,15 @@ function PatientDetail() {
                     {appointments.map((appointment) => (
                       <TableRow key={appointment.id}>
                         <TableCell>
-                          {format(parseISO(appointment.date), 'MMM dd, yyyy HH:mm')}
+                          {appointment.date ? 
+                            (() => {
+                              try {
+                                return format(parseISO(appointment.date), 'MMM dd, yyyy HH:mm');
+                              } catch (error) {
+                                console.error('Invalid date format:', appointment.date);
+                                return 'Invalid date';
+                              }
+                            })() : 'No date'}
                         </TableCell>
                         <TableCell>{appointment.type}</TableCell>
                         <TableCell>{appointment.provider}</TableCell>
