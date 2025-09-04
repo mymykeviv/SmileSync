@@ -65,13 +65,13 @@ const api = {
       return { success: false, data: [] };
     }
   },
-  getDashboardStats: async () => {
+  getDashboardStats: async (date = new Date()) => {
     try {
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const startOfMonth = format(new Date(new Date().getFullYear(), new Date().getMonth(), 1), 'yyyy-MM-dd');
+      const targetDate = format(date, 'yyyy-MM-dd');
       
       // Use ApiService.request to ensure proper authentication
-      const response = await ApiService.request(`/analytics/dashboard?startDate=${startOfMonth}&endDate=${today}`);
+      // Query for selected date's appointments by using same date for start and end
+      const response = await ApiService.request(`/analytics/dashboard?startDate=${targetDate}&endDate=${targetDate}`);
       return {
         success: true,
         data: {
@@ -132,7 +132,7 @@ function Dashboard() {
       setLoading(true);
       const [appointmentsResponse, statsResponse] = await Promise.all([
         api.getAppointmentsByDate(selectedDate),
-        api.getDashboardStats()
+        api.getDashboardStats(selectedDate)
       ]);
       
       if (appointmentsResponse.success) {
@@ -195,30 +195,32 @@ function Dashboard() {
     }
   };
 
+  const isToday = format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+  
   const statCards = [
     {
-      title: "Today's Appointments",
+      title: isToday ? "Today's Appointments" : `Appointments on ${format(selectedDate, 'MMM d')}`,
       value: stats.todaysAppointments,
       icon: <CalendarIcon />,
       color: '#1976d2',
       action: () => navigate('/appointments')
     },
     {
-      title: 'Total Patients',
+      title: isToday ? "Today's Patients" : `Patients on ${format(selectedDate, 'MMM d')}`,
       value: stats.totalPatients.toLocaleString(),
       icon: <PeopleIcon />,
       color: '#388e3c',
       action: () => navigate('/patients')
     },
     {
-      title: 'Monthly Revenue',
+      title: isToday ? "Today's Revenue" : `Revenue on ${format(selectedDate, 'MMM d')}`,
       value: `₹${stats.monthlyRevenue.toLocaleString()}`,
       icon: <MoneyIcon />,
       color: '#f57c00',
       action: () => navigate('/billing')
     },
     {
-      title: 'Completion Rate',
+      title: isToday ? "Today's Completion Rate" : `Completion Rate on ${format(selectedDate, 'MMM d')}`,
       value: `${stats.completionRate}%`,
       icon: <TrendingUpIcon />,
       color: '#7b1fa2',
@@ -454,7 +456,7 @@ function Dashboard() {
                   <TimelineItem key={appointment.id}>
                     <TimelineOppositeContent sx={{ m: 'auto 0', minWidth: 80 }}>
                       <Typography variant="body2" sx={{ color: '#4B5563', fontWeight: 500 }}>
-                        {appointment.time || '10:00 AM'}
+                        {appointment.appointmentTime || '10:00 AM'}
                       </Typography>
                     </TimelineOppositeContent>
                     <TimelineSeparator>

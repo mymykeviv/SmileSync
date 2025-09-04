@@ -11,17 +11,6 @@ const getDashboardOverview = async (req, res) => {
     const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const end = endDate || new Date().toISOString().split('T')[0];
 
-    // Get total patients
-    const totalPatientsResult = await database.get('SELECT COUNT(*) as count FROM patients WHERE is_active = 1');
-    const totalPatients = totalPatientsResult.count;
-    
-    // Get new patients in date range
-    const newPatientsResult = await database.get(
-      'SELECT COUNT(*) as count FROM patients WHERE created_at BETWEEN ? AND ? AND is_active = 1',
-      [start + ' 00:00:00', end + ' 23:59:59']
-    );
-    const newPatients = newPatientsResult.count;
-
     // Convert date strings to timestamps for comparison
     const startDateObj = new Date(start);
     startDateObj.setHours(0, 0, 0, 0);
@@ -30,6 +19,23 @@ const getDashboardOverview = async (req, res) => {
     const endDateObj = new Date(end);
     endDateObj.setHours(23, 59, 59, 999);
     const endTimestamp = endDateObj.getTime();
+
+    // Get patients with appointments in the selected date range
+    const totalPatientsResult = await database.get(
+      `SELECT COUNT(DISTINCT a.patient_id) as count 
+       FROM appointments a 
+       JOIN patients p ON a.patient_id = p.id 
+       WHERE a.appointment_date BETWEEN ? AND ? AND p.is_active = 1`,
+      [startTimestamp, endTimestamp]
+    );
+    const totalPatients = totalPatientsResult.count;
+    
+    // Get new patients in date range
+    const newPatientsResult = await database.get(
+      'SELECT COUNT(*) as count FROM patients WHERE created_at BETWEEN ? AND ? AND is_active = 1',
+      [start + ' 00:00:00', end + ' 23:59:59']
+    );
+    const newPatients = newPatientsResult.count;
 
     // Get appointments in date range
     const totalAppointmentsResult = await database.get(
