@@ -309,20 +309,20 @@ function Services() {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body1" fontWeight="medium">
-                      {formatPrice(service.price)}
+                      {formatPrice(service.base_price)}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {formatDuration(service.duration)}
+                      {formatDuration(service.duration_minutes)}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={service.isActive ? 'Active' : 'Inactive'}
+                      label={service.is_active ? 'Active' : 'Inactive'}
                       size="small"
-                      color={service.isActive ? 'success' : 'default'}
-                      variant={service.isActive ? 'filled' : 'outlined'}
+                      color={service.is_active ? 'success' : 'default'}
+                      variant={service.is_active ? 'filled' : 'outlined'}
                     />
                   </TableCell>
                   <TableCell>
@@ -401,7 +401,7 @@ function Services() {
             handleMenuClose();
           }}
         >
-          {selectedService?.isActive ? 'Deactivate' : 'Activate'} Service
+          {selectedService?.is_active ? 'Deactivate' : 'Activate'} Service
         </MenuItem>
         <MenuItem
           onClick={() => {

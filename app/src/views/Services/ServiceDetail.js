@@ -231,11 +231,11 @@ function ServiceDetail() {
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">Status</Typography>
                     <Chip
-                      label={service.isActive ? 'Active' : 'Inactive'}
-                      size="small"
-                      color={service.isActive ? 'success' : 'default'}
-                      variant={service.isActive ? 'filled' : 'outlined'}
-                    />
+              label={service.is_active ? 'Active' : 'Inactive'}
+              size="small"
+              color={service.is_active ? 'success' : 'default'}
+              variant={service.is_active ? 'filled' : 'outlined'}
+            />
                   </Box>
                 </Grid>
                 
@@ -244,7 +244,7 @@ function ServiceDetail() {
                     <Typography variant="body2" color="text.secondary">Base Price</Typography>
                     <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <PriceIcon color="primary" />
-                      {formatPrice(service.price)}
+                      {formatPrice(service.base_price)}
                     </Typography>
                   </Box>
                 </Grid>
@@ -254,7 +254,7 @@ function ServiceDetail() {
                     <Typography variant="body2" color="text.secondary">Duration</Typography>
                     <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <ScheduleIcon color="primary" />
-                      {formatDuration(service.duration)}
+                      {formatDuration(service.duration_minutes)}
                     </Typography>
                   </Box>
                 </Grid>
