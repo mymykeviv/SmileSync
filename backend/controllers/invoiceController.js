@@ -179,9 +179,38 @@ class InvoiceController {
       const invoice = new Invoice(backendInvoiceData);
       const savedInvoice = await invoice.save();
 
+      // Add items to the invoice
+      if (invoiceData.items && invoiceData.items.length > 0) {
+        for (const item of invoiceData.items) {
+          await savedInvoice.addItem(
+            item.type || 'service',
+            item.itemId || item.serviceId || item.productId || item.id,
+            item.description || item.itemName || '',
+            item.quantity || 1,
+            item.unitPrice || 0,
+            item.toothNumber || null
+          );
+        }
+      }
+
+      // Get the complete invoice with items for response
+      const completeInvoice = await Invoice.findById(savedInvoice.id);
+      const invoiceItems = await completeInvoice.getItems();
+      const responseData = completeInvoice.toJSON();
+      responseData.items = invoiceItems.map(item => ({
+        id: item.id,
+        type: item.item_type,
+        itemId: item.item_id,
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: parseFloat(item.unit_price),
+        totalPrice: parseFloat(item.total_price),
+        toothNumber: item.tooth_number
+      }));
+
       res.status(201).json({
         success: true,
-        data: savedInvoice,
+        data: responseData,
         message: 'Invoice created successfully'
       });
     } catch (error) {
