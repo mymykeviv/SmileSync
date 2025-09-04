@@ -399,50 +399,54 @@ class InvoiceController {
         yPos += 15;
       }
       
-      // Invoice title
-      doc.fontSize(16).text('Invoice', 50, yPos + 10);
-      yPos += 40;
+      // Two-column header layout
+      const leftColumnX = 50;
+      const rightColumnX = 300;
+      const headerStartY = yPos + 10;
       
-      // Patient information
+      // Left column - Bill To details
       const patientName = invoice.patient_first_name && invoice.patient_last_name 
         ? `${invoice.patient_first_name} ${invoice.patient_last_name}` 
         : 'Unknown Patient';
       
-      doc.fontSize(14).text('Bill To:', 50, yPos);
-      yPos += 20;
+      doc.fontSize(14).text('Bill To:', leftColumnX, headerStartY);
+      let leftYPos = headerStartY + 20;
       doc.fontSize(12)
-         .text(patientName, 50, yPos)
-         .text(`Patient ID: ${invoice.patient_number || invoice.patient_id || 'N/A'}`, 50, yPos + 15);
+         .text(patientName, leftColumnX, leftYPos)
+         .text(`Patient ID: ${invoice.patient_number || invoice.patient_id || 'N/A'}`, leftColumnX, leftYPos + 15);
+      leftYPos += 30;
       
       if (invoice.phone) {
-        doc.text(`Phone: ${invoice.phone}`, 50, yPos + 30);
-        yPos += 15;
+        doc.text(`Phone: ${invoice.phone}`, leftColumnX, leftYPos);
+        leftYPos += 15;
       }
       if (invoice.email) {
-        doc.text(`Email: ${invoice.email}`, 50, yPos + 30);
-        yPos += 15;
+        doc.text(`Email: ${invoice.email}`, leftColumnX, leftYPos);
+        leftYPos += 15;
       }
       if (invoice.address) {
-        doc.text(`Address: ${invoice.address}`, 50, yPos + 30);
-        yPos += 15;
+        doc.text(`Address: ${invoice.address}`, leftColumnX, leftYPos);
+        leftYPos += 15;
       }
       
-      yPos += 30;
-      
-      // Invoice details - right aligned
-      const rightMargin = 550;
+      // Right column - Invoice details with right-aligned title
+      doc.fontSize(16).text('INVOICE', rightColumnX, headerStartY, { width: 250, align: 'right' });
+      let rightYPos = headerStartY + 30;
       doc.fontSize(12)
-         .text(`Invoice Number: ${invoice.invoice_number || 'N/A'}`, 300, yPos, { width: 250, align: 'right' })
-         .text(`Date: ${invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString() : 'N/A'}`, 300, yPos + 20, { width: 250, align: 'right' })
-         .text(`Due Date: ${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A'}`, 300, yPos + 40, { width: 250, align: 'right' });
+         .text(`Invoice Number: ${invoice.invoice_number || 'N/A'}`, rightColumnX, rightYPos, { width: 250, align: 'right' })
+         .text(`Date: ${invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString() : 'N/A'}`, rightColumnX, rightYPos + 20, { width: 250, align: 'right' })
+         .text(`Due Date: ${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A'}`, rightColumnX, rightYPos + 40, { width: 250, align: 'right' });
       
-      // Items table header
-      let yPosition = yPos + 100;
+      // Set yPos to the maximum of both columns with reduced spacing
+       yPos = Math.max(leftYPos, rightYPos + 60) + 10;
+       
+       // Items table header with reduced spacing
+       let yPosition = yPos + 20;
       doc.fontSize(12)
          .text('Description', 50, yPosition)
          .text('Qty', 250, yPosition, { width: 40, align: 'center' })
          .text('Unit Price', 300, yPosition, { width: 80, align: 'right' })
-         .text('Total', 420, yPosition, { width: 80, align: 'right' });
+         .text('Total', 440, yPosition, { width: 80, align: 'right' });
       
       // Draw line under header
       doc.moveTo(50, yPosition + 15)
@@ -467,8 +471,8 @@ class InvoiceController {
           doc.fontSize(10)
              .text(itemText, 50, yPosition, { width: 190, lineGap: 2 })
              .text(quantity.toString(), 250, yPosition, { width: 40, align: 'center' })
-             .text(`₹${unitPrice.toFixed(2)}`, 300, yPosition, { width: 80, align: 'right' })
-             .text(`₹${totalPrice.toFixed(2)}`, 420, yPosition, { width: 80, align: 'right' });
+             .text(`Rs.${unitPrice.toFixed(2)}`, 300, yPosition, { width: 80, align: 'right' })
+             .text(`Rs.${totalPrice.toFixed(2)}`, 440, yPosition, { width: 80, align: 'right' });
           
           // Calculate height based on text content
           const textHeight = Math.max(25, doc.heightOfString(itemText, { width: 190 }) + 10);
@@ -478,8 +482,8 @@ class InvoiceController {
       
       // Totals
       yPosition += 20;
-      doc.moveTo(300, yPosition)
-         .lineTo(500, yPosition)
+      doc.moveTo(320, yPosition)
+         .lineTo(520, yPosition)
          .stroke();
       
       yPosition += 10;
@@ -489,15 +493,15 @@ class InvoiceController {
       const amountPaid = parseFloat(invoice.amount_paid) || 0;
       const balanceDue = parseFloat(invoice.balance_due) || 0;
       
-      doc.fontSize(12).text(`Subtotal: ₹${subtotal.toFixed(2)}`, 350, yPosition, { width: 150, align: 'right' });
+      doc.fontSize(12).text(`Subtotal: Rs.${subtotal.toFixed(2)}`, 370, yPosition, { width: 150, align: 'right' });
       yPosition += 20;
-      doc.text(`Tax: ₹${taxAmount.toFixed(2)}`, 350, yPosition, { width: 150, align: 'right' });
+      doc.text(`Tax: Rs.${taxAmount.toFixed(2)}`, 370, yPosition, { width: 150, align: 'right' });
       yPosition += 20;
-      doc.fontSize(14).text(`Total: ₹${totalAmount.toFixed(2)}`, 350, yPosition, { width: 150, align: 'right' });
+      doc.fontSize(14).text(`Total: Rs.${totalAmount.toFixed(2)}`, 370, yPosition, { width: 150, align: 'right' });
       yPosition += 30;
-      doc.fontSize(12).text(`Amount Paid: ₹${amountPaid.toFixed(2)}`, 350, yPosition, { width: 150, align: 'right' });
+      doc.fontSize(12).text(`Amount Paid: Rs.${amountPaid.toFixed(2)}`, 370, yPosition, { width: 150, align: 'right' });
       yPosition += 20;
-      doc.text(`Balance Due: ₹${balanceDue.toFixed(2)}`, 350, yPosition, { width: 150, align: 'right' });
+      doc.text(`Balance Due: Rs.${balanceDue.toFixed(2)}`, 370, yPosition, { width: 150, align: 'right' });
       
       // Finalize PDF
       doc.end();
