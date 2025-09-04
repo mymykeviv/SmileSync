@@ -494,7 +494,7 @@ function Billing() {
         </TableContainer>
         
         {/* Pagination */}
-        {pagination.totalPages > 1 && (
+        {pagination.totalCount > 0 && (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
             <Pagination
               count={pagination.totalPages}
@@ -502,6 +502,9 @@ function Billing() {
               onChange={handlePageChange}
               color="primary"
             />
+            <Typography variant="caption" sx={{ ml: 2, alignSelf: 'center' }}>
+              {pagination.totalCount} total items
+            </Typography>
           </Box>
         )}
         

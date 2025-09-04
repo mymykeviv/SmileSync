@@ -56,7 +56,7 @@ function InvoiceForm() {
     dueDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
     items: [],
     notes: '',
-    taxRate: 8.0, // Default tax rate
+    taxRate: 0, // Default tax rate
   });
   const [errors, setErrors] = useState({});
   const [showAddItemDialog, setShowAddItemDialog] = useState(false);
@@ -116,7 +116,7 @@ function InvoiceForm() {
           dueDate: invoice.dueDate ? format(new Date(invoice.dueDate), 'yyyy-MM-dd') : format(addDays(new Date(), 30), 'yyyy-MM-dd'),
           items: processedItems,
           notes: invoice.notes || '',
-          taxRate: invoice.taxRate || 8.0,
+          taxRate: invoice.taxRate || 0,
         });
       }
     } catch (error) {
@@ -129,7 +129,25 @@ function InvoiceForm() {
   const handleInputChange = (field, value) => {
     // Ensure value is never undefined to prevent controlled/uncontrolled input warnings
     const safeValue = value === undefined ? '' : value;
-    setFormData(prev => ({ ...prev, [field]: safeValue }));
+    
+    // Auto-adjust due date if issue date is ahead of current due date
+    if (field === 'issueDate' && safeValue) {
+      const newIssueDate = new Date(safeValue);
+      const currentDueDate = new Date(formData.dueDate);
+      
+      if (newIssueDate > currentDueDate) {
+        setFormData(prev => ({ 
+          ...prev, 
+          [field]: safeValue,
+          dueDate: safeValue // Set due date to same as issue date
+        }));
+      } else {
+        setFormData(prev => ({ ...prev, [field]: safeValue }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [field]: safeValue }));
+    }
+    
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
@@ -215,13 +233,6 @@ function InvoiceForm() {
     
     if (!formData.issueDate) {
       newErrors.issueDate = 'Issue date is required';
-    } else {
-      const issueDate = new Date(formData.issueDate);
-      const today = new Date();
-      today.setHours(23, 59, 59, 999); // Allow until end of today
-      if (issueDate > today) {
-        newErrors.issueDate = 'Issue date cannot be in the future';
-      }
     }
     
     if (!formData.dueDate) {
