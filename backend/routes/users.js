@@ -1,6 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const UserController = require('../controllers/userController');
+const { PERMISSIONS } = require('../config/permissions');
 const { 
     authenticateToken, 
     requirePermission, 
@@ -108,7 +109,7 @@ const updateUserValidation = [
  */
 router.get('/', 
     authenticateToken, 
-    requireAnyPermission('USERS_VIEW', 'USERS_MANAGE'), 
+    requireAnyPermission(PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE), 
     UserController.getUsers
 );
 
@@ -130,7 +131,7 @@ router.get('/dentists',
  */
 router.get('/stats/roles', 
     authenticateToken, 
-    requirePermission('ANALYTICS_VIEW'), 
+    requirePermission(PERMISSIONS.ANALYTICS_VIEW), 
     UserController.getRoleStats
 );
 
@@ -141,7 +142,7 @@ router.get('/stats/roles',
  */
 router.get('/:id', 
     authenticateToken, 
-    requireAnyPermission('USERS_VIEW', 'USERS_MANAGE'), 
+    requireAnyPermission(PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_MANAGE), 
     UserController.getUserById
 );
 
@@ -153,7 +154,7 @@ router.get('/:id',
  */
 router.get('/:id/stats', 
     authenticateToken, 
-    requireAnyPermission('ANALYTICS_VIEW', 'USERS_VIEW'), 
+    requireAnyPermission(PERMISSIONS.ANALYTICS_VIEW, PERMISSIONS.USERS_VIEW), 
     UserController.getUserStats
 );
 
@@ -165,7 +166,7 @@ router.get('/:id/stats',
  */
 router.post('/', 
     authenticateToken, 
-    requirePermission('USERS_CREATE'), 
+    requirePermission(PERMISSIONS.USERS_CREATE), 
     [...userValidation, ...passwordValidation], 
     UserController.createUser
 );
@@ -178,7 +179,7 @@ router.post('/',
  */
 router.put('/:id', 
     authenticateToken, 
-    requireAnyPermission('USERS_EDIT', 'USERS_MANAGE'), 
+    requireAnyPermission(PERMISSIONS.USERS_EDIT, PERMISSIONS.USERS_MANAGE), 
     updateUserValidation, 
     UserController.updateUser
 );
@@ -209,7 +210,7 @@ router.put('/:id/password',
  */
 router.put('/:id/deactivate', 
     authenticateToken, 
-    requirePermission('USERS_MANAGE'), 
+    requirePermission(PERMISSIONS.USERS_MANAGE), 
     UserController.deactivateUser
 );
 
@@ -220,7 +221,7 @@ router.put('/:id/deactivate',
  */
 router.put('/:id/activate', 
     authenticateToken, 
-    requirePermission('USERS_MANAGE'), 
+    requirePermission(PERMISSIONS.USERS_MANAGE), 
     UserController.activateUser
 );
 
