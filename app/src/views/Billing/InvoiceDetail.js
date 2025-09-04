@@ -36,12 +36,13 @@ import {
   Schedule as ScheduleIcon,
   ReportProblem as WarningIcon,
 } from '@mui/icons-material';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { format, differenceInDays } from 'date-fns';
 import ApiService from '../../services/api';
 
 function InvoiceDetail() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -94,6 +95,18 @@ function InvoiceDetail() {
       return format(date, 'MMM dd, yyyy');
     } catch (error) {
       return 'Invalid Date';
+    }
+  };
+
+  const handleBackNavigation = () => {
+    // Check if we came from a patient details page
+    const fromPatient = location.state?.fromPatient;
+    const patientId = location.state?.patientId || invoice?.patientId;
+    
+    if (fromPatient && patientId) {
+      navigate(`/patients/${patientId}`);
+    } else {
+      navigate('/billing');
     }
   };
 
@@ -165,9 +178,9 @@ function InvoiceDetail() {
         <Button
           variant="contained"
           startIcon={<BackIcon />}
-          onClick={() => navigate('/billing')}
+          onClick={handleBackNavigation}
         >
-          Back to Billing
+          Back
         </Button>
       </Box>
     );
@@ -180,10 +193,10 @@ function InvoiceDetail() {
         <Button
           variant="contained"
           startIcon={<BackIcon />}
-          onClick={() => navigate('/billing')}
+          onClick={handleBackNavigation}
           sx={{ mt: 2 }}
         >
-          Back to Billing
+          Back
         </Button>
       </Box>
     );
@@ -197,7 +210,7 @@ function InvoiceDetail() {
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton onClick={() => navigate('/billing')} sx={{ mr: 2 }}>
+          <IconButton onClick={handleBackNavigation} sx={{ mr: 2 }}>
             <BackIcon />
           </IconButton>
           <Box>

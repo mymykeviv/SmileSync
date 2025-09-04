@@ -179,7 +179,9 @@ const APPOINTMENT_FIELD_MAPPINGS = {
     next_appointment_notes: 'nextAppointmentNotes',
     created_at: 'createdAt',
     updated_at: 'updatedAt',
-    created_by: 'createdBy'
+    created_by: 'createdBy',
+    // Additional mappings for frontend display
+    status: 'status'
   }
 };
 
@@ -222,7 +224,10 @@ const INVOICE_FIELD_MAPPINGS = {
     payment_terms: 'paymentTerms',
     created_at: 'createdAt',
     updated_at: 'updatedAt',
-    created_by: 'createdBy'
+    created_by: 'createdBy',
+    // Additional mappings for frontend display
+    description: 'description',
+    status: 'status'
   }
 };
 
@@ -305,12 +310,46 @@ function convertAppointmentToBackend(appointmentData) {
  * Convert appointment data from backend format to frontend format
  */
 function convertAppointmentToFrontend(appointmentData) {
+  if (!appointmentData) return null;
+  
   const converted = {};
   
   for (const [key, value] of Object.entries(appointmentData)) {
     const frontendKey = APPOINTMENT_FIELD_MAPPINGS.backendToFrontend[key] || snakeToCamel(key);
     converted[frontendKey] = value;
   }
+  
+  // Add computed fields for frontend display
+  // Combine appointment_date and appointment_time into 'date'
+  if (appointmentData.appointment_date) {
+    // Convert timestamp to date string if needed
+    let dateStr = appointmentData.appointment_date;
+    if (typeof appointmentData.appointment_date === 'number') {
+      dateStr = new Date(appointmentData.appointment_date).toISOString().split('T')[0];
+    }
+    
+    if (appointmentData.appointment_time) {
+      converted.date = `${dateStr}T${appointmentData.appointment_time}`;
+    } else {
+      converted.date = dateStr;
+    }
+  }
+  
+  // Map appointment_type to 'type'
+  converted.type = appointmentData.appointment_type || 'General';
+  
+  // Create provider name from dentist info
+  if (appointmentData.dentist_first_name && appointmentData.dentist_last_name) {
+    converted.provider = `${appointmentData.dentist_first_name} ${appointmentData.dentist_last_name}`;
+  } else {
+    converted.provider = 'Unknown Provider';
+  }
+  
+  // Map treatment_notes to 'notes'
+  converted.notes = appointmentData.treatment_notes || appointmentData.chief_complaint || 'No notes';
+  
+  // Set default status if not provided
+  converted.status = appointmentData.status || 'scheduled';
   
   return converted;
 }
@@ -333,12 +372,27 @@ function convertInvoiceToBackend(invoiceData) {
  * Convert invoice data from backend format to frontend format
  */
 function convertInvoiceToFrontend(invoiceData) {
+  if (!invoiceData) return null;
+  
   const converted = {};
   
   for (const [key, value] of Object.entries(invoiceData)) {
     const frontendKey = INVOICE_FIELD_MAPPINGS.backendToFrontend[key] || snakeToCamel(key);
     converted[frontendKey] = value;
   }
+  
+  // Add computed fields for frontend display
+  // Map invoice_date to 'date'
+  converted.date = invoiceData.invoice_date;
+  
+  // Map total_amount to 'amount'
+  converted.amount = invoiceData.total_amount || 0;
+  
+  // Set default description if not provided
+  converted.description = invoiceData.description || 'Dental Services';
+  
+  // Set default status if not provided
+  converted.status = invoiceData.status || 'pending';
   
   return converted;
 }

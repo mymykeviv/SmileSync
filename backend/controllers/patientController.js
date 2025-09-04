@@ -1,5 +1,5 @@
 const { Patient } = require('../models');
-const { convertPatientToBackend } = require('../utils/fieldMapping');
+const { convertPatientToBackend, convertAppointmentToFrontend, convertInvoiceToFrontend } = require('../utils/fieldMapping');
 
 class PatientController {
   // Get all patients with optional filters
@@ -200,9 +200,12 @@ class PatientController {
       const { limit = 20, offset = 0 } = query;
       const appointments = await patient.getAppointments(parseInt(limit), parseInt(offset));
       
+      // Convert snake_case to camelCase for frontend
+      const convertedAppointments = appointments.map(appointment => convertAppointmentToFrontend(appointment));
+      
       return {
         success: true,
-        data: appointments
+        data: convertedAppointments
       };
     } catch (error) {
       throw new Error(error.message);
@@ -220,9 +223,12 @@ class PatientController {
       const { limit = 20, offset = 0 } = query;
       const invoices = await patient.getInvoices(parseInt(limit), parseInt(offset));
       
+      // Convert snake_case to camelCase for frontend
+      const convertedInvoices = invoices.map(invoice => convertInvoiceToFrontend(invoice));
+      
       return {
         success: true,
-        data: invoices
+        data: convertedInvoices
       };
     } catch (error) {
       throw new Error(error.message);

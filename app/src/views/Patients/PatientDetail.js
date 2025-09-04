@@ -46,6 +46,7 @@ import {
   Schedule as InProgressIcon,
   Warning as OverdueIcon,
   Pause as PausedIcon,
+  Visibility as ViewIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format, parseISO, differenceInYears } from 'date-fns';
@@ -385,7 +386,8 @@ function PatientDetail() {
           <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
             <Tab label="Medical Information" />
             <Tab label={`Appointments (${appointments.length})`} />
-            <Tab label={`Treatment Plans (${treatmentPlans.length})`} />
+            {/* TODO: Re-enable Treatment Plans tab in future */}
+            {/* <Tab label={`Treatment Plans (${treatmentPlans.length})`} /> */}
             <Tab label={`Invoices (${invoices.length})`} />
           </Tabs>
         </Box>
@@ -518,147 +520,12 @@ function PatientDetail() {
           </CardContent>
         )}
         
-        {/* Treatment Plans Tab */}
-        {activeTab === 2 && (
-          <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">
-                Treatment Plans
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => navigate(`/treatment-plans/new?patientId=${patient.id}`)}
-              >
-                Create Treatment Plan
-              </Button>
-            </Box>
-            
-            {treatmentPlans.length > 0 ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {treatmentPlans.map((plan) => (
-                  <Card key={plan.id} variant="outlined" sx={{ p: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box sx={{ flex: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          {getTreatmentStatusIcon(plan.status)}
-                          <Typography variant="h6">
-                            {plan.name || `Treatment Plan #${plan.id}`}
-                          </Typography>
-                          <Chip
-                            label={plan.status}
-                            color={getTreatmentStatusColor(plan.status)}
-                            size="small"
-                          />
-                        </Box>
-                        <Typography variant="body2" color="text.secondary" gutterBottom>
-                          {plan.description || 'No description provided'}
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 1 }}>
-                          <Typography variant="body2">
-                            <strong>Start Date:</strong> {formatDateShort(plan.start_date)}
-                          </Typography>
-                          <Typography variant="body2">
-                            <strong>Target Completion:</strong> {formatDateShort(plan.target_completion_date)}
-                          </Typography>
-                          {plan.estimated_duration && (
-                            <Typography variant="body2">
-                              <strong>Duration:</strong> {plan.estimated_duration} days
-                            </Typography>
-                          )}
-                        </Box>
-                      </Box>
-                      {isOverdue(plan) && (
-                        <Tooltip title="Treatment plan is overdue">
-                          <OverdueIcon color="error" />
-                        </Tooltip>
-                      )}
-                    </Box>
-                    
-                    {/* Progress Bar */}
-                    <Box sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Progress
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {calculateProgress(plan)}%
-                        </Typography>
-                      </Box>
-                      <LinearProgress
-                        variant="determinate"
-                        value={calculateProgress(plan)}
-                        sx={{
-                          height: 8,
-                          borderRadius: 4,
-                          backgroundColor: 'grey.200',
-                          '& .MuiLinearProgress-bar': {
-                            borderRadius: 4,
-                            backgroundColor: getTreatmentStatusColor(plan.status) === 'success' ? '#10B981' :
-                                           getTreatmentStatusColor(plan.status) === 'error' ? '#EF4444' :
-                                           getTreatmentStatusColor(plan.status) === 'warning' ? '#F59E0B' :
-                                           '#2A7FAA'
-                          }
-                        }}
-                      />
-                    </Box>
-                    
-                    {/* Treatment Items */}
-                    {plan.items && plan.items.length > 0 && (
-                      <Box>
-                        <Typography variant="subtitle2" gutterBottom>
-                          Treatment Items ({plan.items.length})
-                        </Typography>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                          {plan.items.slice(0, 3).map((item, index) => (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 2 }}>
-                              <Box
-                                sx={{
-                                  width: 8,
-                                  height: 8,
-                                  borderRadius: '50%',
-                                  backgroundColor: item.completed ? '#10B981' : '#E5E7EB'
-                                }}
-                              />
-                              <Typography variant="body2" sx={{ flex: 1 }}>
-                                {item.description || `Treatment Item ${index + 1}`}
-                              </Typography>
-                              {item.completed && (
-                                <CompletedIcon sx={{ fontSize: 16, color: '#10B981' }} />
-                              )}
-                            </Box>
-                          ))}
-                          {plan.items.length > 3 && (
-                            <Typography variant="body2" color="text.secondary" sx={{ pl: 3 }}>
-                              +{plan.items.length - 3} more items
-                            </Typography>
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-                  </Card>
-                ))}
-              </Box>
-            ) : (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <TreatmentIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="body1" color="text.secondary" gutterBottom>
-                  No treatment plans created
-                </Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => navigate(`/treatment-plans/new?patientId=${patient.id}`)}
-                >
-                  Create First Treatment Plan
-                </Button>
-              </Box>
-            )}
-          </CardContent>
-        )}
+        {/* TODO: Treatment Plans Tab - Re-enable in future */}
+        
+
         
         {/* Invoices Tab */}
-        {activeTab === 3 && (
+        {activeTab === 2 && (
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6">
@@ -683,6 +550,7 @@ function PatientDetail() {
                       <TableCell>Description</TableCell>
                       <TableCell>Amount</TableCell>
                       <TableCell>Status</TableCell>
+                      <TableCell>Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -693,13 +561,24 @@ function PatientDetail() {
                           {formatDateShort(invoice.date)}
                         </TableCell>
                         <TableCell>{invoice.description}</TableCell>
-                        <TableCell>₹{invoice.amount.toFixed(2)}</TableCell>
+                        <TableCell>₹{(invoice.amount || 0).toFixed(2)}</TableCell>
                         <TableCell>
                           <Chip
                             label={invoice.status}
                             color={getStatusColor(invoice.status)}
                             size="small"
                           />
+                        </TableCell>
+                        <TableCell>
+                          <IconButton
+                            size="small"
+                            onClick={() => navigate(`/billing/${invoice.id}`, {
+                              state: { fromPatient: true, patientId: patient.id }
+                            })}
+                            title="View Invoice"
+                          >
+                            <ViewIcon />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     ))}
