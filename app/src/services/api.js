@@ -100,7 +100,12 @@ class ApiService {
 
   // Patient API methods
   static async getPatients(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
+    // Filter out empty parameters to clean up the URL
+    const filteredParams = Object.entries(params)
+      .filter(([key, value]) => value !== '' && value !== null && value !== undefined)
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+    
+    const queryString = new URLSearchParams(filteredParams).toString();
     const endpoint = `/patients${queryString ? `?${queryString}` : ''}`;
     return this.request(endpoint);
   }
@@ -149,10 +154,11 @@ class ApiService {
 
   // Appointment API methods
   static async getAppointments(params = {}) {
-    // Filter out undefined values
-    const filteredParams = Object.fromEntries(
-      Object.entries(params).filter(([key, value]) => value !== undefined && value !== null && value !== '')
-    );
+    // Filter out empty parameters to clean up the URL
+    const filteredParams = Object.entries(params)
+      .filter(([key, value]) => value !== '' && value !== null && value !== undefined)
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+    
     const queryString = new URLSearchParams(filteredParams).toString();
     const endpoint = `/appointments${queryString ? `?${queryString}` : ''}`;
     return this.request(endpoint);
@@ -205,7 +211,12 @@ class ApiService {
 
   // Service API methods
   static async getServices(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
+    // Filter out empty parameters to clean up the URL
+    const filteredParams = Object.entries(params)
+      .filter(([key, value]) => value !== '' && value !== null && value !== undefined)
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+    
+    const queryString = new URLSearchParams(filteredParams).toString();
     const endpoint = `/services${queryString ? `?${queryString}` : ''}`;
     return this.request(endpoint);
   }
@@ -236,7 +247,12 @@ class ApiService {
 
   // Product API methods
   static async getProducts(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
+    // Filter out empty parameters to clean up the URL
+    const filteredParams = Object.entries(params)
+      .filter(([key, value]) => value !== '' && value !== null && value !== undefined)
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+    
+    const queryString = new URLSearchParams(filteredParams).toString();
     const endpoint = `/products${queryString ? `?${queryString}` : ''}`;
     return this.request(endpoint);
   }

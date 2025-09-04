@@ -33,11 +33,14 @@ exports.getAllProducts = async (req, res) => {
         const totalCount = await Product.getCount(options);
         const totalPages = Math.ceil(totalCount / limit);
 
+        // Convert products to JSON
+        const productsData = products.map(product => product.toJSON());
+
         res.json({
             success: true,
-            data: products,
+            data: productsData,
             pagination: {
-                currentPage: parseInt(page),
+                currentPage: page,
                 totalPages,
                 totalCount,
                 hasNext: page < totalPages,
@@ -139,18 +142,43 @@ exports.getProductByCode = async (req, res) => {
 // Create new product
 exports.createProduct = async (req, res) => {
     try {
+        console.log('Raw request body:', JSON.stringify(req.body, null, 2));
+        
         // Convert frontend camelCase to backend snake_case
         const productData = convertProductToBackend(req.body);
+        console.log('Converted product data:', JSON.stringify(productData, null, 2));
         
         // Validate required fields
-        const requiredFields = ['name', 'category', 'unit_price', 'supplier'];
+        const requiredFields = ['name', 'unit_price'];
         for (const field of requiredFields) {
-            if (!productData[field]) {
+            if (!productData[field] && productData[field] !== 0) {
+                console.log(`Validation failed: ${field} is missing or empty`);
                 return res.status(400).json({
                     success: false,
                     message: `${field} is required`
                 });
             }
+        }
+        
+        // Validate unit_price is a valid number
+        if (isNaN(parseFloat(productData.unit_price))) {
+            console.log('Validation failed: unit_price is not a valid number');
+            return res.status(400).json({
+                success: false,
+                message: 'Unit price must be a valid number'
+            });
+        }
+        
+        // Ensure unit_price is a number
+        productData.unit_price = parseFloat(productData.unit_price);
+        
+        // Validate category and supplier (allow N/A or empty)
+        if (!productData.category || productData.category.trim() === '') {
+            productData.category = 'N/A';
+        }
+        
+        if (!productData.supplier || productData.supplier.trim() === '') {
+            productData.supplier = 'N/A';
         }
 
         // Generate product code if not provided
@@ -159,7 +187,10 @@ exports.createProduct = async (req, res) => {
         }
 
         const product = new Product(productData);
+        console.log('About to save product:', JSON.stringify(product, null, 2));
+        
         await product.save();
+        console.log('Product saved successfully:', product.id);
 
         res.status(201).json({
             success: true,
@@ -168,6 +199,17 @@ exports.createProduct = async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating product:', error);
+        console.error('Error stack:', error.stack);
+        
+        // Check for specific database errors
+        if (error.message.includes('UNIQUE constraint failed')) {
+            return res.status(400).json({
+                success: false,
+                message: 'Product code already exists. Please try again.',
+                error: 'DUPLICATE_PRODUCT_CODE'
+            });
+        }
+        
         res.status(500).json({
             success: false,
             message: 'Failed to create product',

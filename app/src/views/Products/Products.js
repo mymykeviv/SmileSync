@@ -118,6 +118,7 @@ function Products() {
       };
       
       const response = await api.getProducts(params);
+      
       if (response.success) {
         setProducts(response.data);
         setPagination(response.pagination);

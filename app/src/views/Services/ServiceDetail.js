@@ -78,22 +78,7 @@ function ServiceDetail() {
     handleMenuClose();
   };
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this service?')) {
-      try {
-        const response = await ApiService.deleteService(id);
-        if (response.success) {
-          navigate('/services');
-        } else {
-          setError('Failed to delete service.');
-        }
-      } catch (error) {
-        console.error('Failed to delete service:', error);
-        setError('Failed to delete service.');
-      }
-    }
-    handleMenuClose();
-  };
+  // Delete function removed - services use soft delete
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US', {
@@ -332,10 +317,7 @@ function ServiceDetail() {
           <DuplicateIcon sx={{ mr: 1 }} />
           Duplicate Service
         </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-          <DeleteIcon sx={{ mr: 1 }} />
-          Delete Service
-        </MenuItem>
+        {/* Delete option removed - services use soft delete */}
       </Menu>
     </Box>
   );

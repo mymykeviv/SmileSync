@@ -179,17 +179,42 @@ const validateProduct = [
     .trim()
     .isLength({ min: 1, max: 200 })
     .withMessage('Supplier is required and must be less than 200 characters'),
-  body('unit_price')
+  // Accept both camelCase (frontend) and snake_case (backend) field names
+  body('unitPrice')
     .isFloat({ min: 0 })
     .withMessage('Unit price must be a positive number'),
+  body('unit_price')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Unit price must be a positive number'),
+  body('currentStock')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Current stock must be a non-negative integer'),
   body('current_stock')
     .optional()
     .isInt({ min: 0 })
     .withMessage('Current stock must be a non-negative integer'),
+  body('minimumStock')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Minimum stock must be a non-negative integer'),
   body('minimum_stock')
     .optional()
     .isInt({ min: 0 })
     .withMessage('Minimum stock must be a non-negative integer'),
+  body('unitOfMeasure')
+    .optional({ nullable: true, checkFalsy: true })
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Unit of measure must be less than 50 characters'),
+  body('unit_of_measure')
+    .optional({ nullable: true, checkFalsy: true })
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Unit of measure must be less than 50 characters'),
+  body('isActive')
+    .optional()
+    .isBoolean()
+    .withMessage('is_active must be a boolean value'),
   body('is_active')
     .optional()
     .isBoolean()

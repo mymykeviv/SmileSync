@@ -159,13 +159,18 @@ class Service {
                 params.push(category);
             }
 
-            // Status filter
+            // Status filter - default to active only
             if (status !== undefined) {
                 if (status === 'active') {
                     sql += ' AND is_active = 1';
                 } else if (status === 'inactive') {
                     sql += ' AND is_active = 0';
+                } else if (status === 'all') {
+                    // Show all services regardless of status
                 }
+            } else {
+                // Default: only show active services
+                sql += ' AND is_active = 1';
             }
 
             // Sorting
@@ -249,13 +254,18 @@ class Service {
                 params.push(category);
             }
 
-            // Status filter
+            // Status filter - default to active only
             if (status !== undefined) {
                 if (status === 'active') {
                     sql += ' AND is_active = 1';
                 } else if (status === 'inactive') {
                     sql += ' AND is_active = 0';
+                } else if (status === 'all') {
+                    // Count all services regardless of status
                 }
+            } else {
+                // Default: only count active services
+                sql += ' AND is_active = 1';
             }
 
             const result = await database.get(sql, params);

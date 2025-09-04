@@ -71,7 +71,7 @@ function Services() {
   const [statusFilter, setStatusFilter] = useState('');
   
   // Dialog states
-  const [deleteDialog, setDeleteDialog] = useState({ open: false, service: null });
+  // Delete dialog removed - services use soft delete
   
   // Menu state
   const [anchorEl, setAnchorEl] = useState(null);
@@ -133,17 +133,7 @@ function Services() {
     setSelectedService(null);
   };
 
-  const handleDeleteService = async () => {
-    try {
-      const response = await api.deleteService(deleteDialog.service.id);
-      if (response.success) {
-        setDeleteDialog({ open: false, service: null });
-        loadServices(pagination.currentPage);
-      }
-    } catch (error) {
-      console.error('Failed to delete service:', error);
-    }
-  };
+  // Delete service function removed - services use soft delete
 
   const handleToggleStatus = async (service) => {
     try {
@@ -411,41 +401,10 @@ function Services() {
         >
           Duplicate Service
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            setDeleteDialog({ open: true, service: selectedService });
-            handleMenuClose();
-          }}
-          sx={{ color: 'error.main' }}
-        >
-          Delete Service
-        </MenuItem>
+        {/* Delete option removed - services use soft delete */}
       </Menu>
 
-      {/* Delete Service Dialog */}
-      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, service: null })}>
-        <DialogTitle>Delete Service</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1">
-            Are you sure you want to delete "{deleteDialog.service?.name}"?
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            This action cannot be undone. This service will be removed from all treatment plans and invoices.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialog({ open: false, service: null })}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleDeleteService}
-            color="error"
-            variant="contained"
-          >
-            Delete Service
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Delete dialog removed - services use soft delete */}
 
       {/* Floating Action Button */}
       <Fab

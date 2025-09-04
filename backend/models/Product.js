@@ -584,24 +584,24 @@ class Product {
     toJSON() {
         return {
             id: this.id,
-            product_code: this.product_code,
+            productCode: this.product_code,
             name: this.name,
             description: this.description,
             category: this.category,
-            unit_price: this.unit_price,
-            formatted_price: this.getFormattedPrice(),
-            unit_of_measure: this.unit_of_measure,
-            current_stock: this.current_stock,
-            minimum_stock: this.minimum_stock,
-            stock_status: this.getStockStatus(),
-            is_low_stock: this.isLowStock(),
-            is_out_of_stock: this.isOutOfStock(),
-            stock_value: this.getStockValue(),
-            formatted_stock_value: this.getFormattedStockValue(),
+            unitPrice: this.unit_price,
+            formattedPrice: this.getFormattedPrice(),
+            unitOfMeasure: this.unit_of_measure,
+            currentStock: this.current_stock,
+            minimumStock: this.minimum_stock,
+            stockStatus: this.getStockStatus(),
+            isLowStock: this.isLowStock(),
+            isOutOfStock: this.isOutOfStock(),
+            stockValue: this.getStockValue(),
+            formattedStockValue: this.getFormattedStockValue(),
             supplier: this.supplier,
-            is_active: this.is_active,
-            created_at: this.created_at,
-            updated_at: this.updated_at
+            isActive: this.is_active,
+            createdAt: this.created_at,
+            updatedAt: this.updated_at
         };
     }
 }

@@ -89,8 +89,8 @@ const ServiceForm = () => {
     try {
       setLoading(true);
       const response = await ApiService.getService(id);
-      if (response.data.success) {
-        const service = response.data.data;
+      if (response.success) {
+        const service = response.data;
         setFormData({
           name: service.name || '',
           description: service.description || '',
@@ -199,16 +199,16 @@ const ServiceForm = () => {
         response = await ApiService.createService(serviceData);
       }
 
-      if (response.data.success) {
+      if (response.success) {
         setSuccess(isEdit ? 'Service updated successfully!' : 'Service created successfully!');
         setTimeout(() => {
           navigate('/services');
         }, 1500);
       } else {
         handleError({
-          code: response.data.errorCode || 'SERVICE_SAVE_ERROR',
-          message: response.data.message || 'Failed to save service',
-          details: response.data.details || null
+          code: response.errorCode || 'SERVICE_SAVE_ERROR',
+          message: response.message || 'Failed to save service',
+          details: response.details || null
         });
       }
     } catch (error) {
