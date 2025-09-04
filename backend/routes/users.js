@@ -35,7 +35,7 @@ const userValidation = [
         .withMessage('Role must be one of: admin, dentist, assistant, receptionist, staff'),
     body('phone')
         .optional()
-        .isMobilePhone()
+        .matches(/^[\+]?[1-9]?[0-9]{7,15}$/)
         .withMessage('Please provide a valid phone number'),
     body('license_number')
         .optional()
@@ -85,7 +85,7 @@ const updateUserValidation = [
         .withMessage('Role must be one of: admin, dentist, assistant, receptionist, staff'),
     body('phone')
         .optional()
-        .isMobilePhone()
+        .matches(/^[\+]?[1-9]?[0-9]{7,15}$/)
         .withMessage('Please provide a valid phone number'),
     body('license_number')
         .optional()

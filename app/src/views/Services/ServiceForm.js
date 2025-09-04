@@ -214,9 +214,9 @@ const ServiceForm = () => {
     } catch (error) {
       console.error('Error saving service:', error);
       handleError({
-        code: 'NETWORK_ERROR',
-        message: 'Failed to save service due to network error',
-        details: { originalError: error.message }
+        code: error.statusCode ? 'API_ERROR' : 'NETWORK_ERROR',
+        message: error.message || 'Failed to save service due to network error',
+        details: error.originalError || { originalError: error.message }
       });
     } finally {
       setSaving(false);

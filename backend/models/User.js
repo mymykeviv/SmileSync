@@ -70,13 +70,13 @@ class User {
             const sql = `
                 UPDATE users SET
                     username = ?, email = ?, first_name = ?, last_name = ?, role = ?,
-                    phone = ?, license_number = ?, specialization = ?, is_active = ?
+                    phone = ?, is_active = ?
                 WHERE id = ?
             `;
 
             const params = [
                 this.username, this.email, this.first_name, this.last_name, this.role,
-                this.phone, this.license_number, this.specialization, this.is_active, this.id
+                this.phone, this.is_active, this.id
             ];
 
             await database.run(sql, params);

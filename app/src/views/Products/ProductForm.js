@@ -212,7 +212,7 @@ const ProductForm = () => {
                 setError(response.message || 'Failed to save product');
             }
         } catch (error) {
-            setError('Failed to save product. Please try again.');
+            setError(error.message || 'Failed to save product. Please try again.');
             console.error('Error saving product:', error);
         } finally {
             setLoading(false);

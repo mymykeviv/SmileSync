@@ -196,9 +196,9 @@ function PatientForm() {
       }
     } catch (error) {
       setSubmitError({
-        code: 'NETWORK_ERROR',
-        message: 'Failed to save patient',
-        details: error.message
+        code: error.statusCode ? 'API_ERROR' : 'NETWORK_ERROR',
+        message: error.message || 'Failed to save patient',
+        details: error.originalError || error.message
       });
       console.error('Error saving patient:', error);
     } finally {

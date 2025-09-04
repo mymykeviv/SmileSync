@@ -38,11 +38,29 @@ class Database {
             // Run schema if tables don't exist
             await this.createTables();
             
+            // Run any pending migrations
+            await this.runMigrations();
+            
             console.log('Database initialized successfully');
             return this.db;
         } catch (error) {
             console.error('Database initialization failed:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Run pending migrations
+     */
+    async runMigrations() {
+        try {
+            const MigrationRunner = require('./migrationRunner');
+            const migrationRunner = new MigrationRunner();
+            await migrationRunner.runMigrations();
+        } catch (error) {
+            console.error('Failed to run migrations:', error);
+            // Don't throw error to prevent database initialization failure
+            // Migrations can be run manually if needed
         }
     }
 

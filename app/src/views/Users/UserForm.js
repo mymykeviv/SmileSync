@@ -146,8 +146,11 @@ const UserForm = ({ open, user, onClose, onSave }) => {
     }
 
     // Phone validation (optional)
-    if (formData.phone && !/^[\+]?[1-9][\d\s\-\(\)]{7,15}$/.test(formData.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Please enter a valid phone number';
+    if (formData.phone) {
+      const phonePattern = /^(\+?1[-\s]?)?\(?[0-9]{3}\)?[-\s]?[0-9]{3}[-\s]?[0-9]{4}$|^[\+]?[1-9][\d\s\-\(\)]{7,15}$/;
+      if (!phonePattern.test(formData.phone.trim())) {
+        newErrors.phone = 'Please enter a valid phone number';
+      }
     }
 
     setErrors(newErrors);
@@ -203,9 +206,9 @@ const UserForm = ({ open, user, onClose, onSave }) => {
     } catch (error) {
       console.error('Error saving user:', error);
       setSubmitError({
-        code: 'NETWORK_ERROR',
-        message: 'Failed to save user',
-        details: error.message
+        code: error.statusCode ? 'API_ERROR' : 'NETWORK_ERROR',
+        message: error.message || 'Failed to save user',
+        details: error.originalError || error.message
       });
     } finally {
       setLoading(false);
