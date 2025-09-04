@@ -449,17 +449,17 @@ class Service {
     toJSON() {
         return {
             id: this.id,
-            service_code: this.service_code,
+            serviceCode: this.service_code,
             name: this.name,
             description: this.description,
             category: this.category,
-            duration_minutes: this.duration_minutes,
-            formatted_duration: this.getFormattedDuration(),
-            base_price: this.base_price,
-            formatted_price: this.getFormattedPrice(),
-            is_active: this.is_active,
-            created_at: this.created_at,
-            updated_at: this.updated_at
+            durationMinutes: this.duration_minutes,
+            formattedDuration: this.getFormattedDuration(),
+            basePrice: this.base_price,
+            formattedPrice: this.getFormattedPrice(),
+            isActive: this.is_active,
+            createdAt: this.created_at,
+            updatedAt: this.updated_at
         };
     }
 }

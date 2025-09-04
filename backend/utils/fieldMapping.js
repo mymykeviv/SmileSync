@@ -414,6 +414,61 @@ function convertUserToFrontend(userData) {
 }
 
 /**
+ * Service-specific field mappings
+ */
+const SERVICE_FIELD_MAPPINGS = {
+  // Frontend (camelCase) -> Backend (snake_case)
+  frontendToBackend: {
+    serviceCode: 'service_code',
+    durationMinutes: 'duration_minutes',
+    basePrice: 'base_price',
+    isActive: 'is_active',
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    createdBy: 'created_by'
+  },
+  
+  // Backend (snake_case) -> Frontend (camelCase)
+  backendToFrontend: {
+    service_code: 'serviceCode',
+    duration_minutes: 'durationMinutes',
+    base_price: 'basePrice',
+    is_active: 'isActive',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+    created_by: 'createdBy'
+  }
+};
+
+/**
+ * Convert service data from frontend format to backend format
+ */
+function convertServiceToBackend(serviceData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(serviceData)) {
+    const backendKey = SERVICE_FIELD_MAPPINGS.frontendToBackend[key] || camelToSnake(key);
+    converted[backendKey] = value;
+  }
+  
+  return converted;
+}
+
+/**
+ * Convert service data from backend format to frontend format
+ */
+function convertServiceToFrontend(serviceData) {
+  const converted = {};
+  
+  for (const [key, value] of Object.entries(serviceData)) {
+    const frontendKey = SERVICE_FIELD_MAPPINGS.backendToFrontend[key] || snakeToCamel(key);
+    converted[frontendKey] = value;
+  }
+  
+  return converted;
+}
+
+/**
  * Product-specific field mappings
  */
 const PRODUCT_FIELD_MAPPINGS = {
@@ -487,6 +542,8 @@ module.exports = {
   convertPaymentToFrontend,
   convertUserToBackend,
   convertUserToFrontend,
+  convertServiceToBackend,
+  convertServiceToFrontend,
   convertProductToBackend,
   convertProductToFrontend,
   PATIENT_FIELD_MAPPINGS,
@@ -494,5 +551,6 @@ module.exports = {
   INVOICE_FIELD_MAPPINGS,
   PAYMENT_FIELD_MAPPINGS,
   USER_FIELD_MAPPINGS,
+  SERVICE_FIELD_MAPPINGS,
   PRODUCT_FIELD_MAPPINGS
 };

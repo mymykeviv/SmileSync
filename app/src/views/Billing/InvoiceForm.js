@@ -149,8 +149,8 @@ function InvoiceForm() {
       itemName: selectedItem.name,
       description: newItem.description || selectedItem.description,
       quantity: newItem.quantity,
-      unitPrice: newItem.unitPrice || selectedItem.price,
-      total: newItem.quantity * (newItem.unitPrice || selectedItem.price)
+      unitPrice: newItem.unitPrice || selectedItem.basePrice || selectedItem.unitPrice,
+      total: newItem.quantity * (newItem.unitPrice || selectedItem.basePrice || selectedItem.unitPrice)
     };
 
     setFormData(prev => ({
@@ -596,7 +596,13 @@ function InvoiceForm() {
                 <InputLabel>Item Type</InputLabel>
                 <Select
                   value={newItem.type}
-                  onChange={(e) => setNewItem(prev => ({ ...prev, type: e.target.value, itemId: '' }))}
+                  onChange={(e) => setNewItem(prev => ({ 
+                    ...prev, 
+                    type: e.target.value, 
+                    itemId: '', 
+                    itemName: '', 
+                    unitPrice: 0 
+                  }))}
                 >
                   <MenuItem value="service">Service</MenuItem>
                   <MenuItem value="product">Product</MenuItem>
@@ -610,13 +616,14 @@ function InvoiceForm() {
                   getOptionLabel={(option) => option.name}
                   value={availableItems.find(item => item.id === newItem.itemId) || null}
                   onChange={(event, newValue) => {
-                    setNewItem(prev => ({
-                      ...prev,
-                      itemId: newValue ? newValue.id : '',
-                      itemName: newValue ? newValue.name : '',
-                      unitPrice: newValue ? (newValue.price || 0) : 0
-                    }));
-                  }}
+                        const calculatedPrice = newValue ? (newValue.basePrice || newValue.unitPrice || 0) : 0;
+                        setNewItem({
+                          ...newItem,
+                          itemId: newValue ? newValue.id : '',
+                          itemName: newValue ? newValue.name : '',
+                          unitPrice: calculatedPrice
+                        });
+                      }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
