@@ -14,7 +14,8 @@
     "format": "prettier --write **/*.js",
     "db:migrate": "node database/migrate.js",
     "db:seed": "node database/seed.js",
-    "db:reset": "node database/reset.js"
+    "db:reset": "node database/reset.js",
+    "build:exe": "node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && pkg index.js --targets node18-win-x64 --output dist/smilesync-backend.exe"
   },
   "keywords": [
     "dental",
@@ -51,7 +52,8 @@
     "jest": "^29.7.0",
     "nodemon": "^3.0.2",
     "prettier": "^3.1.1",
-    "supertest": "^6.3.3"
+    "supertest": "^6.3.3",
+    "pkg": "^5.8.1"
   },
   "jest": {
     "testEnvironment": "node",
@@ -69,5 +71,10 @@
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"
+  },
+  "pkg": {
+    "assets": [
+      "database/schema.sql"
+    ]
   }
 }

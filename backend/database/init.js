@@ -3,7 +3,11 @@ const path = require('path');
 const fs = require('fs');
 
 // Database configuration
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '../../data/smilesync.db');
+// Resolve DB path to a writable location when packaged with pkg (outside snapshot)
+const isPkg = typeof process !== 'undefined' && process.pkg;
+const appRoot = isPkg ? path.dirname(process.execPath) : path.join(__dirname, '..', '..');
+const DB_PATH = process.env.DB_PATH || path.join(appRoot, 'data', 'smilesync.db');
+// schema.sql can be read from snapshot when included as a pkg asset
 const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
 
 class Database {
@@ -267,39 +271,12 @@ class Database {
             
             // Recreate tables
             await this.createTables();
-            
-            console.log('Database reset completed');
+            console.log('Database reset complete');
         } catch (error) {
             console.error('Error resetting database:', error);
             throw error;
         }
     }
-
-    /**
-     * Get database statistics
-     */
-    async getStats() {
-        try {
-            const tables = await this.all(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-            );
-            
-            const stats = {};
-            
-            for (const table of tables) {
-                const result = await this.get(`SELECT COUNT(*) as count FROM ${table.name}`);
-                stats[table.name] = result.count;
-            }
-            
-            return stats;
-        } catch (error) {
-            console.error('Error getting database stats:', error);
-            throw error;
-        }
-    }
 }
 
-// Create singleton instance
-const database = new Database();
-
-module.exports = database;
+module.exports = new Database();
