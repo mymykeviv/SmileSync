@@ -173,36 +173,12 @@ for /d %%D in ("%OUTDIR%\nginx\nginx-*") do (
 
 :: Start/Stop scripts inside package
  echo [8/8] Creating start/stop scripts and README...
- (
-   echo @echo off
-   echo setlocal
-   echo set ROOT=%%~dp0
-   echo if not exist "%%ROOT%%logs" mkdir "%%ROOT%%logs"
-   echo if not exist "%%ROOT%%backend\logs" mkdir "%%ROOT%%backend\logs"
-   echo if not exist "%%ROOT%%nginx\logs" mkdir "%%ROOT%%nginx\logs"
-   echo if not exist "%%ROOT%%logs\backend.out.log" type nul ^> "%%ROOT%%logs\backend.out.log"
-   echo if not exist "%%ROOT%%logs\backend.err.log" type nul ^> "%%ROOT%%logs\backend.err.log"
-   if /i "%BUILD_EXE%"=="true" (
-     echo set NODE_SQLITE3_BINARY=%%ROOT%%backend\bin\node_sqlite3.node
-     echo set SQLITE3_BINARY_PATH=%%ROOT%%backend\bin\node_sqlite3.node
-     echo echo Starting backend ^(exe^) on PORT 5001 ...
-     echo start "SmileSync Backend" cmd /c "cd %%ROOT%%backend\bin ^&^& set PORT=5001 ^&^& smilesync-backend.exe ^>^> \"%%ROOT%%logs\backend.out.log\" 2^>^> \"%%ROOT%%logs\backend.err.log\""
-   ) else (
-     echo set PATH=%%ROOT%%runtime\node\;%%PATH%%
-     echo echo Starting backend ^(node^) on PORT 5001 ...
-     echo start "SmileSync Backend" cmd /c "cd %%ROOT%%backend ^&^& set PORT=5001 ^&^& node index.js ^>^> \"%%ROOT%%logs\backend.out.log\" 2^>^> \"%%ROOT%%logs\backend.err.log\""
-   )
-   echo echo Starting nginx on http://localhost:8080 ...
-   echo pushd %%ROOT%%nginx ^>nul
-   echo start "SmileSync Nginx" cmd /c "nginx.exe -p %%ROOT%%nginx -c conf\nginx.conf"
-   echo popd ^>nul
-   echo echo.
-   echo echo Frontend: http://localhost:8080
-   echo echo API:      http://localhost:5001
-   echo echo Logs folder: %%ROOT%%logs ^(backend.out.log, backend.err.log^)
-   echo echo Nginx logs:  %%ROOT%%nginx\logs ^(access.log, error.log^)
-   echo pause
- ) > "%OUTDIR%\start.bat"
+REM Copy start.bat template
+copy "%~dp0templates\start.bat" "%OUTDIR%\start.bat" >nul
+if errorlevel 1 (
+  echo Error: Failed to copy start.bat template
+  exit /b 1
+)
 
 (
   echo @echo off
