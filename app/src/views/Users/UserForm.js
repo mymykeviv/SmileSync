@@ -171,13 +171,13 @@ const UserForm = ({ open, user, onClose, onSave }) => {
       const submitData = {
         username: formData.username.trim(),
         email: formData.email.trim(),
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim(),
         role: formData.role,
         phone: formData.phone.trim() || null,
-        licenseNumber: formData.licenseNumber.trim() || null,
+        license_number: formData.licenseNumber.trim() || null,
         specialization: formData.specialization.trim() || null,
-        isActive: formData.isActive
+        is_active: formData.isActive
       };
 
       // Include password only if provided
